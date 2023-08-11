@@ -10,13 +10,9 @@
 #include <esp_log.h>
 #include "FlexyStepper.hpp"
 
-FlexyStepper flexyStepper;
+FlexyStepper flexyStepper(200, 16, 17, 18);
 
 extern "C" void app_main(void) {
-    flexyStepper.connectToPins(17, 18);
-    flexyStepper.setEnablePin(19);
-    flexyStepper.setResetPin(20);
-
     flexyStepper.setAccelerationInStepsPerSecond(200);
     flexyStepper.setDecelerationInStepsPerSecond(200);
     flexyStepper.setSpeedInStepsPerSecond(500);

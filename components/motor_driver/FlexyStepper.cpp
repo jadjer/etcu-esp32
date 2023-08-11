@@ -36,8 +36,8 @@ auto pinConfiguration = [](uint8_t pinNumber) {
     gpio_config(&stepPinConfig);
 };
 
-FlexyStepper::FlexyStepper(uint8_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin) {
-    _stepsPerRevolution = stepsPerRevolution;
+FlexyStepper::FlexyStepper(uint8_t motorStepsPerRevolution, uint8_t directionPin, uint8_t stepPin) {
+    _motorStepsPerRevolution = motorStepsPerRevolution;
     _directionPin = directionPin;
     _stepPin = stepPin;
 
@@ -64,8 +64,8 @@ FlexyStepper::FlexyStepper(uint8_t stepsPerRevolution, uint8_t directionPin, uin
     pinConfiguration(_stepPin);
 }
 
-FlexyStepper::FlexyStepper(uint8_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin, uint8_t enablePin)
-        : FlexyStepper(stepsPerRevolution, directionPin, stepPin) {
+FlexyStepper::FlexyStepper(uint8_t motorStepsPerRevolution, uint8_t directionPin, uint8_t stepPin, uint8_t enablePin)
+        : FlexyStepper(motorStepsPerRevolution, directionPin, stepPin) {
     _enablePin = enablePin;
 
     pinConfiguration(_enablePin);
@@ -326,11 +326,11 @@ void FlexyStepper::registerTargetPositionReachedCallback(PositionCallbackFunctio
     _targetPositionReachedCallback = targetPositionReachedCallbackFunction;
 }
 
-void FlexyStepper::setStepsPerRevolution(float motorStepPerRevolution) {
-    _stepsPerRevolution = motorStepPerRevolution;
+void FlexyStepper::setStepsPerRevolution(uint32_t motorStepPerRevolution) {
+    _motorStepsPerRevolution = motorStepPerRevolution;
 }
 
-void FlexyStepper::setSpeedInStepsPerSecond(float speedInStepsPerSecond) {
+void FlexyStepper::setSpeedInStepsPerSecond(uint32_t speedInStepsPerSecond) {
     _desiredSpeed_InStepsPerSecond = speedInStepsPerSecond;
     _desiredPeriod_InUSPerStep = 1000000 / _desiredSpeed_InStepsPerSecond;
 }
@@ -459,10 +459,7 @@ void FlexyStepper::moveRelativeInSteps(int32_t distanceToMoveInSteps) {
 }
 
 void FlexyStepper::determinePeriodOfNextStep() {
-    int32_t distanceToTarget_Signed;
     uint32_t distanceToTarget_Unsigned;
-    int32_t decelerationDistance_InSteps;
-    float currentStepPeriodSquared;
     bool speedUpFlag = false;
     bool slowDownFlag = false;
     bool targetInPositiveDirectionFlag = false;
@@ -471,8 +468,8 @@ void FlexyStepper::determinePeriodOfNextStep() {
     //
     // determine the distance to the target position
     //
-    distanceToTarget_Signed = _targetPosition_InSteps - _currentPosition_InSteps;
-    if (distanceToTarget_Signed >= 0L) {
+    int32_t distanceToTarget_Signed = _targetPosition_InSteps - _currentPosition_InSteps;
+    if (distanceToTarget_Signed >= 0) {
         distanceToTarget_Unsigned = distanceToTarget_Signed;
         targetInPositiveDirectionFlag = true;
     } else {
@@ -484,8 +481,8 @@ void FlexyStepper::determinePeriodOfNextStep() {
     // determine the number of steps needed to go from the current speed down to a
     // velocity of 0, Steps = Velocity^2 / (2 * Deceleration)
     //
-    currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
-    decelerationDistance_InSteps = (int32_t) std::round(5E11 / (_deceleration_InStepsPerSecond * currentStepPeriodSquared));
+    float currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
+    int32_t decelerationDistance_InSteps = std::round(5E11 / (_deceleration_InStepsPerSecond * currentStepPeriodSquared));
 
     //
     // check if: Moving in a positive direction & Moving toward the target

@@ -38,20 +38,20 @@ public:
 public:
     /**
      * Connect the stepper object to the IO pins
-     * @param stepsPerRevolution
+     * @param motorStepsPerRevolution
      * @param directionPin IO pin number for the direction signal
      * @param stepPin IO pin number for the Step signal
      */
-    FlexyStepper(uint8_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin);
+    FlexyStepper(uint8_t motorStepsPerRevolution, uint8_t directionPin, uint8_t stepPin);
 
     /**
      * Connect the stepper object to the IO pins
-     * @param stepsPerRevolution
+     * @param motorStepsPerRevolution
      * @param directionPin IO pin number for the direction signal
      * @param stepPin IO pin number for the Step signal
      * @param enablePin IO pin number for enable motor
      */
-    FlexyStepper(uint8_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin, uint8_t enablePin);
+    FlexyStepper(uint8_t motorStepsPerRevolution, uint8_t directionPin, uint8_t stepPin, uint8_t enablePin);
 
     /**
      * Destructor
@@ -180,7 +180,7 @@ public:
      * set the number of steps the motor has per revolution
      * @param motorStepPerRevolution
      */
-    void setStepsPerRevolution(float motorStepPerRevolution);
+    void setStepsPerRevolution(uint32_t motorStepPerRevolution);
 
     /**
      * set the maximum speed, units in steps/second, this is the maximum speed reached
@@ -188,7 +188,7 @@ public:
      * Enter:  speedInStepsPerSecond = speed to accelerate up to, units in steps/second
      * @param speedInStepsPerSecond
      */
-    void setSpeedInStepsPerSecond(float speedInStepsPerSecond);
+    void setSpeedInStepsPerSecond(uint32_t speedInStepsPerSecond);
 
     /**
      * set the rate of acceleration, units in steps/second/second
@@ -383,20 +383,20 @@ private:
 
 private:
     uint32_t _lastStepTime_InUS;
+    uint32_t _motorStepsPerRevolution;
+    uint32_t _desiredSpeed_InStepsPerSecond;
 
 private:
     int32_t _targetPosition_InSteps;
     int32_t _currentPosition_InSteps;
 
 private:
-    float _stepsPerRevolution;
     float _nextStepPeriod_InUS;
     float _currentStepPeriod_InUS;
     float _periodOfSlowestStep_InUS;
     float _desiredPeriod_InUSPerStep;
     float _acceleration_InStepsPerSecond;
     float _deceleration_InStepsPerSecond;
-    float _desiredSpeed_InStepsPerSecond;
     float _acceleration_InStepsPerUSPerUS;
     float _deceleration_InStepsPerUSPerUS;
     float _minimumPeriodForAStoppedMotion;
