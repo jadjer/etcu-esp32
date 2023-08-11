@@ -1,0 +1,16 @@
+menu "Button"
+
+    config BUTTON_PIN
+        int "GPIO external power pin"
+        range 0 36
+        default 0
+        help
+            GPIO pin number to be system enabled.
+
+    config BUTTON_PIN_INVERTED
+        bool "Inverted value from external pin?"
+        default TRUE
+        help
+            Inverted value from external power pin.
+
+endmenu
