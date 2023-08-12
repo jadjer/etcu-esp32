@@ -60,24 +60,24 @@ public:
 public:
     /**
      *
+     * @param microStepsPerStep
      * @param ms1
      * @param ms2
      * @param ms3
-     * @param useOpenDrain
      */
-    void setMicroStepPins(uint64_t microSteps, uint8_t ms1, uint8_t ms2, uint8_t ms3);
+    void setMicroStepPins(uint64_t microStepsPerStep, uint8_t ms1, uint8_t ms2, uint8_t ms3);
 
     /**
      *
-     * @param microStep
+     * @param microStepsPerStep
      */
-    void setMicroSteps(uint64_t microSteps);
+    void setMicroStepsPerStep(uint64_t microStepsPerStep);
 
     /**
      * set the number of steps the motor has per revolution
-     * @param motorStepPerRevolution
+     * @param stepsPerRevolution
      */
-    void setStepsPerRevolution(uint32_t motorStepPerRevolution);
+    void setStepsPerRevolution(uint32_t stepsPerRevolution);
 
     /**
      * set the maximum speed, units in steps/second, this is the maximum speed reached

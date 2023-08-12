@@ -86,24 +86,24 @@ void FlexyStepper::registerTargetPositionReachedCallback(PositionCallbackFunctio
     _targetPositionReachedCallback = targetPositionReachedCallbackFunction;
 }
 
-void FlexyStepper::setMicroStepPins(uint64_t microSteps, uint8_t ms1, uint8_t ms2, uint8_t ms3) {
-    _microStep1Pin = ms1;
-    _microStep2Pin = ms2;
-    _microStep3Pin = ms3;
+void FlexyStepper::setMicroStepPins(uint64_t microStepsPerStep, uint8_t ms1, uint8_t ms2, uint8_t ms3) {
+    _microStep1Pin = static_cast<int8_t>(ms1);
+    _microStep2Pin = static_cast<int8_t>(ms2);
+    _microStep3Pin = static_cast<int8_t>(ms3);
 
     pinConfiguration(_microStep1Pin);
     pinConfiguration(_microStep2Pin);
     pinConfiguration(_microStep3Pin);
 
-    _motorMicroSteps = microSteps;
+    setMicroStepsPerStep(microStepsPerStep);
 }
 
-void FlexyStepper::setMicroSteps(uint64_t microSteps) {
-    _motorMicroSteps = microSteps;
+void FlexyStepper::setMicroStepsPerStep(uint64_t microStepsPerStep) {
+    _microStepsPerStep = microStepsPerStep;
 }
 
-void FlexyStepper::setStepsPerRevolution(uint32_t motorStepPerRevolution) {
-    _motorStepsPerRevolution = motorStepPerRevolution;
+void FlexyStepper::setStepsPerRevolution(uint32_t stepsPerRevolution) {
+    _stepsPerRevolution = stepsPerRevolution;
 }
 
 void FlexyStepper::setSpeedInStepsPerSecond(uint32_t speedInStepsPerSecond) {
