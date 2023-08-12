@@ -229,7 +229,7 @@ private:
      * determine the period for the next step, either speed up a little, slow down a
      * little or go the same speed
      */
-    void determinePeriodOfNextStep();
+    uint32_t determinePeriodOfNextStep();
 
 private:
     [[noreturn]] static void taskRunner(void *parameter);

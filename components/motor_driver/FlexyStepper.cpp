@@ -293,14 +293,14 @@ bool FlexyStepper::processMovement() {
     return true;
 }
 
-void FlexyStepper::determinePeriodOfNextStep() {
+uint32_t FlexyStepper::determinePeriodOfNextStep() {
     uint32_t distanceToTarget_Unsigned;
     bool speedUpFlag = false;
     bool slowDownFlag = false;
     bool targetInPositiveDirectionFlag = false;
     bool targetInNegativeDirectionFlag = false;
 
-    int32_t distanceToTarget_Signed = _targetPosition_InSteps - _currentPosition_InSteps;
+    auto distanceToTarget_Signed = _targetPosition_InSteps - _currentPosition_InSteps;
     if (distanceToTarget_Signed >= 0) {
         distanceToTarget_Unsigned = distanceToTarget_Signed;
         targetInPositiveDirectionFlag = true;
@@ -314,7 +314,8 @@ void FlexyStepper::determinePeriodOfNextStep() {
     // velocity of 0, Steps = Velocity^2 / (2 * Deceleration)
     //
     auto currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
-    auto decelerationDistance_InSteps = 5E11 / (_deceleration_InStepsPerSecond * currentStepPeriodSquared);
+
+    auto decelerationDistance_InSteps = std::round(5E11 / (_deceleration_InStepsPerUS * currentStepPeriodSquared));
 
     if (_directionOfMotion == 1 and targetInPositiveDirectionFlag) {
         if (distanceToTarget_Unsigned < decelerationDistance_InSteps or _nextStepPeriod_InUS < _desiredPeriod_InUSPerStep) {
@@ -324,11 +325,6 @@ void FlexyStepper::determinePeriodOfNextStep() {
         }
 
     } else if (_directionOfMotion == 1 and targetInNegativeDirectionFlag) {
-        //
-        // check if: Moving in a positive direction & Moving away from the target
-        //    (directionOfMotion == 1) && (distanceToTarget_Signed < 0)
-        //
-
         //
         // need to slow down, then reverse direction
         //
@@ -342,11 +338,6 @@ void FlexyStepper::determinePeriodOfNextStep() {
 
     } else if (_directionOfMotion == -1 and targetInNegativeDirectionFlag) {
         //
-        // check if: Moving in a negative direction & Moving toward the target
-        //    (directionOfMotion == -1) && (distanceToTarget_Signed < 0)
-        //
-
-        //
         // check if need to start slowing down as we reach the target, or if we
         // need to slow down because we are going too fast
         //
@@ -357,11 +348,6 @@ void FlexyStepper::determinePeriodOfNextStep() {
         }
 
     } else if (_directionOfMotion == -1 and targetInPositiveDirectionFlag) {
-        //
-        // check if: Moving in a negative direction & Moving away from the target
-        //    (directionOfMotion == -1) && (distanceToTarget_Signed > 0)
-        //
-
         //
         // need to slow down, then reverse direction
         //
@@ -374,33 +360,25 @@ void FlexyStepper::determinePeriodOfNextStep() {
         }
     }
 
-    //
-    // check if accelerating
-    //
     if (speedUpFlag) {
-        //
         // StepPeriod = StepPeriod(1 - a * StepPeriod^2)
-        //
-        _nextStepPeriod_InUS = _currentStepPeriod_InUS - _acceleration_InStepsPerUS * currentStepPeriodSquared * _currentStepPeriod_InUS;
+        _nextStepPeriod_InUS = _currentStepPeriod_InUS - _currentStepPeriod_InUS * _acceleration_InStepsPerUS * currentStepPeriodSquared;
 
         if (_nextStepPeriod_InUS < _desiredPeriod_InUSPerStep) {
             _nextStepPeriod_InUS = _desiredPeriod_InUSPerStep;
         }
     }
 
-    //
-    // check if decelerating
-    //
     if (slowDownFlag) {
-        //
         // StepPeriod = StepPeriod(1 + a * StepPeriod^2)
-        //
-        _nextStepPeriod_InUS = _currentStepPeriod_InUS + _deceleration_InStepsPerUS * currentStepPeriodSquared * _currentStepPeriod_InUS;
+        _nextStepPeriod_InUS = _currentStepPeriod_InUS + _currentStepPeriod_InUS * _deceleration_InStepsPerUS * currentStepPeriodSquared;
 
         if (_nextStepPeriod_InUS > _periodOfSlowestStep_InUS) {
             _nextStepPeriod_InUS = _periodOfSlowestStep_InUS;
         }
     }
+
+    return _nextStepPeriod_InUS;
 }
 
 [[noreturn]] void FlexyStepper::taskRunner(void *parameter) {
