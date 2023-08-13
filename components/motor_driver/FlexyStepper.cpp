@@ -36,39 +36,33 @@ auto micros = []() -> uint64_t {
     return esp_timer_get_time();
 };
 
-FlexyStepper::FlexyStepper(uint32_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin) :
-        _firstProcessingAfterTargetReached(true),
+FlexyStepper::FlexyStepper(uint8_t directionPin, uint8_t stepPin) :
         _stepPin(stepPin),
-        _directionPin(directionPin),
         _enablePin(-1),
-        _microStep1Pin(-1),
-        _microStep2Pin(-1),
-        _microStep3Pin(-1),
+        _directionPin(directionPin),
         _directionOfMotion(0),
+        _nextStepPeriod_InUS(0.0),
+        _lastStepTime_InUS(0),
+        _currentStepPeriod_InUS(0.0),
+        _periodOfSlowestStep_InUS(0.0),
         _targetPosition_InSteps(0),
         _currentPosition_InSteps(0),
-        _lastStepTime_InUS(0),
-        _nextStepPeriod_InUS(0),
-        _currentStepPeriod_InUS(0),
-        _periodOfSlowestStep_InUS(0),
-        _microStepsPerStep(1),
-        _stepsPerRevolution(stepsPerRevolution),
-        _desiredSpeed_InStepsPerSecond(0),
-        _acceleration_InStepsPerUS(0),
-        _deceleration_InStepsPerUS(0),
-        _desiredPeriod_InUSPerStep(0),
-        _minimumPeriodForAStoppedMotion(0) {
+        _desiredPeriod_InUSPerStep(0.0),
+        _desiredSpeed_InStepsPerSecond(0.0),
+        _acceleration_InStepsPerUSPerUS(0.0),
+        _deceleration_InStepsPerUSPerUS(0.0),
+        _minimumPeriodForAStoppedMotion(0.0) {
 
     setSpeedInStepsPerSecond(200);
-    setAccelerationInStepsPerSecond(200);
-    setDecelerationInStepsPerSecond(200);
+    setAccelerationInStepsPerSecondPerSecond(200);
+    setDecelerationInStepsPerSecondPerSecond(200);
 
     pinConfiguration(_directionPin);
     pinConfiguration(_stepPin);
 }
 
-FlexyStepper::FlexyStepper(uint32_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin, int8_t enablePin)
-        : FlexyStepper(stepsPerRevolution, directionPin, stepPin) {
+FlexyStepper::FlexyStepper(uint8_t directionPin, uint8_t stepPin, int8_t enablePin)
+        : FlexyStepper(directionPin, stepPin) {
     assert(enablePin > 0);
 
     _enablePin = enablePin;
@@ -82,48 +76,20 @@ FlexyStepper::~FlexyStepper() {
     }
 }
 
-void FlexyStepper::registerTargetPositionReachedCallback(PositionCallbackFunction targetPositionReachedCallbackFunction) {
-    _targetPositionReachedCallback = targetPositionReachedCallbackFunction;
-}
-
-void FlexyStepper::setMicroStepPins(uint64_t microStepsPerStep, uint8_t ms1, uint8_t ms2, uint8_t ms3) {
-    _microStep1Pin = static_cast<int8_t>(ms1);
-    _microStep2Pin = static_cast<int8_t>(ms2);
-    _microStep3Pin = static_cast<int8_t>(ms3);
-
-    pinConfiguration(_microStep1Pin);
-    pinConfiguration(_microStep2Pin);
-    pinConfiguration(_microStep3Pin);
-
-    setMicroStepsPerStep(microStepsPerStep);
-}
-
-void FlexyStepper::setMicroStepsPerStep(uint64_t microStepsPerStep) {
-    _microStepsPerStep = microStepsPerStep;
-}
-
-void FlexyStepper::setStepsPerRevolution(uint32_t stepsPerRevolution) {
-    _stepsPerRevolution = stepsPerRevolution;
-}
-
-void FlexyStepper::setSpeedInStepsPerSecond(uint32_t speedInStepsPerSecond) {
+void FlexyStepper::setSpeedInStepsPerSecond(float speedInStepsPerSecond) {
     _desiredSpeed_InStepsPerSecond = speedInStepsPerSecond;
     _desiredPeriod_InUSPerStep = 1e6 / _desiredSpeed_InStepsPerSecond;
 }
 
-void FlexyStepper::setAccelerationInStepsPerSecond(uint32_t accelerationInStepsPerSecond) {
-    _acceleration_InStepsPerUS = static_cast<double>(accelerationInStepsPerSecond) / 1e12;
+void FlexyStepper::setAccelerationInStepsPerSecondPerSecond(float accelerationInStepsPerSecondPerSecond) {
+    _acceleration_InStepsPerUSPerUS = accelerationInStepsPerSecondPerSecond / 1e12;
 
-    _periodOfSlowestStep_InUS = static_cast<uint32_t>(std::round(1.0e6 / sqrt(2.0 * accelerationInStepsPerSecond)));
-    _minimumPeriodForAStoppedMotion = static_cast<double>(_periodOfSlowestStep_InUS) / 2.8;
+    _periodOfSlowestStep_InUS = 1e6 / sqrt(2.0 * accelerationInStepsPerSecondPerSecond);
+    _minimumPeriodForAStoppedMotion = _periodOfSlowestStep_InUS / 2.8;
 }
 
-void FlexyStepper::setDecelerationInStepsPerSecond(uint32_t decelerationInStepsPerSecond) {
-    _deceleration_InStepsPerUS = static_cast<double>(decelerationInStepsPerSecond) / 1e12;
-}
-
-void FlexyStepper::setCurrentPositionInSteps(int32_t currentPositionInSteps) {
-    _currentPosition_InSteps = currentPositionInSteps;
+void FlexyStepper::setDecelerationInStepsPerSecondPerSecond(float decelerationInStepsPerSecondPerSecond) {
+    _deceleration_InStepsPerUSPerUS = decelerationInStepsPerSecondPerSecond / 1e12;
 }
 
 void FlexyStepper::setTargetPositionToStop() {
@@ -131,12 +97,8 @@ void FlexyStepper::setTargetPositionToStop() {
         return;
     }
 
-    int32_t decelerationDistance_InSteps;
-
-    //
-    // move the target position so that the motor will begin deceleration now
-    //
-    decelerationDistance_InSteps = (int32_t) std::round(5E11 / (_deceleration_InStepsPerUS * _currentStepPeriod_InUS * _currentStepPeriod_InUS));
+    auto currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
+    auto decelerationDistance_InSteps = std::round(1 / currentStepPeriodSquared / (2 * _deceleration_InStepsPerUSPerUS));
 
     if (_directionOfMotion > 0) {
         setTargetPositionInSteps(_currentPosition_InSteps + decelerationDistance_InSteps);
@@ -147,7 +109,6 @@ void FlexyStepper::setTargetPositionToStop() {
 
 void FlexyStepper::setTargetPositionInSteps(int32_t absolutePositionToMoveToInSteps) {
     _targetPosition_InSteps = absolutePositionToMoveToInSteps;
-    _firstProcessingAfterTargetReached = true;
 }
 
 void FlexyStepper::setTargetPositionRelativeInSteps(int32_t distanceToMoveInSteps) {
@@ -282,14 +243,6 @@ bool FlexyStepper::processMovement() {
     _nextStepPeriod_InUS = 0.0;
     _directionOfMotion = 0;
 
-    if (_firstProcessingAfterTargetReached) {
-        _firstProcessingAfterTargetReached = false;
-
-        if (_targetPositionReachedCallback) {
-            _targetPositionReachedCallback(_currentPosition_InSteps);
-        }
-    }
-
     return true;
 }
 
@@ -314,8 +267,7 @@ uint32_t FlexyStepper::determinePeriodOfNextStep() {
     // velocity of 0, Steps = Velocity^2 / (2 * Deceleration)
     //
     auto currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
-
-    auto decelerationDistance_InSteps = std::round(5E11 / (_deceleration_InStepsPerUS * currentStepPeriodSquared));
+    auto decelerationDistance_InSteps = std::round(1 / currentStepPeriodSquared / (2 * _deceleration_InStepsPerUSPerUS));
 
     if (_directionOfMotion == 1 and targetInPositiveDirectionFlag) {
         if (distanceToTarget_Unsigned < decelerationDistance_InSteps or _nextStepPeriod_InUS < _desiredPeriod_InUSPerStep) {
@@ -362,7 +314,7 @@ uint32_t FlexyStepper::determinePeriodOfNextStep() {
 
     if (speedUpFlag) {
         // StepPeriod = StepPeriod(1 - a * StepPeriod^2)
-        _nextStepPeriod_InUS = _currentStepPeriod_InUS - _currentStepPeriod_InUS * _acceleration_InStepsPerUS * currentStepPeriodSquared;
+        _nextStepPeriod_InUS = _currentStepPeriod_InUS - _currentStepPeriod_InUS * _acceleration_InStepsPerUSPerUS * currentStepPeriodSquared;
 
         if (_nextStepPeriod_InUS < _desiredPeriod_InUSPerStep) {
             _nextStepPeriod_InUS = _desiredPeriod_InUSPerStep;
@@ -371,7 +323,7 @@ uint32_t FlexyStepper::determinePeriodOfNextStep() {
 
     if (slowDownFlag) {
         // StepPeriod = StepPeriod(1 + a * StepPeriod^2)
-        _nextStepPeriod_InUS = _currentStepPeriod_InUS + _currentStepPeriod_InUS * _deceleration_InStepsPerUS * currentStepPeriodSquared;
+        _nextStepPeriod_InUS = _currentStepPeriod_InUS + _currentStepPeriod_InUS * _deceleration_InStepsPerUSPerUS * currentStepPeriodSquared;
 
         if (_nextStepPeriod_InUS > _periodOfSlowestStep_InUS) {
             _nextStepPeriod_InUS = _periodOfSlowestStep_InUS;

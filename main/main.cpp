@@ -16,14 +16,18 @@
 #include <esp_log.h>
 #include "FlexyStepper.hpp"
 
-FlexyStepper flexyStepper(200, 16, 17, 18);
+FlexyStepper flexyStepper(13, 12);
 
 extern "C" void app_main(void) {
-    flexyStepper.setAccelerationInStepsPerSecond(200);
-    flexyStepper.setDecelerationInStepsPerSecond(200);
-    flexyStepper.setSpeedInStepsPerSecond(500);
+    flexyStepper.setAccelerationInStepsPerSecondPerSecond(300000);
+    flexyStepper.setDecelerationInStepsPerSecondPerSecond(300000);
+    flexyStepper.setSpeedInStepsPerSecond(60000);
 
     flexyStepper.startAsService(1);
 
-    flexyStepper.setTargetPositionInSteps(500);
+    flexyStepper.setTargetPositionInSteps(1000000);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    flexyStepper.setTargetPositionInSteps(-1000000);
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    flexyStepper.setTargetPositionToStop();
 }

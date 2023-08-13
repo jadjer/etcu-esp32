@@ -21,8 +21,6 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-using PositionCallbackFunction = void (*)(int64_t);
-
 /**
  * @class FlexyStepper
  */
@@ -30,20 +28,18 @@ class FlexyStepper {
 public:
     /**
      * Connect the stepper object to the IO pins
-     * @param stepsPerRevolution
      * @param directionPin IO pin number for the direction signal
      * @param stepPin IO pin number for the Step signal
      */
-    FlexyStepper(uint32_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin);
+    FlexyStepper(uint8_t directionPin, uint8_t stepPin);
 
     /**
      * Connect the stepper object to the IO pins
-     * @param stepsPerRevolution
      * @param directionPin IO pin number for the direction signal
      * @param stepPin IO pin number for the Step signal
      * @param enablePin IO pin number for enable motor
      */
-    FlexyStepper(uint32_t stepsPerRevolution, uint8_t directionPin, uint8_t stepPin, int8_t enablePin);
+    FlexyStepper(uint8_t directionPin, uint8_t stepPin, int8_t enablePin);
 
     /**
      * Destructor
@@ -52,40 +48,12 @@ public:
 
 public:
     /**
-     * register a callback function to be called whenever a target position has been reached
-     * @param targetPositionReachedCallbackFunction
-     */
-    void registerTargetPositionReachedCallback(PositionCallbackFunction targetPositionReachedCallbackFunction);
-
-public:
-    /**
-     *
-     * @param microStepsPerStep
-     * @param ms1
-     * @param ms2
-     * @param ms3
-     */
-    void setMicroStepPins(uint64_t microStepsPerStep, uint8_t ms1, uint8_t ms2, uint8_t ms3);
-
-    /**
-     *
-     * @param microStepsPerStep
-     */
-    void setMicroStepsPerStep(uint64_t microStepsPerStep);
-
-    /**
-     * set the number of steps the motor has per revolution
-     * @param stepsPerRevolution
-     */
-    void setStepsPerRevolution(uint32_t stepsPerRevolution);
-
-    /**
      * set the maximum speed, units in steps/second, this is the maximum speed reached
      * while accelerating
      * Enter:  speedInStepsPerSecond = speed to accelerate up to, units in steps/second
      * @param speedInStepsPerSecond
      */
-    void setSpeedInStepsPerSecond(uint32_t speedInStepsPerSecond);
+    void setSpeedInStepsPerSecond(float speedInStepsPerSecond);
 
     /**
      * set the rate of acceleration, units in steps/second/second
@@ -93,7 +61,7 @@ public:
      * steps/second/second
      * @param accelerationInStepsPerSecond
      */
-    void setAccelerationInStepsPerSecond(uint32_t accelerationInStepsPerSecond);
+    void setAccelerationInStepsPerSecondPerSecond(float accelerationInStepsPerSecondPerSecond);
 
     /**
      * set the rate of deceleration, units in steps/second/second
@@ -101,19 +69,7 @@ public:
      * steps/second/second
      * @param decelerationInStepsPerSecond
      */
-    void setDecelerationInStepsPerSecond(uint32_t decelerationInStepsPerSecond);
-
-    /**
-     * set the current position of the motor in steps, this does not move the motor
-     * currentPositionInSteps = the new position value of the motor in steps to be set internally for the current position
-     * Do not confuse this function with setTargetPositionInMillimeters(), it does not directly cause a motor movement per se.
-     * Notes:
-     * This function should only be called when the motor is stopped
-     * If you called one of the move functions before (and by that setting a target position internally) you might experience that the motor starts to move after calling setCurrentPositionInSteps() in the case that the value of currentPositionInSteps is different from the target position of the stepper.
-     * If this is not intended, you should call setTargetPositionInSteps() with the same value as the setCurrentPositionInSteps() function directly before or after calling setCurrentPositionInSteps
-     * @param currentPositionInSteps
-     */
-    void setCurrentPositionInSteps(int32_t currentPositionInSteps);
+    void setDecelerationInStepsPerSecondPerSecond(float decelerationInStepsPerSecondPerSecond);
 
     /**
      * setup a "Stop" to begin the process of decelerating from the current velocity
@@ -232,47 +188,28 @@ private:
     uint32_t determinePeriodOfNextStep();
 
 private:
+    /**
+     *
+     * @param parameter
+     */
     [[noreturn]] static void taskRunner(void *parameter);
 
 private:
-    PositionCallbackFunction _targetPositionReachedCallback = nullptr;
-
-private:
-    bool _firstProcessingAfterTargetReached;
-
-private:
     uint8_t _stepPin;
-    uint8_t _directionPin;
-
-private:
     int8_t _enablePin;
-    int8_t _microStep1Pin;
-    int8_t _microStep2Pin;
-    int8_t _microStep3Pin;
-
-private:
+    uint8_t _directionPin;
     int8_t _directionOfMotion;
-
-private:
+    float _nextStepPeriod_InUS;
+    uint32_t _lastStepTime_InUS;
+    float _currentStepPeriod_InUS;
+    float _periodOfSlowestStep_InUS;
     int32_t _targetPosition_InSteps;
     int32_t _currentPosition_InSteps;
-
-private:
-    uint32_t _lastStepTime_InUS;
-    uint32_t _nextStepPeriod_InUS;
-    uint32_t _currentStepPeriod_InUS;
-    uint32_t _periodOfSlowestStep_InUS;
-
-private:
-    uint32_t _microStepsPerStep;
-    uint32_t _stepsPerRevolution;
-    uint32_t _desiredSpeed_InStepsPerSecond;
-
-private:
-    uint32_t _acceleration_InStepsPerUS;
-    uint32_t _deceleration_InStepsPerUS;
-    uint32_t _desiredPeriod_InUSPerStep;
-    uint32_t _minimumPeriodForAStoppedMotion;
+    float _desiredPeriod_InUSPerStep;
+    float _desiredSpeed_InStepsPerSecond;
+    float _acceleration_InStepsPerUSPerUS;
+    float _deceleration_InStepsPerUSPerUS;
+    float _minimumPeriodForAStoppedMotion;
 
 private:
     TaskHandle_t _handle = nullptr;
