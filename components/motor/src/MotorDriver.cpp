@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-#include "FlexyStepper.hpp"
+#include <motor/MotorDriver.hpp>
 
 #include <cmath>
 
@@ -21,7 +21,7 @@
 #include <driver/gpio.h>
 
 auto pinConfiguration = [](uint8_t pinNumber) -> void {
-    gpio_config_t stepPinConfig = {
+    gpio_config_t pinConfig = {
             .pin_bit_mask = (1ull << pinNumber),
             .mode = GPIO_MODE_OUTPUT,
             .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -29,16 +29,11 @@ auto pinConfiguration = [](uint8_t pinNumber) -> void {
             .intr_type = GPIO_INTR_DISABLE,
     };
 
-    gpio_config(&stepPinConfig);
+    gpio_config(&pinConfig);
 };
 
-auto micros = []() -> uint64_t {
-    return esp_timer_get_time();
-};
-
-FlexyStepper::FlexyStepper(uint8_t directionPin, uint8_t stepPin) :
+MotorDriver::MotorDriver(uint8_t directionPin, uint8_t stepPin) :
         _stepPin(stepPin),
-        _enablePin(-1),
         _directionPin(directionPin),
         _directionOfMotion(0),
         _nextStepPeriod_InUS(0.0),
@@ -61,44 +56,30 @@ FlexyStepper::FlexyStepper(uint8_t directionPin, uint8_t stepPin) :
     pinConfiguration(_stepPin);
 }
 
-FlexyStepper::FlexyStepper(uint8_t directionPin, uint8_t stepPin, int8_t enablePin)
-        : FlexyStepper(directionPin, stepPin) {
-    assert(enablePin > 0);
+MotorDriver::~MotorDriver() = default;
 
-    _enablePin = enablePin;
-
-    pinConfiguration(_enablePin);
-}
-
-FlexyStepper::~FlexyStepper() {
-    if (_handle != nullptr) {
-        stopService();
-    }
-}
-
-void FlexyStepper::setSpeedInStepsPerSecond(float speedInStepsPerSecond) {
+void MotorDriver::setSpeedInStepsPerSecond(float speedInStepsPerSecond) {
     _desiredSpeed_InStepsPerSecond = speedInStepsPerSecond;
     _desiredPeriod_InUSPerStep = 1e6 / _desiredSpeed_InStepsPerSecond;
 }
 
-void FlexyStepper::setAccelerationInStepsPerSecondPerSecond(float accelerationInStepsPerSecondPerSecond) {
+void MotorDriver::setAccelerationInStepsPerSecondPerSecond(float accelerationInStepsPerSecondPerSecond) {
     _acceleration_InStepsPerUSPerUS = accelerationInStepsPerSecondPerSecond / 1e12;
 
     _periodOfSlowestStep_InUS = 1e6 / sqrt(2.0 * accelerationInStepsPerSecondPerSecond);
     _minimumPeriodForAStoppedMotion = _periodOfSlowestStep_InUS / 2.8;
 }
 
-void FlexyStepper::setDecelerationInStepsPerSecondPerSecond(float decelerationInStepsPerSecondPerSecond) {
+void MotorDriver::setDecelerationInStepsPerSecondPerSecond(float decelerationInStepsPerSecondPerSecond) {
     _deceleration_InStepsPerUSPerUS = decelerationInStepsPerSecondPerSecond / 1e12;
 }
 
-void FlexyStepper::setTargetPositionToStop() {
+void MotorDriver::setTargetPositionToStop() {
     if (_directionOfMotion == 0) {
         return;
     }
 
-    auto currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
-    auto decelerationDistance_InSteps = std::round(1 / currentStepPeriodSquared / (2 * _deceleration_InStepsPerUSPerUS));
+    auto decelerationDistance_InSteps = calcDecelerationDistanceInSteps();
 
     if (_directionOfMotion > 0) {
         setTargetPositionInSteps(_currentPosition_InSteps + decelerationDistance_InSteps);
@@ -107,27 +88,19 @@ void FlexyStepper::setTargetPositionToStop() {
     }
 }
 
-void FlexyStepper::setTargetPositionInSteps(int32_t absolutePositionToMoveToInSteps) {
+void MotorDriver::setTargetPositionInSteps(int32_t absolutePositionToMoveToInSteps) {
     _targetPosition_InSteps = absolutePositionToMoveToInSteps;
 }
 
-void FlexyStepper::setTargetPositionRelativeInSteps(int32_t distanceToMoveInSteps) {
+void MotorDriver::setTargetPositionRelativeInSteps(int32_t distanceToMoveInSteps) {
     setTargetPositionInSteps(_currentPosition_InSteps + distanceToMoveInSteps);
 }
 
-uint32_t FlexyStepper::getTaskStackHighWaterMark() {
-    if (isStartedAsService()) {
-        return uxTaskGetStackHighWaterMark(_handle);
-    }
-
-    return 0;
-}
-
-int8_t FlexyStepper::getDirectionOfMotion() const {
+int8_t MotorDriver::getDirectionOfMotion() const {
     return _directionOfMotion;
 }
 
-double FlexyStepper::getCurrentVelocityInStepsPerSecond() const {
+double MotorDriver::getCurrentVelocityInStepsPerSecond() const {
     if (_currentStepPeriod_InUS == 0) {
         return 0;
     }
@@ -139,23 +112,19 @@ double FlexyStepper::getCurrentVelocityInStepsPerSecond() const {
     return -1e6 / _currentStepPeriod_InUS;
 }
 
-int32_t FlexyStepper::getCurrentPositionInSteps() const {
+int32_t MotorDriver::getCurrentPositionInSteps() const {
     return _currentPosition_InSteps;
 }
 
-int64_t FlexyStepper::getDistanceToTargetSigned() const {
+int64_t MotorDriver::getDistanceToTargetSigned() const {
     return _targetPosition_InSteps - _currentPosition_InSteps;
 }
 
-int64_t FlexyStepper::getTargetPositionInSteps() const {
+int64_t MotorDriver::getTargetPositionInSteps() const {
     return _targetPosition_InSteps;
 }
 
-bool FlexyStepper::isStartedAsService() const {
-    return _handle != nullptr;
-}
-
-bool FlexyStepper::isMotionComplete() const {
+bool MotorDriver::isMotionComplete() const {
     if (_directionOfMotion == 0 and _currentPosition_InSteps == _targetPosition_InSteps) {
         return true;
     } else {
@@ -163,20 +132,20 @@ bool FlexyStepper::isMotionComplete() const {
     }
 }
 
-bool FlexyStepper::startAsService(uint8_t coreNumber) {
-    xTaskCreatePinnedToCore(FlexyStepper::taskRunner, "FlexyStepper", 2000, this, 1, &_handle, coreNumber);
+bool MotorDriver::startAsService(uint8_t coreNumber) {
+    xTaskCreatePinnedToCore(MotorDriver::taskRunner, "FlexyStepper", 2000, this, 1, &_handle, coreNumber);
 
     configASSERT(_handle);
     return true;
 }
 
-void FlexyStepper::stopService() {
+void MotorDriver::stopService() {
     vTaskDelete(_handle);
 
     _handle = nullptr;
 }
 
-bool FlexyStepper::processMovement() {
+void MotorDriver::process() {
     int64_t distanceToTarget_Signed;
 
     if (_directionOfMotion == 0) { // check if currently stopped
@@ -187,9 +156,9 @@ bool FlexyStepper::processMovement() {
             gpio_set_level(static_cast<gpio_num_t>(_directionPin), 0);
 
             _nextStepPeriod_InUS = _periodOfSlowestStep_InUS;
-            _lastStepTime_InUS = micros();
+            _lastStepTime_InUS = esp_timer_get_time();
 
-            return false;
+            return;
 
         } else if (distanceToTarget_Signed < 0) { // check if target position in a negative direction
             _directionOfMotion = -1;
@@ -197,22 +166,22 @@ bool FlexyStepper::processMovement() {
             gpio_set_level(static_cast<gpio_num_t>(_directionPin), 1);
 
             _nextStepPeriod_InUS = _periodOfSlowestStep_InUS;
-            _lastStepTime_InUS = micros();
+            _lastStepTime_InUS = esp_timer_get_time();
 
-            return false;
+            return;
 
-        } else {
-            return true;
         }
+
+        return;
     }
 
     // determine how much time has elapsed since the last step (Note 1: this method
     // works even if the time has wrapped. Note 2: all variables must be unsigned)
-    uint64_t currentTime_InUS = micros();
+    uint64_t currentTime_InUS = esp_timer_get_time();
     uint64_t periodSinceLastStep_InUS = currentTime_InUS - _lastStepTime_InUS;
     // if it is not time for the next step, return
     if (periodSinceLastStep_InUS < _nextStepPeriod_InUS) {
-        return false;
+        return;
     }
 
     // execute the step on the rising edge
@@ -232,21 +201,19 @@ bool FlexyStepper::processMovement() {
     gpio_set_level(static_cast<gpio_num_t>(_stepPin), 0);
 
     if (_currentPosition_InSteps != _targetPosition_InSteps) { // check if the move has reached its final target position, return true if all done
-        return false;
+        return;
     }
 
     if (_nextStepPeriod_InUS < _minimumPeriodForAStoppedMotion) { // at final position, make sure the motor is not going too fast
-        return false;
+        return;
     }
 
     _currentStepPeriod_InUS = 0.0;
     _nextStepPeriod_InUS = 0.0;
     _directionOfMotion = 0;
-
-    return true;
 }
 
-uint32_t FlexyStepper::determinePeriodOfNextStep() {
+uint32_t MotorDriver::determinePeriodOfNextStep() {
     uint32_t distanceToTarget_Unsigned;
     bool speedUpFlag = false;
     bool slowDownFlag = false;
@@ -262,12 +229,8 @@ uint32_t FlexyStepper::determinePeriodOfNextStep() {
         targetInNegativeDirectionFlag = true;
     }
 
-    //
-    // determine the number of steps needed to go from the current speed down to a
-    // velocity of 0, Steps = Velocity^2 / (2 * Deceleration)
-    //
     auto currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
-    auto decelerationDistance_InSteps = std::round(1 / currentStepPeriodSquared / (2 * _deceleration_InStepsPerUSPerUS));
+    auto decelerationDistance_InSteps = calcDecelerationDistanceInSteps();
 
     if (_directionOfMotion == 1 and targetInPositiveDirectionFlag) {
         if (distanceToTarget_Unsigned < decelerationDistance_InSteps or _nextStepPeriod_InUS < _desiredPeriod_InUSPerStep) {
@@ -333,10 +296,22 @@ uint32_t FlexyStepper::determinePeriodOfNextStep() {
     return _nextStepPeriod_InUS;
 }
 
-[[noreturn]] void FlexyStepper::taskRunner(void *parameter) {
-    auto stepperRef = static_cast<FlexyStepper *>(parameter);
+#include <esp_log.h>
+
+uint32_t MotorDriver::calcDecelerationDistanceInSteps() const {
+    //
+    // determine the number of steps needed to go from the current speed down to a
+    // velocity of 0, Steps = Velocity^2 / (2 * Deceleration)
+    //
+    auto currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
+    auto decelerationDistance_InSteps = std::round(1 / (_deceleration_InStepsPerUSPerUS * currentStepPeriodSquared));
+
+    return decelerationDistance_InSteps;
+}
+
+[[noreturn]] void MotorDriver::taskRunner(void *parameter) {
+    auto motorDriverRef = static_cast<MotorDriver *>(parameter);
     for (;;) {
-        stepperRef->processMovement();
-        // vTaskDelay(1); // This would be a working solution to prevent the WDT to fire (if not disabled, yet it will cause noticeably less smooth stepper movements / lower frequencies)
+        motorDriverRef->process();
     }
 }

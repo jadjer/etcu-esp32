@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.26.4)
+cmake_minimum_required(VERSION 3.17)
 
 set(SOURCES
-        FlexyStepper.cpp)
+        src/MotorDriver.cpp)
 
 set(COMPONENTS
         driver

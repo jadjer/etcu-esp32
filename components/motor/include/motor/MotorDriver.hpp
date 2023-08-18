@@ -16,35 +16,26 @@
 #pragma once
 
 #include <cstdlib>
-#include <climits>
 
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
 /**
- * @class FlexyStepper
+ * @class MotorDriver
  */
-class FlexyStepper {
+class MotorDriver {
 public:
     /**
      * Connect the stepper object to the IO pins
      * @param directionPin IO pin number for the direction signal
      * @param stepPin IO pin number for the Step signal
      */
-    FlexyStepper(uint8_t directionPin, uint8_t stepPin);
-
-    /**
-     * Connect the stepper object to the IO pins
-     * @param directionPin IO pin number for the direction signal
-     * @param stepPin IO pin number for the Step signal
-     * @param enablePin IO pin number for enable motor
-     */
-    FlexyStepper(uint8_t directionPin, uint8_t stepPin, int8_t enablePin);
+    MotorDriver(uint8_t directionPin, uint8_t stepPin);
 
     /**
      * Destructor
      */
-    ~FlexyStepper();
+    ~MotorDriver();
 
 public:
     /**
@@ -97,13 +88,6 @@ public:
 
 public:
     /**
-     * get the overall max stack size since task creation (since the call to startAsService() )
-     * This function is used to determine if the stack size is large enough and has more of a debugging purpose.
-     * @return the minimum amount of free bytes on the stack that has been measured so far.
-     */
-    uint32_t getTaskStackHighWaterMark();
-
-    /**
      * get the current direction of motion of the connected stepper motor
      * @return 1 for "forward" motion
      * @return -1 for "backward" motion
@@ -147,12 +131,6 @@ public:
 
 public:
     /**
-     * Check if running as service
-     * @return
-     */
-    [[nodiscard]] bool isStartedAsService() const;
-
-    /**
      * check if the motor has competed its move to the target position
      * Exit:  true returned if the stepper is at the target position
      * @return
@@ -178,7 +156,7 @@ public:
      * Exit:  true returned if movement complete, false returned not a final target position yet
      * @return
      */
-    bool processMovement();
+    void process();
 
 private:
     /**
@@ -186,6 +164,12 @@ private:
      * little or go the same speed
      */
     uint32_t determinePeriodOfNextStep();
+
+    /**
+     *
+     * @return
+     */
+    [[nodiscard]] uint32_t calcDecelerationDistanceInSteps() const;
 
 private:
     /**
@@ -196,11 +180,10 @@ private:
 
 private:
     uint8_t _stepPin;
-    int8_t _enablePin;
     uint8_t _directionPin;
     int8_t _directionOfMotion;
     float _nextStepPeriod_InUS;
-    uint32_t _lastStepTime_InUS;
+    uint64_t _lastStepTime_InUS;
     float _currentStepPeriod_InUS;
     float _periodOfSlowestStep_InUS;
     int32_t _targetPosition_InSteps;
