@@ -23,20 +23,40 @@
 #include <esp_err.h>
 #include <ecu/CommandResult.hpp>
 
+/**
+ * @class  IProtocol
+ */
 class IProtocol {
 public:
     virtual ~IProtocol() = default;
 
 public:
+    /**
+     *
+     * @return
+     */
     virtual esp_err_t connect() = 0;
 
 public:
+    /**
+     *
+     * @return
+     */
     [[nodiscard]] virtual bool isConnected() const = 0;
 
 public:
-    virtual CommandResultPtr readData() = 0;
-
+    /**
+     *
+     * @param data
+     * @param len
+     * @return
+     */
     virtual esp_err_t writeData(uint8_t const *data, size_t len) = 0;
+    /**
+     *
+     * @return
+     */
+    virtual CommandResultPtr readData() = 0;
 };
 
 using IProtocolPtr = std::unique_ptr<IProtocol>;

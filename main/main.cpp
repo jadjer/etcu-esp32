@@ -21,10 +21,10 @@
 #include <accelerator/Accelerator.hpp>
 #include <indicator/BlinkIndicator.hpp>
 #include <ecu/UartProtocol.hpp>
-#include <ecu/ElectronicControlUnit.hpp>
 
 #include "Controller.hpp"
 #include "SetupButton.hpp"
+#include "ElectronicControlUnit.hpp"
 #include "node/EcuNode.hpp"
 #include "node/MotorNode.hpp"
 #include "node/ControllerNode.hpp"

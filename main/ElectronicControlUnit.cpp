@@ -14,24 +14,20 @@
 //
 
 //
-// Created by jadjer on 18.08.23.
+// Created by jadjer on 19.08.23.
 //
 
-#pragma once
-
-#include <executor/INode.hpp>
 #include "ElectronicControlUnit.hpp"
 
-using EcuPtr = std::shared_ptr<ElectronicControlUnit>;
+ElectronicControlUnit::ElectronicControlUnit(IProtocolPtr protocolPtr) :
+        BaseElectronicControlUnit(std::move(protocolPtr)) {
 
-class EcuNode : public INode {
-public:
-    explicit EcuNode(EcuPtr ecuPtr);
-    ~EcuNode() override;
+}
 
-protected:
-    void spinOnce() override;
+ElectronicControlUnit::~ElectronicControlUnit() = default;
 
-private:
-    EcuPtr _ecuPtr;
-};
+void ElectronicControlUnit::process() {
+    if (not _protocolPtr->isConnected()) {
+        return;
+    }
+}

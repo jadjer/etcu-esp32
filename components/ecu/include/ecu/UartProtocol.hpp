@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <mutex>
 #include <ecu/IProtocol.hpp>
 
 /**
@@ -50,6 +51,7 @@ private:
      * ECU wake up
      */
     esp_err_t wakeUp() const;
+
     /**
      * ECU init
      * @return
@@ -62,15 +64,16 @@ public:
 public:
     /**
      * @brief
-     * @return
-     */
-    CommandResultPtr readData() override;
-    /**
-     * @brief
      * @param data
      * @param len
      */
     esp_err_t writeData(uint8_t const *data, size_t len) override;
+
+    /**
+     * @brief
+     * @return
+     */
+    CommandResultPtr readData() override;
 
 private:
     /**
@@ -78,11 +81,15 @@ private:
      * @param len
      */
     void waitDataFromUart(size_t len) const;
+
     /**
      *
      * @return
      */
     [[nodiscard]] size_t getBufferSize() const;
+
+private:
+    std::mutex _mutex;
 
 private:
     bool _isConnected;

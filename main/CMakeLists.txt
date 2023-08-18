@@ -4,6 +4,7 @@ set(SOURCES
         main.cpp
         Controller.cpp
         SetupButton.cpp
+        ElectronicControlUnit.cpp
         node/EcuNode.cpp
         node/MotorNode.cpp
         node/ControllerNode.cpp

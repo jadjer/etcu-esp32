@@ -14,24 +14,12 @@
 //
 
 //
-// Created by jadjer on 18.08.23.
+// Created by jadjer on 19.08.23.
 //
 
 #pragma once
 
-#include <executor/INode.hpp>
-#include "ElectronicControlUnit.hpp"
 
-using EcuPtr = std::shared_ptr<ElectronicControlUnit>;
+class RevolutionPerHour {
 
-class EcuNode : public INode {
-public:
-    explicit EcuNode(EcuPtr ecuPtr);
-    ~EcuNode() override;
-
-protected:
-    void spinOnce() override;
-
-private:
-    EcuPtr _ecuPtr;
 };

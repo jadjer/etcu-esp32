@@ -26,6 +26,7 @@
 static const size_t BufferSize = 1024;
 
 UartProtocol::UartProtocol(uint8_t rxPinNum, uint8_t txPinNum) :
+        _mutex(),
         _isConnected(false),
         _rxPinNum(rxPinNum),
         _txPinNum(txPinNum),
@@ -143,7 +144,7 @@ esp_err_t UartProtocol::initialize() {
         return ESP_ERR_INVALID_RESPONSE;
     }
 
-    if (result->length != 0x04) {
+    if (result->length != 4) {
         return ESP_ERR_INVALID_SIZE;
     }
 
@@ -162,13 +163,46 @@ bool UartProtocol::isConnected() const {
     return _isConnected;
 }
 
+esp_err_t UartProtocol::writeData(uint8_t const *data, size_t len) {
+    std::lock_guard<std::mutex> lockGuard(_mutex);
+
+    esp_err_t errorCode = ESP_OK;
+
+    /**
+     * Input buffer clear
+     */
+    errorCode = uart_flush(_uartPortNum);
+    if (errorCode != ESP_OK) {
+        return errorCode;
+    }
+
+    /**
+     * Data write to uart
+     */
+    size_t sendLen = uart_write_bytes(_uartPortNum, data, len);
+    if (sendLen != len) {
+        return ESP_ERR_NOT_FINISHED;
+    }
+
+//    //  Wait echo data from ECU
+//    waitDataFromUart(len);
+//
+//    //  Echo data's delete from RX buffer
+//    uint8_t buffer[len];
+//    uart_read_bytes(_uartPortNum, &buffer, len, 20 / portTICK_PERIOD_MS);
+
+    return errorCode;
+}
+
 CommandResultPtr UartProtocol::readData() {
-    size_t minimumPackageSize = 4;
+    std::lock_guard<std::mutex> lockGuard(_mutex);
+
+    size_t packageMinimumLength = 4;
 
     /**
      * Check minimum package size
      */
-    if (getBufferSize() < minimumPackageSize) {
+    if (getBufferSize() < packageMinimumLength) {
         return nullptr;
     }
 
@@ -176,7 +210,7 @@ CommandResultPtr UartProtocol::readData() {
 
     {
         uint8_t buffer[3];
-        size_t len = uart_read_bytes(_uartPortNum, &buffer, sizeof (buffer), 20 / portTICK_PERIOD_MS);
+        size_t len = uart_read_bytes(_uartPortNum, &buffer, 3, 1 / portTICK_PERIOD_MS);
         if (len != 3) {
             /**
              * Error read data from uart
@@ -189,7 +223,7 @@ CommandResultPtr UartProtocol::readData() {
         result->command = buffer[2];
     }
 
-    if (result->length < minimumPackageSize) {
+    if (result->length < packageMinimumLength) {
         /**
          * The message is very small
          */
@@ -239,29 +273,6 @@ CommandResultPtr UartProtocol::readData() {
     }
 
     return result;
-}
-
-esp_err_t UartProtocol::writeData(uint8_t const *data, size_t len) {
-    esp_err_t errorCode = ESP_OK;
-
-    errorCode = uart_flush(_uartPortNum);
-    if (errorCode != ESP_OK) {
-        return errorCode;
-    }
-
-    size_t sendLen = uart_write_bytes(_uartPortNum, data, len);
-    if (sendLen != len) {
-        return ESP_ERR_NOT_FINISHED;
-    }
-//
-//    //  Wait echo data from ECU
-//    waitDataFromUart(len);
-//
-//    //  Echo data's delete from RX buffer
-//    uint8_t buffer[len];
-//    uart_read_bytes(_uartPortNum, &buffer, len, 20 / portTICK_PERIOD_MS);
-
-    return errorCode;
 }
 
 void UartProtocol::waitDataFromUart(size_t len) const {

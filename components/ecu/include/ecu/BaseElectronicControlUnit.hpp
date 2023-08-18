@@ -30,88 +30,53 @@
 #include <ecu/data/SensorsData.hpp>
 #include <ecu/data/VehicleData.hpp>
 
+enum {
+    REQUEST_TYPE = 0x72,
+    REQUEST_ALL_DATA_IN_TABLE = 0x71,
+    REQUEST_PARTIAL_DATA_IN_TABLE = 0x72,
+    REQUEST_UNKNOWN_1_ = 0x73,
+    REQUEST_UNKNOWN_2 = 0x74,
+};
+
 /**
  * @class ECU
  */
-class ElectronicControlUnit {
+class BaseElectronicControlUnit {
 public:
     /**
      *
      * @param protocolPtr
      */
-    explicit ElectronicControlUnit(IProtocolPtr protocolPtr);
+    explicit BaseElectronicControlUnit(IProtocolPtr protocolPtr);
+
     /**
      * Default destructor
      */
-    ~ElectronicControlUnit();
-
-public:
-    /**
-   * @brief
-   */
-    void detectAllTables();
-
-    /**
-   * @brief
-   */
-    void updateAllData();
-
-public:
-    /**
-     * @brief
-     * @return
-     */
-    [[nodiscard]] VehicleData getVehicleData() const;
-
-    /**
-     * @brief
-     * @return
-     */
-    [[nodiscard]] EngineData getEngineData() const;
-
-    /**
-     * @brief
-     * @return
-     */
-    [[nodiscard]] SensorsData getSensorsData() const;
+    virtual ~BaseElectronicControlUnit();
 
 public:
     /**
      *
      */
-    void process();
+    virtual void process() = 0;
 
-private:
+protected:
     /**
      *
-     * @param table
+     * @param tableAddress
      * @return
      */
-    CommandResultPtr updateDataFromTable(uint8_t table);
+    CommandResultPtr getDataFromTable(uint8_t tableAddress);
 
-private:
     /**
      *
+     * @param tableAddress
+     * @param beginSlice
+     * @param endSlice
      * @return
      */
-    esp_err_t updateDataFromTable10();
-    /**
-     *
-     * @return
-     */
-    esp_err_t updateDataFromTable11();
-    /**
-     *
-     * @return
-     */
-    esp_err_t updateDataFromTableD1();
+    CommandResultPtr getPartialDataFromTable(uint8_t tableAddress, uint8_t beginSlice, uint8_t endSlice);
 
-private:
-    std::mutex _mutex;
+protected:
     IProtocolPtr _protocolPtr;
-
-private:
-    VehicleData _vehicleData;
-    EngineData _engineData;
-    SensorsData _sensorsData;
 };
