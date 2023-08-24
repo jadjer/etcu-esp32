@@ -31,26 +31,35 @@
 #include "node/AcceleratorNode.hpp"
 #include "node/SetupButtonNode.hpp"
 
-int64_t averageFilter(int64_t value, float threshold) {
+#include <vector>
+
+
+int64_t averageFilter(int64_t const value, float const threshold) {
     static const size_t windowSize = 10;
-    static int64_t data[windowSize];
+
+    std::vector<int64_t> accelerationItems;
+    accelerationItems.reserve(windowSize);
+
+    accelerationItems[windowSize - 1] = value;
 
     for (size_t i = 0; i < windowSize - 1; i++) {
-        data[i] = data[i + 1];
+        accelerationItems[i] = accelerationItems[i + 1];
     }
-    data[windowSize - 1] = value;
 
-    int64_t mean = 0;
-    for (int64_t i : data) {
-        mean += i;
-    }
-    mean /= windowSize;
+    int64_t result = 0;
 
-    if (std::fabs(value - mean) > threshold) {
-        return mean;
-    } else {
-        return value;
+    for (auto const accelerationItem : accelerationItems) {
+        result += accelerationItem;
     }
+
+    result /= windowSize;
+
+    if (std::fabs(value - result) > threshold)
+    {
+        return result;
+    }
+
+    return result;
 }
 
 int64_t expRunningAverageAdaptive(int64_t currentValue, float threshold) {

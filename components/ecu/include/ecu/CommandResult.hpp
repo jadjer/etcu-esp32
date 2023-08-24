@@ -21,6 +21,7 @@
 
 #include <memory>
 
+
 struct CommandResult {
   uint8_t code;
   uint8_t command;

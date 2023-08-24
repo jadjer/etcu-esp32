@@ -1,0 +1,108 @@
+---
+Language:        Cpp
+BasedOnStyle: Microsoft
+AccessModifierOffset: -4
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveMacros: false
+AlignEscapedNewlines: DontAlign
+AlignOperands: false
+AlignTrailingComments: false
+AllowAllArgumentsOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: Inline
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Allman
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
+ColumnLimit: 128
+CommentPragmas: '^ NOLINT'
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ContinuationIndentWidth: 4
+DeriveLineEnding: true
+FixNamespaceComments: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Headers in <> without extension.
+  - Regex:           '<([A-Za-z0-9\Q/-_\E])+>'
+    Priority:        5
+  # Headers in <> from specific external libraries.
+  - Regex:           '<(catch2|boost)\/'
+    # - Regex:           '^(<|"(catch2|boost)/)'
+    Priority:        4
+  # Headers from shared internal libraries.
+  - Regex:           '"(Common|RichTypes|Shared)\/'
+    Priority:        3
+  # Headers in <> with extension.
+  - Regex:           '<([A-Za-z0-9.\Q/-_\E])+>'
+    Priority:        2
+  # Headers in "" with extension.
+  - Regex:           '"([A-Za-z0-9.\Q/-_\E])+"'
+    Priority:        1
+IndentPPDirectives: None
+IndentWidth: 4
+MaxEmptyLinesToKeep: 2
+NamespaceIndentation: None
+PenaltyBreakAssignment: 80
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakFirstLessLess: 2
+PenaltyBreakTemplateDeclaration: 0
+PenaltyExcessCharacter: 1000
+PenaltyReturnTypeOnItsOwnLine: 1000
+PointerAlignment: Left
+ReflowComments: true
+SortIncludes: false
+SortUsingDeclarations: false
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: false
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesInAngles:  false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: true
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard: c++14
+StatementMacros:
+  - RESTORE_AWARE_EXCEPTION_TRY
+  - RESTORE_AWARE_EXCEPTION_CATCH
+  - SUBTREE_AWARE_EXCEPTION_TRY
+  - SUBTREE_AWARE_EXCEPTION_CATCH
+  - SUBTREE_UNREACHABLE_RECONNECT_TRY
+  - SUBTREE_UNREACHABLE_RECONNECT_CATCH
+  - NEAT_VSS_EXCEPTION_TRY
+  - NEAT_VSS_EXCEPTION_CATCH
+  - SECURITY_DECORATED_ERROR_TRY
+  - SECURITY_DECORATED_ERROR_CATCH
+  - VERSION_PARSE_EXCEPTION_TRY
+  - VERSION_PARSE_EXCEPTION_CATCH
+  - NO_CONNECTION_EXCEPTION_TRY
+  - NO_CONNECTION_EXCEPTION_CATCH
+  - AUTO_DECORATION_TRY
+  - AUTO_DECORATION_CATCH
+  - MYSQL_API_TRY
+  - MYSQL_API_CATCH
+  - CODEBASE_EXCEPTION_TRY
+  - CODEBASE_EXCEPTION_CATCH
+  - RESTRICTION_AUDIT_TRY
+  - RESTRICTION_AUDIT_CATCH
+  - NO_THROW_BEGIN
+  - NO_THROW_END
+UseCRLF: false
+UseTab: Never
+...
