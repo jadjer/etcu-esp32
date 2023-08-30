@@ -14,24 +14,40 @@
 //
 
 //
-// Created by jadjer on 16.08.23.
+// Created by jadjer on 30.08.23.
 //
 
 #pragma once
 
-#include <executor/INode.hpp>
-#include <accelerator/Accelerator.hpp>
+#include <vector>
+#include <cstdint>
 
-using AcceleratorPtr = std::shared_ptr<Accelerator>;
+/**
+ * @namespace ECU
+ */
+namespace ECU
+{
 
-class AcceleratorNode : public INode {
+using Byte = uint8_t;
+using Bytes = std::vector<Byte>;
+
+/**
+ * @namespace Interface
+ */
+namespace Interface
+{
+
+/**
+ * @interface NetworkConnector
+ */
+class NetworkConnector
+{
 public:
-    explicit AcceleratorNode(AcceleratorPtr acceleratorPtr);
-    ~AcceleratorNode() override;
+    virtual ~NetworkConnector() = default;
 
-protected:
-    void spinOnce() override;
-
-private:
-    AcceleratorPtr _acceleratorPtr;
+public:
+    virtual void connect() = 0;
 };
+
+} // namespace Interface
+} // namespace ECU::Interface

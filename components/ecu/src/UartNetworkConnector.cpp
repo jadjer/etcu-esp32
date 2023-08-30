@@ -2,75 +2,21 @@
 // Created by Сергей Матышев on 19.08.23.
 //
 
-#include "ecu/UartNetworkConnector.h"
+#include "ECU/UartNetworkConnector.hpp"
+#include "ECU/exception.hpp"
+#include "Common/Interface/ErrorCode.hpp"
 
-#include "NetworkException.h"
-
-#include <driver/gpio.h>
 #include <driver/uart.h>
-
-#include <chrono>
-#include <cstdint>
 #include <thread>
-#include <vector>
+#include <cmath>
 
-
-namespace
+namespace ECU
 {
 
-void WakeUp(uint8_t const numberOfTxPin)
-{
-    auto errorCode = ESP_OK;
-
-    gpio_config_t buttonConfig = {
-        .pin_bit_mask = (1ull << numberOfTxPin),
-        .mode = GPIO_MODE_OUTPUT,
-        .pull_up_en = GPIO_PULLUP_DISABLE,
-        .pull_down_en = GPIO_PULLDOWN_ENABLE,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    errorCode = gpio_config(&buttonConfig);
-
-    /*
-     * TODO:
-     * Нужно добавить фильтрацию ошибок, есть идея как это сделать, отдельный класс, который будет принимать
-     * статус и если статус не ок - генерировать нужную ошибку, пока что оставлю так, как заготовку под изменения
-     * */
-
-    if (ErrorCode::EspStatusCodeToErrorCode(errorCode) != ErrorCode::Success)
-    {
-        std::string const gpioConfigSetError = "Error to set gpio config.";
-        throw Common::NetworkException(gpioConfigSetError, ErrorCode::EspStatusCodeToErrorCode(errorCode));
-    }
-
-    int level = 0;
-
-    errorCode = gpio_set_level(static_cast<gpio_num_t>(numberOfTxPin), level);
-    if (errorCode != ESP_OK)
-    {
-        std::string const gpioConfigSetError = "Error to set gpio level " + std::to_string(level) + " .";
-        throw Common::NetworkException(gpioConfigSetError, ErrorCode::EspStatusCodeToErrorCode(errorCode));
-    }
-    std::this_thread::sleep_for(std::chrono::milliseconds(70));
-
-    level = 1;
-
-    errorCode = gpio_set_level(static_cast<gpio_num_t>(numberOfTxPin), level);
-
-    if (errorCode != ESP_OK)
-    {
-        std::string const gpioConfigSetError = "Error to set gpio level " + std::to_string(level) + " .";
-
-        throw Common::NetworkException(gpioConfigSetError, ErrorCode::EspStatusCodeToErrorCode(errorCode));
-    }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(120));
-}
-
-void WriteDataToUart(std::vector<uint8_t> const& data, uint8_t const numberOfUartPorts)
+void writeDataToUart(Bytes const& data, Byte const numberOfUartPorts)
 {
     std::size_t const size = data.size();
-    uint8_t* cStyleArray = new uint8_t[size];
+    auto cStyleArray = new Byte[size];
 
     for (size_t i = 0; i < data.size(); ++i)
     {
@@ -82,28 +28,106 @@ void WriteDataToUart(std::vector<uint8_t> const& data, uint8_t const numberOfUar
     if (sendLen != size)
     {
         std::string const errorMessage = "Data write error, abort write to uart operation";
-        throw Common::UartWriteError(errorMessage, ErrorCode::OperationAborted);
+        throw ECU::UartWriteError(errorMessage, ErrorCode::OperationAborted);
     }
 }
 
-} // namespace
+constexpr uint16_t calculateDelayForWaitDataFromUartInMilliseconds(size_t const bytes, uint16_t const baudRate) {
+    auto const bytePerBaud = 1;
+    auto const bytePerSecond = baudRate * bytePerBaud;
+    auto const bytesPerMillisecond = bytePerSecond / 1000;
 
-namespace NetworkConnector
-{
+    auto minimalDelay_InUS = 1;
 
-UartNetworkConnector::UartNetworkConnector(uint8_t numberOfRxPin, uint8_t numberOfTxPin, uint8_t numberOfUartPorts) :
-    m_numberOfRxPin(numberOfRxPin), m_numberOfTxPin(numberOfTxPin), m_numberOfUartPorts(numberOfUartPorts)
-{
-    std::vector<uint8_t> const wakeUpMessage = {0xFE, 0x04, 0xFF, 0xFF};
-    std::vector<uint8_t> const initializeMessage = {0x72, 0x05, 0x00, 0xF0, 0x99};
+    if (bytes < bytesPerMillisecond) {
+        return minimalDelay_InUS;
+    }
+
+    auto delay_InUS = (bytes / bytesPerMillisecond) + minimalDelay_InUS;
+    return delay_InUS;
 }
 
-CommandResultPtr UartNetworkConnector::Read() {}
+UartNetworkConnector::UartNetworkConnector(Byte numberOfRxPin, Byte numberOfTxPin, Byte numberOfUartPorts) :
+    m_numberOfRxPin(numberOfRxPin), m_numberOfTxPin(numberOfTxPin), m_numberOfUartPorts(numberOfUartPorts), m_baudRate(10400)
+{
+}
 
-void UartNetworkConnector::Write(std::vector<uint8_t> const& data)
+void UartNetworkConnector::connect()
+{
+    size_t const bufferSize = 1024;
+
+    auto status = uart_driver_install(m_numberOfUartPorts, bufferSize, bufferSize, 0, nullptr, 0);
+    auto errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
+    if (errorCode != ErrorCode::Enum::Success)
+    {
+        auto const errorMessage = "Write error";
+        throw ECU::NetworkException(errorMessage, errorCode);
+    }
+
+    /**
+     * Setup UART
+     */
+    uart_config_t uart_config = {
+        .baud_rate = m_baudRate,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .rx_flow_ctrl_thresh = 0,
+        .source_clk = UART_SCLK_DEFAULT};
+
+    status = uart_param_config(m_numberOfUartPorts, &uart_config);
+    errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
+    if (errorCode != ErrorCode::Enum::Success)
+    {
+        throw ECU::NetworkException("Write error", errorCode);
+    }
+
+    status = uart_set_pin(m_numberOfUartPorts, m_numberOfTxPin, m_numberOfRxPin, -1, -1);
+    errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
+    if (errorCode != ErrorCode::Enum::Success)
+    {
+        throw ECU::NetworkException("Write error", errorCode);
+    }
+}
+
+Byte UartNetworkConnector::readByte()
 {
     std::lock_guard<std::mutex> lockGuard(m_mutex);
 
+    Byte resultData;
+
+    size_t requiredLength = 1;
+
+    auto delay_InUS = calculateDelayForWaitDataFromUartInMilliseconds(requiredLength, m_baudRate);
+    auto resultLength = uart_read_bytes(m_numberOfUartPorts, &resultData, requiredLength, (delay_InUS / portTICK_PERIOD_MS));
+
+    if (resultLength != requiredLength) {
+        // TODO Uart read data exception
+    }
+
+    return resultData;
+}
+
+Bytes UartNetworkConnector::readBytes(size_t requiredLength)
+{
+    std::lock_guard<std::mutex> lockGuard(m_mutex);
+
+    Bytes resultData;
+
+    auto delay_InUS = calculateDelayForWaitDataFromUartInMilliseconds(requiredLength, m_baudRate);
+    auto resultLength = uart_read_bytes(m_numberOfUartPorts, &resultData, requiredLength, (delay_InUS / portTICK_PERIOD_MS));
+
+    if (resultLength != requiredLength) {
+        // TODO Uart read data exception
+    }
+
+    return resultData;
+}
+
+void UartNetworkConnector::write(Bytes const& data)
+{
+    std::lock_guard<std::mutex> lockGuard(m_mutex);
 
     /**
      * Input buffer clear
@@ -121,17 +145,19 @@ void UartNetworkConnector::Write(std::vector<uint8_t> const& data)
     if (errorCode != ErrorCode::Enum::Success)
     {
         auto const errorMessage = "Write error";
-        throw Common::NetworkException(errorMessage, errorCode);
+        throw ECU::NetworkException(errorMessage, errorCode);
     }
 
-    WriteDataToUart(data, m_numberOfUartPorts);
+    writeDataToUart(data, m_numberOfUartPorts);
 }
 
-void UartNetworkConnector::Connect()
+size_t UartNetworkConnector::getBufferSize() const
 {
-    auto errorCode = ESP_OK;
+    size_t bufferSize = 0;
 
-    WakeUp(m_numberOfUartPorts);
+    uart_get_buffered_data_len(m_numberOfUartPorts, &bufferSize);
+
+    return bufferSize;
 }
 
-} // namespace NetworkConnector
+} // namespace ECU

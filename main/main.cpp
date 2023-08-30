@@ -14,22 +14,17 @@
 //
 
 #include <cmath>
-#include <esp_log.h>
 
-#include <executor/Executor.hpp>
-#include <motor/MotorDriver.hpp>
-#include <accelerator/Accelerator.hpp>
-#include <indicator/BlinkIndicator.hpp>
-#include <ecu/UartProtocol.hpp>
+#include "Executor/Executor.hpp"
+#include "motor/MotorDriver.hpp"
+#include "accelerator/Accelerator.hpp"
+#include "indicator/BlinkIndicator.hpp"
+#include "ECU/HondaECU.hpp"
+#include "ECU/UartNetworkConnector.hpp"
+#include "ECU/KLineNetworkConnector.hpp"
 
 #include "Controller.hpp"
 #include "SetupButton.hpp"
-#include "ElectronicControlUnit.hpp"
-#include "node/EcuNode.hpp"
-#include "node/MotorNode.hpp"
-#include "node/ControllerNode.hpp"
-#include "node/AcceleratorNode.hpp"
-#include "node/SetupButtonNode.hpp"
 
 #include <vector>
 
@@ -116,21 +111,11 @@ extern "C" void app_main(void) {
         }
     });
 
-    auto ecuUartProtocol = std::make_unique<UartProtocol>(3, 1);
-    ecuUartProtocol->connect();
-    auto ecu = std::make_shared<ElectronicControlUnit>(std::move(ecuUartProtocol));
+    auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);
+    auto kLine = std::make_unique<ECU::KLineNetworkConnector>(1, std::move(uart));
+    auto ecu = std::make_unique<ECU::HondaECU>(std::move(kLine));
 
-    auto controllerNodePtr = std::make_unique<ControllerNode>(controllerPtr);
-    auto motorDriverNodePtr = std::make_unique<MotorNode>(motorDriverPtr);
-    auto acceleratorNodePtr = std::make_unique<AcceleratorNode>(acceleratorPtr);
-    auto setupButtonNodePtr = std::make_unique<SetupButtonNode>(setupButtonPtr);
-    auto ecuNodePtr = std::make_unique<EcuNode>(ecu);
-
-    auto executorPtr = std::make_unique<Executor>();
-    executorPtr->addNode(std::move(controllerNodePtr));
-    executorPtr->addNode(std::move(motorDriverNodePtr));
-    executorPtr->addNode(std::move(acceleratorNodePtr));
-    executorPtr->addNode(std::move(setupButtonNodePtr));
-    executorPtr->addNode(std::move(ecuNodePtr));
+    auto executorPtr = std::make_unique<Executor::Executor>();
+    executorPtr->addNode(std::move(ecu));
     executorPtr->spin();
 }

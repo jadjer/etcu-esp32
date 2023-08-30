@@ -17,30 +17,38 @@
 // Created by jadjer on 15.08.23.
 //
 
-#include <executor/Executor.hpp>
+#include "Executor/Executor.hpp"
 
-Executor::Executor() :
-        _enable(true),
-        _nodes() {
+namespace Executor
+{
+
+Executor::Executor() : m_enable(true), m_nodes() {}
+
+Executor::~Executor()
+{
+    m_enable = false;
+    m_nodes.clear();
 }
 
-Executor::~Executor() {
-    _enable = false;
-    _nodes.clear();
+void Executor::addNode(Interface::INodePtr node)
+{
+    m_nodes.push_back(std::move(node));
 }
 
-void Executor::addNode(INodePtr node) {
-    _nodes.push_back(std::move(node));
+void Executor::removeNode(Interface::INodePtr const& node)
+{
+    m_nodes.remove(node);
 }
 
-void Executor::removeNode(INodePtr const &node) {
-    _nodes.remove(node);
-}
-
-void Executor::spin() const {
-    while (_enable) {
-        for (auto const &node: _nodes) {
+void Executor::spin() const
+{
+    while (m_enable)
+    {
+        for (auto const& node : m_nodes)
+        {
             node->spinOnce();
         }
     }
 }
+
+} // namespace Executor

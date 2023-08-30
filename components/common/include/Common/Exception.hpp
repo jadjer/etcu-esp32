@@ -13,13 +13,28 @@
 // limitations under the License.
 //
 
-//
-// Created by jadjer on 19.08.23.
-//
+#include "Interface/IException.hpp"
 
-#pragma once
+#include <string>
 
 
-class Speed {
+namespace Common
+{
 
+class Exception : public IException
+{
+public:
+    Exception(std::string const& message, ErrorCode::Enum const code);
+
+    [[nodiscard]] char const* what() const noexcept override;
+
+    [[nodiscard]] std::string const& message() const noexcept override;
+
+    [[nodiscard]] ErrorCode::Enum code() const noexcept override;
+
+private:
+    std::string const m_errorMessage;
+    ErrorCode::Enum const m_errorCode;
 };
+
+} // namespace Common

@@ -14,50 +14,42 @@
 //
 
 //
-// Created by jadjer on 15.08.23.
+// Created by jadjer on 28.08.23.
 //
 
 #pragma once
 
-#include <list>
-#include <executor/INode.hpp>
+#include "ECU/Interface/KLineNetworkConnector.hpp"
+#include "ECU/Interface/UartNetworkConnector.hpp"
 
-using Nodes = std::list<INodePtr>;
+#include <chrono>
 
 /**
- * @class Executor
+ * @namespace ECU
  */
-class Executor {
-public:
-    /**
-     * Default constructor
-     */
-    Executor();
+namespace ECU
+{
 
-    /**
-     * Default destructor
-     */
-    ~Executor();
-
+/**
+ * @class KLineNetworkConnector
+ */
+class KLineNetworkConnector : public Interface::KLineNetworkConnector
+{
 public:
-    /**
-     * Node add to list
-     * @param node Node ptr
-     */
-    void addNode(INodePtr node);
-    /**
-     * Node remove from list
-     * @param node Node ptr
-     */
-    void removeNode(INodePtr const&node);
+    KLineNetworkConnector(Byte numberOfTxPin, Interface::UartNetworkConnectorPtr uartNetworkConnectorPtr);
 
 public:
-    /**
-     * Loop executor
-     */
-    void spin() const;
+    void connect() override;
+
+public:
+    Bytes readData() override;
+    void writeData(Bytes const& data) override;
 
 private:
-    bool _enable;
-    Nodes _nodes;
+    Interface::UartNetworkConnectorPtr m_networkConnectorPtr;
+
+private:
+    bool m_isConnected;
 };
+
+} // namespace Ecu

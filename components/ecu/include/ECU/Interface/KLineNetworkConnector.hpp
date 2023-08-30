@@ -14,20 +14,39 @@
 //
 
 //
-// Created by jadjer on 31.08.22.
+// Created by jadjer on 29.08.23.
 //
 
 #pragma once
 
 #include <memory>
 
+#include "ECU/Interface/NetworkConnector.hpp"
 
-struct CommandResult {
-  uint8_t code;
-  uint8_t command;
-  uint8_t length;
-  uint8_t checksum;
-  uint8_t* data;
+/**
+ * @namespace ECU::Interface
+ */
+namespace ECU::Interface
+{
+
+/**
+ * @interface INetworkConnector
+ */
+class KLineNetworkConnector : public NetworkConnector
+{
+public:
+    /**
+     * Read data from network channel
+     * @return CommandResult struct
+     */
+    virtual Bytes readData() = 0;
+    /**
+     * Write data to network channel
+     * @param data Bytes array
+     */
+    virtual void writeData(Bytes const& data) = 0;
 };
 
-using CommandResultPtr = std::unique_ptr<CommandResult>;
+using KLineNetworkConnectorPtr = std::unique_ptr<KLineNetworkConnector>;
+
+} // namespace ECU::Interface
