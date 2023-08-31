@@ -35,8 +35,8 @@ void configurePin(Byte const numberOfPin)
         .pull_down_en = GPIO_PULLDOWN_ENABLE,
         .intr_type = GPIO_INTR_DISABLE};
 
-    auto status = gpio_config(&buttonConfig);
-    auto errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
+    auto const status = gpio_config(&buttonConfig);
+    auto const errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
     if (errorCode != ErrorCode::Enum::Success)
     {
         throw ECU::NetworkException("qwe", errorCode);
@@ -45,17 +45,17 @@ void configurePin(Byte const numberOfPin)
 
 void setPin(Byte const numberOfPin, Byte const value)
 {
-    auto status = gpio_set_level(static_cast<gpio_num_t>(numberOfPin), value);
-    auto errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
+    auto const status = gpio_set_level(static_cast<gpio_num_t>(numberOfPin), value);
+    auto const errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
     if (errorCode != ErrorCode::Enum::Success)
     {
         throw ECU::NetworkException("qwe", errorCode);
     }
 }
 
-uint16_t calculateCheckSum(Byte resultCode, Byte dataLength, Byte queryType, Bytes const& payload, Byte checkSum)
+Byte calculateCheckSum(Byte resultCode, Byte dataLength, Byte queryType, Bytes const& payload, Byte checkSum)
 {
-    uint16_t calculatedCheckSum = 0;
+    Byte calculatedCheckSum = 0;
 
     checkSum -= resultCode;
     checkSum -= dataLength;
@@ -92,32 +92,32 @@ Bytes KLineNetworkConnector::readData()
 {
     if (not m_isConnected)
     {
-        return {};
+        // TODO KLine does not connected exception
     }
 
-    auto const minimalDataLength = 4;
+    size_t const minimalDataLength = 4;
 
-    Byte resultCode = m_networkConnectorPtr->readByte();
+    Byte const resultCode = m_networkConnectorPtr->readByte();
     if (resultCode != 0x02)
     {
-        // TODO KLine result code exception
+        // TODO KLine invalid result code exception
     }
 
-    Byte dataLength = m_networkConnectorPtr->readByte();
+    Byte const dataLength = m_networkConnectorPtr->readByte();
     if (dataLength < minimalDataLength)
     {
-        // TODO KLine data length exception
+        // TODO KLine wrong data length exception
     }
 
-    Byte queryType = m_networkConnectorPtr->readByte();
+    Byte const queryType = m_networkConnectorPtr->readByte();
     if ((queryType != 0x71) or (queryType != 0x72)) {
         // TODO KLine invalid query type exception
     }
 
-    Bytes payload = m_networkConnectorPtr->readBytes(dataLength - minimalDataLength);
+    Bytes const payload = m_networkConnectorPtr->readBytes(dataLength - minimalDataLength);
 
-    Byte checkSum = m_networkConnectorPtr->readByte();
-    auto calculatedCheckSum = calculateCheckSum(resultCode, dataLength, queryType, payload, checkSum);
+    Byte const checkSum = m_networkConnectorPtr->readByte();
+    Byte const calculatedCheckSum = calculateCheckSum(resultCode, dataLength, queryType, payload, checkSum);
     if (checkSum != calculatedCheckSum) {
         // TODO KLine invalid data exception
     }
@@ -129,7 +129,7 @@ void KLineNetworkConnector::writeData(Bytes const& data)
 {
     if (not m_isConnected)
     {
-        return;
+        // TODO KLine does not connected exception
     }
 
     m_networkConnectorPtr->write(data);

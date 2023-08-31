@@ -27,7 +27,6 @@ Executor::Executor() : m_enable(true), m_nodes() {}
 Executor::~Executor()
 {
     m_enable = false;
-    m_nodes.clear();
 }
 
 void Executor::addNode(Interface::INodePtr node)

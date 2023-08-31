@@ -19,10 +19,10 @@
 
 #pragma once
 
+#include <shared_mutex>
+
 #include "Executor/Interface/INode.hpp"
 #include "ECU/Interface/KLineNetworkConnector.hpp"
-
-#include <shared_mutex>
 
 /**
  * @namespace ECU

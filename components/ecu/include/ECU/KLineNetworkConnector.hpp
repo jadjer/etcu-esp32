@@ -22,8 +22,6 @@
 #include "ECU/Interface/KLineNetworkConnector.hpp"
 #include "ECU/Interface/UartNetworkConnector.hpp"
 
-#include <chrono>
-
 /**
  * @namespace ECU
  */

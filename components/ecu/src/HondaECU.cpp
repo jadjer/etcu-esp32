@@ -33,14 +33,15 @@ HondaECU::HondaECU(Interface::KLineNetworkConnectorPtr networkConnectorPtr) :
 {
     Bytes const wakeUpMessage = {0xFE, 0x04, 0xFF, 0xFF};
     Bytes const initializeMessage = {0x72, 0x05, 0x00, 0xF0, 0x99};
+    auto const delayBetweenInitCommands = std::chrono::milliseconds(200);
 
     m_networkConnectorPtr->connect();
 
     m_networkConnectorPtr->writeData(wakeUpMessage);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(delayBetweenInitCommands);
 
     m_networkConnectorPtr->writeData(initializeMessage);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(delayBetweenInitCommands);
 }
 
 uint16_t HondaECU::getSpeedInKilometerPerHour() const

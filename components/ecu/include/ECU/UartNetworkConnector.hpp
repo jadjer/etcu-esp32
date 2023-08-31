@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 
 #include "ECU/Interface/UartNetworkConnector.hpp"
 
@@ -38,4 +39,4 @@ protected:
     uint16_t const m_baudRate;
 };
 
-} // namespace Ecu
+} // namespace ECU
