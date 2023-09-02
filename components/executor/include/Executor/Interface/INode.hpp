@@ -14,17 +14,45 @@
 //
 
 //
-// Created by jadjer on 18.08.23.
+// Created by jadjer on 15.08.23.
 //
 
-#include "EcuNode.hpp"
+#pragma once
 
-EcuNode::EcuNode(EcuPtr ecuPtr) :
-        _ecuPtr(std::move(ecuPtr)) {
-}
+#include <memory>
 
-EcuNode::~EcuNode() = default;
+/**
+ * @namespace Executor
+ */
+namespace Executor
+{
 
-void EcuNode::spinOnce() {
-    _ecuPtr->process();
-}
+class Executor;
+
+/**
+ * @namespace Executor::Interface
+ */
+namespace Interface
+{
+/**
+ * @class INode
+ * Interface for node object
+ */
+class INode
+{
+    friend Executor;
+
+public:
+    /**
+     * Virtual default destructor
+     */
+    virtual ~INode() = default;
+
+protected:
+    virtual void spinOnce() = 0;
+};
+
+using INodePtr = std::unique_ptr<INode>;
+
+} // namespace Interface
+} // namespace Executor

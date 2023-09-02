@@ -14,24 +14,39 @@
 //
 
 //
-// Created by jadjer on 18.08.23.
+// Created by jadjer on 29.08.23.
 //
 
 #pragma once
 
-#include <executor/INode.hpp>
-#include "ElectronicControlUnit.hpp"
+#include <memory>
 
-using EcuPtr = std::shared_ptr<ElectronicControlUnit>;
+#include "ECU/Interface/NetworkConnector.hpp"
 
-class EcuNode : public INode {
+/**
+ * @namespace ECU::Interface
+ */
+namespace ECU::Interface
+{
+
+/**
+ * @interface INetworkConnector
+ */
+class KLineNetworkConnector : public NetworkConnector
+{
 public:
-    explicit EcuNode(EcuPtr ecuPtr);
-    ~EcuNode() override;
-
-protected:
-    void spinOnce() override;
-
-private:
-    EcuPtr _ecuPtr;
+    /**
+     * Read data from network channel
+     * @return CommandResult struct
+     */
+    virtual Bytes readData() = 0;
+    /**
+     * Write data to network channel
+     * @param data Bytes array
+     */
+    virtual void writeData(Bytes const& data) = 0;
 };
+
+using KLineNetworkConnectorPtr = std::unique_ptr<KLineNetworkConnector>;
+
+} // namespace ECU::Interface

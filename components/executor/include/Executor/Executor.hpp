@@ -19,25 +19,54 @@
 
 #pragma once
 
-#include <memory>
-
-class Executor;
+#include <list>
+#include <Executor/Interface/INode.hpp>
 
 /**
- * @class INode
- * Interface for node object
+ * @namespace Executor
  */
-class INode {
-    friend Executor;
+namespace Executor
+{
+
+using Nodes = std::list<Interface::INodePtr>;
+
+/**
+ * @class Executor
+ */
+class Executor
+{
+public:
+    /**
+     * Default constructor
+     */
+    Executor();
+
+    /**
+     * Default destructor
+     */
+    ~Executor();
 
 public:
     /**
-     * Virtual default destructor
+     * Node add to list
+     * @param node Node ptr
      */
-    virtual ~INode() = default;
+    void addNode(Interface::INodePtr node);
+    /**
+     * Node remove from list
+     * @param node Node ptr
+     */
+    void removeNode(Interface::INodePtr const& node);
 
-protected:
-    virtual void spinOnce() = 0;
+public:
+    /**
+     * Loop executor
+     */
+    void spin() const;
+
+private:
+    bool m_enable;
+    Nodes m_nodes;
 };
 
-using INodePtr = std::unique_ptr<INode>;
+} // namespace Executor

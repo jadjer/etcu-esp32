@@ -13,21 +13,28 @@
 // limitations under the License.
 //
 
-//
-// Created by jadjer on 31.08.22.
-//
+#include "Interface/IException.hpp"
 
-#pragma once
-
-#include <memory>
+#include <string>
 
 
-struct CommandResult {
-  uint8_t code;
-  uint8_t command;
-  uint8_t length;
-  uint8_t checksum;
-  uint8_t* data;
+namespace Common
+{
+
+class Exception : public IException
+{
+public:
+    Exception(std::string const& message, ErrorCode::Enum const code);
+
+    [[nodiscard]] char const* what() const noexcept override;
+
+    [[nodiscard]] std::string const& message() const noexcept override;
+
+    [[nodiscard]] ErrorCode::Enum code() const noexcept override;
+
+private:
+    std::string const m_errorMessage;
+    ErrorCode::Enum const m_errorCode;
 };
 
-using CommandResultPtr = std::unique_ptr<CommandResult>;
+} // namespace Common

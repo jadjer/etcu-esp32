@@ -13,50 +13,43 @@
 // limitations under the License.
 //
 
-//
-// Created by jadjer on 23.09.22.
-//
-
 #pragma once
 
 #include <memory>
-#include <esp_err.h>
-#include <ecu/CommandResult.hpp>
+
+#include "ECU/Interface/NetworkConnector.hpp"
 
 /**
- * @class  IProtocol
+ * @namespace ECU
  */
-class IProtocol {
-public:
-    virtual ~IProtocol() = default;
+namespace ECU::Interface
+{
+
+/**
+ * @interface INetworkConnector
+ */
+class UartNetworkConnector : public NetworkConnector
+{
 
 public:
     /**
-     *
-     * @return
+     * Read one byte from network channel
+     * @return CommandResult struct
      */
-    virtual esp_err_t connect() = 0;
-
-public:
+    virtual Byte readByte() = 0;
     /**
-     *
+     * Read data from network channel
+     * @param requiredLength Count of bytes
      * @return
      */
-    [[nodiscard]] virtual bool isConnected() const = 0;
-
-public:
+    virtual Bytes readBytes(size_t requiredLength) = 0;
     /**
-     *
-     * @param data
-     * @param len
-     * @return
+     * Write data to network channel
+     * @param data Bytes array
      */
-    virtual esp_err_t writeData(uint8_t const *data, size_t len) = 0;
-    /**
-     *
-     * @return
-     */
-    virtual CommandResultPtr readData() = 0;
+    virtual void write(Bytes const& data) = 0;
 };
 
-using IProtocolPtr = std::unique_ptr<IProtocol>;
+using UartNetworkConnectorPtr = std::unique_ptr<UartNetworkConnector>;
+
+} // namespace ECU::Interface

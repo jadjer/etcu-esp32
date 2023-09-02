@@ -14,24 +14,40 @@
 //
 
 //
-// Created by jadjer on 16.08.23.
+// Created by jadjer on 28.08.23.
 //
 
 #pragma once
 
-#include <executor/INode.hpp>
-#include <accelerator/Accelerator.hpp>
+#include "ECU/Interface/KLineNetworkConnector.hpp"
+#include "ECU/Interface/UartNetworkConnector.hpp"
 
-using AcceleratorPtr = std::shared_ptr<Accelerator>;
+/**
+ * @namespace ECU
+ */
+namespace ECU
+{
 
-class AcceleratorNode : public INode {
+/**
+ * @class KLineNetworkConnector
+ */
+class KLineNetworkConnector : public Interface::KLineNetworkConnector
+{
 public:
-    explicit AcceleratorNode(AcceleratorPtr acceleratorPtr);
-    ~AcceleratorNode() override;
+    KLineNetworkConnector(Byte numberOfTxPin, Interface::UartNetworkConnectorPtr uartNetworkConnectorPtr);
 
-protected:
-    void spinOnce() override;
+public:
+    void connect() override;
+
+public:
+    Bytes readData() override;
+    void writeData(Bytes const& data) override;
 
 private:
-    AcceleratorPtr _acceleratorPtr;
+    Interface::UartNetworkConnectorPtr m_networkConnectorPtr;
+
+private:
+    bool m_isConnected;
 };
+
+} // namespace Ecu

@@ -1,7 +1,4 @@
-#include "Interface/ErrorCode.h"
-
-#include <assert.h>
-
+#include "Common/Interface/ErrorCode.hpp"
 
 esp_err_t ErrorCode::ErrorCodeToEspStatus(ErrorCode::Enum errorCode)
 {
@@ -31,7 +28,6 @@ esp_err_t ErrorCode::ErrorCodeToEspStatus(ErrorCode::Enum errorCode)
         return ESP_ERR_INVALID_MAC;
     case OperationAborted:
         return ESP_ERR_NOT_FINISHED;
-    case Count:
     default:
         std::abort(); // developer attention - we are not expect use count or some another as parameter of type
     }

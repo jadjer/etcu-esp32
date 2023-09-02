@@ -2,7 +2,6 @@
 
 #include "esp_err.h"
 
-
 struct ErrorCode
 {
     enum Enum
@@ -24,9 +23,7 @@ struct ErrorCode
         Count = 13
     };
 
-    static Enum EspStatusCodeToErrorCode(esp_err_t  const espError);
+    static Enum EspStatusCodeToErrorCode(esp_err_t const espError);
 
     static esp_err_t ErrorCodeToEspStatus(Enum const errorCode);
-
 };
-

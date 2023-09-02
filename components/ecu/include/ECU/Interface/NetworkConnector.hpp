@@ -14,12 +14,40 @@
 //
 
 //
-// Created by jadjer on 19.08.23.
+// Created by jadjer on 30.08.23.
 //
 
 #pragma once
 
+#include <vector>
+#include <cstdint>
 
-class Speed {
+/**
+ * @namespace ECU
+ */
+namespace ECU
+{
 
+using Byte = uint8_t;
+using Bytes = std::vector<Byte>;
+
+/**
+ * @namespace Interface
+ */
+namespace Interface
+{
+
+/**
+ * @interface NetworkConnector
+ */
+class NetworkConnector
+{
+public:
+    virtual ~NetworkConnector() = default;
+
+public:
+    virtual void connect() = 0;
 };
+
+} // namespace Interface
+} // namespace ECU::Interface
