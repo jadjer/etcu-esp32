@@ -21,15 +21,17 @@
 
 #include <cstdlib>
 
+#include "Executor/Interface/Node.hpp"
+
 /**
  * @class Button
  * @brief
  */
-class Button {
+class Button : public Executor::Interface::Node {
 public:
     explicit Button(uint8_t pinNum, bool invertedValue = false);
 
-    virtual ~Button();
+    ~Button() override;
 
 public:
     /**
@@ -38,7 +40,10 @@ public:
      */
     [[nodiscard]] bool isPressed() const;
 
+protected:
+    void process() override;
+
 private:
-    uint8_t _pinNum;
-    bool _invertedValue;
+    uint8_t m_pinNum;
+    bool m_invertedValue;
 };

@@ -20,7 +20,10 @@
 #pragma once
 
 #include <list>
-#include <Executor/Interface/INode.hpp>
+#include <thread>
+#include <mutex>
+
+#include "Executor/Interface/Node.hpp"
 
 /**
  * @namespace Executor
@@ -28,7 +31,7 @@
 namespace Executor
 {
 
-using Nodes = std::list<Interface::INodePtr>;
+using Nodes = std::list<Interface::NodePtr>;
 
 /**
  * @class Executor
@@ -51,12 +54,12 @@ public:
      * Node add to list
      * @param node Node ptr
      */
-    void addNode(Interface::INodePtr node);
+    void addNode(Interface::NodePtr const&node);
     /**
      * Node remove from list
      * @param node Node ptr
      */
-    void removeNode(Interface::INodePtr const& node);
+    void removeNode(Interface::NodePtr const& node);
 
 public:
     /**
@@ -65,8 +68,10 @@ public:
     void spin() const;
 
 private:
-    bool m_enable;
     Nodes m_nodes;
+    bool m_isEnabled;
+    std::mutex m_mutex;
+    std::thread m_thread;
 };
 
 } // namespace Executor

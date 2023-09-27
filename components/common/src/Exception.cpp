@@ -1,11 +1,13 @@
+#include <utility>
+
 #include "Common/Exception.hpp"
 
 namespace Common
 {
 
-Exception::Exception(std::string const& message, ErrorCode::Enum const code) : m_errorMessage(message), m_errorCode(code) {}
+Exception::Exception(std::string message, ErrorCode::Enum const code) : m_errorMessage(std::move(message)), m_errorCode(code) {}
 
-const char* Exception::what() const noexcept
+char const* Exception::what() const noexcept
 {
     return m_errorMessage.c_str();
 }

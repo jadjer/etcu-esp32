@@ -4,6 +4,7 @@ set(SOURCES
         src/Button.cpp)
 
 set(COMPONENTS
-        driver)
+        driver
+        executor)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})

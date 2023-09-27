@@ -40,7 +40,7 @@ public:
     void registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const& setupButtonChangeStateCallbackFunction);
 
 public:
-    void process();
+    void process() override;
 
 private:
     SetupButtonChangeStateCallbackFunction _setupButtonChangeStateCallbackFunction = nullptr;

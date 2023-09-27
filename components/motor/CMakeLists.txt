@@ -5,6 +5,6 @@ set(SOURCES
 
 set(COMPONENTS
         driver
-        esp_timer)
+        executor)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})

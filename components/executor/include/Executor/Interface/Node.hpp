@@ -35,24 +35,44 @@ class Executor;
 namespace Interface
 {
 /**
- * @class INode
+ * @interface Node
  * Interface for node object
  */
-class INode
+class Node
 {
     friend Executor;
 
 public:
+    explicit Node(uint32_t frequency = 100);
     /**
      * Virtual default destructor
      */
-    virtual ~INode() = default;
+    virtual ~Node() = default;
+
+public:
+    /**
+     * Set frequency for update node
+     * @param frequency
+     */
+    void setFrequency(uint32_t frequency);
 
 protected:
-    virtual void spinOnce() = 0;
+    /**
+     * Business data implementation
+     */
+    virtual void process() = 0;
+
+    /**
+     * Service's method for call process() with settled frequency
+     */
+    virtual void spinOnce();
+
+private:
+    uint32_t m_updatePeriod_InUS;
+    uint32_t m_lastSpinTime_InUS;
 };
 
-using INodePtr = std::unique_ptr<INode>;
+using NodePtr = std::shared_ptr<Node>;
 
 } // namespace Interface
 } // namespace Executor

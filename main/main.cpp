@@ -14,6 +14,10 @@
 //
 
 #include <cmath>
+#include <vector>
+#include <iostream>
+
+#include "sdkconfig.h"
 
 #include "Executor/Executor.hpp"
 #include "motor/MotorDriver.hpp"
@@ -23,99 +27,102 @@
 #include "ECU/UartNetworkConnector.hpp"
 #include "ECU/KLineNetworkConnector.hpp"
 
+#include "Scaler.hpp"
 #include "Controller.hpp"
 #include "SetupButton.hpp"
 
-#include <vector>
-
-
-int64_t averageFilter(int64_t const value, float const threshold) {
-    static const size_t windowSize = 10;
-
-    std::vector<int64_t> accelerationItems;
-    accelerationItems.reserve(windowSize);
-
-    accelerationItems[windowSize - 1] = value;
+int64_t averageFilter(int64_t value, float threshold) {
+    static const size_t windowSize = 3;
+    static int64_t data[windowSize];
 
     for (size_t i = 0; i < windowSize - 1; i++) {
-        accelerationItems[i] = accelerationItems[i + 1];
+        data[i] = data[i + 1];
     }
+    data[windowSize - 1] = value;
 
-    int64_t result = 0;
-
-    for (auto const accelerationItem : accelerationItems) {
-        result += accelerationItem;
+    int64_t mean = 0;
+    for (int64_t i : data) {
+        mean += i;
     }
+    mean /= windowSize;
 
-    result /= windowSize;
-
-    if (std::fabs(value - result) > threshold)
-    {
-        return result;
-    }
-
-    return result;
-}
-
-int64_t expRunningAverageAdaptive(int64_t currentValue, float threshold) {
-    static int64_t previousValue = 0;
-    float k;
-
-    auto diff = std::fabs(currentValue - previousValue);
-    if (diff > threshold) {
-        k = 0.9;
+    if (std::fabs(value - mean) > threshold) {
+        return mean;
     } else {
-        k = 0.001;
+        return value;
     }
-
-    previousValue += static_cast<int64_t>(static_cast<float >(currentValue - previousValue) * k);
-    return previousValue;
 }
 
-extern "C" void app_main(void) {
-    auto indicatorPtr = std::make_shared<BlinkIndicator>(2);
-
-    auto motorDriverPtr = std::make_shared<MotorDriver>(13, 12);
-    motorDriverPtr->setAccelerationInStepsPerSecondPerSecond(200000);
-    motorDriverPtr->setDecelerationInStepsPerSecondPerSecond(400000);
+extern "C" void app_main(void)
+{
+    auto motorDriverPtr = std::make_shared<MotorDriver>(13, 11);
+    motorDriverPtr->setFrequency(1000000);
+    motorDriverPtr->setAccelerationInStepsPerSecondPerSecond(150000);
+    motorDriverPtr->setDecelerationInStepsPerSecondPerSecond(150000);
     motorDriverPtr->setSpeedInStepsPerSecond(100000);
 
     auto controllerPtr = std::make_shared<Controller>();
-    controllerPtr->registerChangeValueCallback([&motorDriverPtr](int32_t controlValue) {
-        auto diff_InSteps = std::fabs(motorDriverPtr->getTargetPositionInSteps() - controlValue);
-        if (diff_InSteps < 16) {
-            return;
-        }
+    controllerPtr->registerChangeValueCallback(
+        [&](uint32_t const acceleratorValue)
+        {
+            std::cout << "Accelerator(scale): " << acceleratorValue << " ";
 
-        motorDriverPtr->setTargetPositionInSteps(controlValue);
-    });
+            auto steps = static_cast<int32_t>(acceleratorValue * 115);
+            std::cout << "Motor: " << steps;
+
+            motorDriverPtr->setTargetPositionInSteps(steps);
+        });
+
+    auto scalerPtr = std::make_shared<Scaler>(840, 2570);
+    scalerPtr->registerChangeValueCallback([&](uint32_t const acceleratorValue)
+                                           { controllerPtr->setAcceleration(acceleratorValue); });
 
     auto acceleratorPtr = std::make_shared<Accelerator>();
-    acceleratorPtr->registerChangeAccelerateCallback([&controllerPtr](uint32_t accelerationValue) {
-        accelerationValue = averageFilter(accelerationValue, 10);
-        accelerationValue = expRunningAverageAdaptive(accelerationValue, 20);
-        accelerationValue = accelerationValue * 4;
+    acceleratorPtr->setFrequency(8);
+    acceleratorPtr->registerChangeAccelerateCallback(
+        [&](uint32_t acceleratorValue_InPercentage)
+        {
+            std::cout << "Accelerator(voltage): " << acceleratorValue_InPercentage << " ";
 
-        controllerPtr->setAcceleration(accelerationValue);
-    });
+            acceleratorValue_InPercentage = static_cast<uint32_t>(static_cast<float>(acceleratorValue_InPercentage) * 0.1) * 10;
+            std::cout << "Accelerator(filter1): " << acceleratorValue_InPercentage << " ";
 
-    auto setupButtonPtr = std::make_shared<SetupButton>(15, false);
-    setupButtonPtr->registerChangeValueCallback([&indicatorPtr, &controllerPtr](SetupButtonState setupButtonState) {
-        if (setupButtonState == SETUP_BUTTON_HELD) {
-            controllerPtr->enable();
-            indicatorPtr->enable();
-        }
-        if (setupButtonState == SETUP_BUTTON_PRESSED) {
-            controllerPtr->disable();
-            indicatorPtr->disable();
-        }
-    });
+            acceleratorValue_InPercentage = averageFilter(acceleratorValue_InPercentage, 20);
+            std::cout << "Accelerator(filter2): " << acceleratorValue_InPercentage << " ";
 
-    auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);
-    auto kLine = std::make_unique<ECU::KLineNetworkConnector>(1, std::move(uart));
-    auto ecu = std::make_unique<ECU::HondaECU>(std::move(kLine));
+            scalerPtr->setValue(acceleratorValue_InPercentage);
+            std::cout << std::endl;
+        });
+
+//    auto setupButtonPtr = std::make_shared<SetupButton>(5, true);
+//    setupButtonPtr->setFrequency(100);
+//    setupButtonPtr->registerChangeValueCallback(
+//        [&](SetupButtonState const setupButtonState)
+//        {
+//            if (setupButtonState == SETUP_BUTTON_HELD)
+//            {
+//                scalerPtr->enable();
+//                controllerPtr->enable();
+//            }
+//            if (setupButtonState == SETUP_BUTTON_PRESSED)
+//            {
+//                scalerPtr->disable();
+//                controllerPtr->disable();
+//            }
+//        });
+
+    //    auto const numberOfUartPort = 2;
+    //    auto const numberOfRxPin = 3;
+    //    auto const numberOfTxPin = 1;
+    //
+    //    auto uartPtr = std::make_unique<ECU::UartNetworkConnector>(numberOfRxPin, numberOfTxPin, numberOfUartPort);
+    //    auto kLinePtr = std::make_unique<ECU::KLineNetworkConnector>(numberOfTxPin, std::move(uartPtr));
+    //    auto ecuPtr = std::make_shared<ECU::HondaECU>(std::move(kLinePtr));
 
     auto executorPtr = std::make_unique<Executor::Executor>();
-    executorPtr->addNode(std::move(ecu));
+    executorPtr->addNode(motorDriverPtr);
+    executorPtr->addNode(acceleratorPtr);
+//    executorPtr->addNode(setupButtonPtr);
+    //    executorPtr->addNode(ecuPtr);
     executorPtr->spin();
 }

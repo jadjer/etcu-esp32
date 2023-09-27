@@ -20,6 +20,13 @@
 
 #include <driver/gpio.h>
 
+constexpr uint8_t lowLevel = 0;
+constexpr uint8_t highLevel = 1;
+constexpr uint32_t longLight_InMS = 500;
+constexpr uint32_t shortLight_InMS = 250;
+constexpr uint32_t delayBetweenDigits_InMS = 250;
+constexpr uint32_t delayBetweenCodes_InMS = 3000;
+
 ErrorCodeIndicator::ErrorCodeIndicator(int pinNum) : Indicator(pinNum) {}
 
 ErrorCodeIndicator::~ErrorCodeIndicator() = default;
@@ -34,21 +41,23 @@ void ErrorCodeIndicator::blinkTask() {
         uint8_t secondDigit = _taskValue % 10;
 
         for (size_t i = 0; i < firstDigit; i++) {
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            gpio_set_level(static_cast<gpio_num_t>(_pinNum), highLevel);
+            std::this_thread::sleep_for(std::chrono::milliseconds(longLight_InMS));
 
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            gpio_set_level(static_cast<gpio_num_t>(_pinNum), lowLevel);
+            std::this_thread::sleep_for(std::chrono::milliseconds(longLight_InMS));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayBetweenDigits_InMS));
 
         for (size_t i = 0; i < secondDigit; i++) {
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+            gpio_set_level(static_cast<gpio_num_t>(_pinNum), highLevel);
+            std::this_thread::sleep_for(std::chrono::milliseconds(shortLight_InMS));
 
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+            gpio_set_level(static_cast<gpio_num_t>(_pinNum), lowLevel);
+            std::this_thread::sleep_for(std::chrono::milliseconds(shortLight_InMS));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayBetweenCodes_InMS));
     }
 }

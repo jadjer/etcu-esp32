@@ -44,9 +44,13 @@ public:
 class KLineConnectException : public Common::Exception
 {
 public:
-    explicit KLineConnectException(std::string const& message) : Common::Exception(message, ErrorCode::Enum::OperationAborted)
-    {
-    }
+    KLineConnectException(std::string const& message, ErrorCode::Enum errorCode) : Common::Exception(message, errorCode) {}
+};
+
+class UartReadException : public Common::Exception
+{
+public:
+    UartReadException(std::string const& message, ErrorCode::Enum errorCode) : Common::Exception(message, errorCode) {}
 };
 
 } // namespace ECU

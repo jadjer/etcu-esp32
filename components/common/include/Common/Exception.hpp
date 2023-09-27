@@ -24,7 +24,7 @@ namespace Common
 class Exception : public IException
 {
 public:
-    Exception(std::string const& message, ErrorCode::Enum const code);
+    Exception(std::string  message, ErrorCode::Enum code);
 
     [[nodiscard]] char const* what() const noexcept override;
 

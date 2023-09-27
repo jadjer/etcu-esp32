@@ -4,7 +4,7 @@ set(SOURCES
         src/Accelerator.cpp)
 
 set(COMPONENTS
-        driver
-        esp_timer)
+        esp_adc
+        executor)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})

@@ -21,7 +21,7 @@
 
 #include <shared_mutex>
 
-#include "Executor/Interface/INode.hpp"
+#include "Executor/Interface/Node.hpp"
 #include "ECU/Interface/KLineNetworkConnector.hpp"
 
 /**
@@ -33,21 +33,20 @@ namespace ECU
 /**
  * @class HondaECU
  */
-class HondaECU : public Executor::Interface::INode
+class HondaECU : public Executor::Interface::Node
 {
 public:
-    HondaECU(Interface::KLineNetworkConnectorPtr networkConnectorPtr);
+    explicit HondaECU(Interface::KLineNetworkConnectorPtr networkConnectorPtr);
 
 public:
     [[nodiscard]] uint16_t getRevolutionPerMinute() const;
     [[nodiscard]] uint16_t getSpeedInKilometerPerHour() const;
-    [[nodiscard]] uint8_t getThrottlePosition_InPercent() const;
+    [[nodiscard]] uint8_t getThrottlePositionInPercent() const;
 
 protected:
-    void spinOnce() override;
+    void process() override;
 
 private:
-    void updateAllSensorsData();
     void updateSpeedData();
     void updateRevolutePerMinuteData();
 

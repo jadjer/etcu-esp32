@@ -22,29 +22,37 @@
 #include <driver/gpio.h>
 
 Button::Button(uint8_t pinNum, bool invertedValue) :
-        _pinNum(pinNum),
-        _invertedValue(invertedValue) {
+        m_pinNum(pinNum),
+        m_invertedValue(invertedValue) {
 
     gpio_config_t buttonConfig = {
-            .pin_bit_mask = (1ull << _pinNum),
+            .pin_bit_mask = (1ull << m_pinNum),
             .mode = GPIO_MODE_INPUT,
             .pull_up_en = GPIO_PULLUP_DISABLE,
             .pull_down_en = GPIO_PULLDOWN_ENABLE,
             .intr_type = GPIO_INTR_DISABLE,
     };
+
+    if (invertedValue) {
+        buttonConfig.pull_up_en = GPIO_PULLUP_ENABLE;
+        buttonConfig.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    }
+
     gpio_config(&buttonConfig);
 }
 
 Button::~Button() {
-    gpio_isr_handler_remove(static_cast<gpio_num_t>(_pinNum));
+    gpio_isr_handler_remove(static_cast<gpio_num_t>(m_pinNum));
 }
 
 bool Button::isPressed() const {
-    bool value = gpio_get_level(static_cast<gpio_num_t>(_pinNum));
+    bool value = gpio_get_level(static_cast<gpio_num_t>(m_pinNum));
 
-    if (_invertedValue) {
+    if (m_invertedValue) {
         value = not value;
     }
 
     return value;
 }
+
+void Button::process() {}

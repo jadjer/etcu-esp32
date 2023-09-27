@@ -56,38 +56,34 @@ uint16_t HondaECU::getRevolutionPerMinute() const
     return m_revolutionPerMinute;
 }
 
-uint8_t HondaECU::getThrottlePosition_InPercent() const
+uint8_t HondaECU::getThrottlePositionInPercent() const
 {
+    std::shared_lock lock(m_mutex);
     return m_throttlePosition_InPercent;
 }
 
-void HondaECU::spinOnce() {
-    updateAllSensorsData();
-}
-
-void HondaECU::updateAllSensorsData() {
+void HondaECU::process() {
+    updateRevolutePerMinuteData();
     updateSpeedData();
 }
 
 void HondaECU::updateSpeedData() {
-    std::unique_lock lock(m_mutex);
-
     Bytes const speedSensorDataRequest = {0x72, 0x07, 0x72, 0x11, 0x13, 0x14, 0x00};
 
     m_networkConnectorPtr->writeData(speedSensorDataRequest);
-    Bytes payload = m_networkConnectorPtr->readData();
+    Bytes const payload = m_networkConnectorPtr->readData();
 
+    std::unique_lock lock(m_mutex);
     // TODO Speed data from payload value
 }
 
 void HondaECU::updateRevolutePerMinuteData() {
-    std::unique_lock lock(m_mutex);
-
     Bytes const rpmSensorDataRequest = {0x72, 0x07, 0x72, 0x11, 0x00, 0x01, 0x00};
 
     m_networkConnectorPtr->writeData(rpmSensorDataRequest);
-    Bytes payload = m_networkConnectorPtr->readData();
+    Bytes const payload = m_networkConnectorPtr->readData();
 
+    std::unique_lock lock(m_mutex);
     // TODO RPM data from payload value
 }
 

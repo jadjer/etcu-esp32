@@ -104,6 +104,7 @@ Byte UartNetworkConnector::readByte()
 
     if (resultLength != requiredLength) {
         // TODO Uart read data exception
+//        throw UartReadException();
     }
 
     return resultData;

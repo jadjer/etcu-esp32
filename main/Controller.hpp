@@ -28,36 +28,33 @@ class Controller {
 public:
     Controller();
 
-    ~Controller();
-
 public:
-    void registerChangeValueCallback(ControllerChangeValueCallbackFunction const &controllerChangeValueCallbackFunction);
+    void registerChangeValueCallback(ControllerChangeValueCallbackFunction const &changeValueCallbackFunction);
 
 public:
     void setRPM(uint32_t revolutionPerMinute);
 
     void setSpeed(uint32_t speedInKilometersPerHour);
 
-    void setClutch(bool clutchIsEnabled);
-
     void setAcceleration(uint32_t accelerationValue);
+
+    void setClutch(bool clutchIsEnabled);
 
 public:
     void enable();
 
     void disable();
 
-public:
+private:
     void process();
 
 private:
-    ControllerChangeValueCallbackFunction _controllerChangeValueCallbackFunction = nullptr;
+    ControllerChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
 
 private:
-    bool _clutchIsEnabled;
-    uint32_t _accelerationValue;
-    uint32_t _revolutionPerMinute;
-    uint32_t _minimalAccelerationValue;
-    uint32_t _speed_InKilometersPerHour;
-    uint32_t _cruiseSpeed_InKilometersPerHour;
+    bool m_clutchIsEnabled;
+    uint32_t m_accelerationValue;
+    uint32_t m_revolutionPerMinute;
+    uint32_t m_speed_InKilometersPerHour;
+    uint32_t m_cruiseSpeed_InKilometersPerHour;
 };

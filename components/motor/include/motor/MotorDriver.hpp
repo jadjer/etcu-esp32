@@ -15,15 +15,13 @@
 
 #pragma once
 
-#include <cstdlib>
-
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
+#include "Executor/Interface/Node.hpp"
 
 /**
  * @class MotorDriver
  */
-class MotorDriver {
+class MotorDriver : public Executor::Interface::Node
+{
 public:
     /**
      * Connect the stepper object to the IO pins
@@ -35,7 +33,7 @@ public:
     /**
      * Destructor
      */
-    ~MotorDriver();
+    ~MotorDriver() override = default;
 
 public:
     /**
@@ -137,26 +135,8 @@ public:
      */
     [[nodiscard]] bool isMotionComplete() const;
 
-public:
-    /**
-     * Start as service
-     * @param coreNumber Number of cores
-     * @return
-     */
-    bool startAsService(uint8_t coreNumber = 1);
-
-    /**
-     * Stop service
-     */
-    void stopService();
-
-public:
-    /**
-     * if it is time, move one step
-     * Exit:  true returned if movement complete, false returned not a final target position yet
-     * @return
-     */
-    void process();
+protected:
+    void process() override;
 
 private:
     /**
@@ -170,13 +150,6 @@ private:
      * @return
      */
     [[nodiscard]] uint32_t calcDecelerationDistanceInSteps() const;
-
-private:
-    /**
-     *
-     * @param parameter
-     */
-    [[noreturn]] static void taskRunner(void *parameter);
 
 private:
     uint8_t _stepPin;
@@ -193,7 +166,4 @@ private:
     float _acceleration_InStepsPerUSPerUS;
     float _deceleration_InStepsPerUSPerUS;
     float _minimumPeriodForAStoppedMotion;
-
-private:
-    TaskHandle_t _handle = nullptr;
 };

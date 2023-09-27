@@ -21,14 +21,16 @@
 
 #include <thread>
 
+#include "Executor/Interface/Node.hpp"
+
 /**
  * @brief
  */
-class Indicator {
+class Indicator : public Executor::Interface::Node {
 public:
     explicit Indicator(int pinNum);
 
-    virtual ~Indicator();
+    ~Indicator() override;
 
 public:
     /**
@@ -59,4 +61,6 @@ protected:
      * @param delayMs
      */
     virtual void blinkTask() = 0;
+
+    void process() override;
 };

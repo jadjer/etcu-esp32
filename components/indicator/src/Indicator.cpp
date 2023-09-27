@@ -16,6 +16,9 @@
 
 #include <driver/gpio.h>
 
+constexpr uint8_t lowLevel = 0;
+constexpr uint8_t highLevel = 1;
+
 Indicator::Indicator(int pinNum) :
         _enableFlag(true),
         _pinNum(pinNum),
@@ -42,14 +45,14 @@ void Indicator::enable() {
     _enableFlag = false;
     if (_thread.joinable()) { _thread.join(); }
 
-    gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
+    gpio_set_level(static_cast<gpio_num_t>(_pinNum), highLevel);
 }
 
 void Indicator::disable() {
     _enableFlag = false;
     if (_thread.joinable()) { _thread.join(); }
 
-    gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
+    gpio_set_level(static_cast<gpio_num_t>(_pinNum), lowLevel);
 }
 
 void Indicator::blink(int value) {
@@ -60,3 +63,5 @@ void Indicator::blink(int value) {
     _enableFlag = true;
     _thread = std::thread(&Indicator::blinkTask, this);
 }
+
+void Indicator::process() {}
