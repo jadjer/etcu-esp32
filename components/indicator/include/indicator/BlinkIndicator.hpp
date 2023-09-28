@@ -19,14 +19,20 @@
 
 #pragma once
 
-#include <indicator/Indicator.hpp>
+#include "indicator/Indicator.hpp"
 
-class BlinkIndicator : public Indicator {
- public:
-  explicit BlinkIndicator(int pinNum);
+namespace indicator
+{
 
-  ~BlinkIndicator() override;
+class BlinkIndicator : public Indicator
+{
+public:
+    explicit BlinkIndicator(int pinNum);
 
- protected:
-  void blinkTask() override;
+    ~BlinkIndicator() override;
+
+protected:
+    void blinkTask() override;
 };
+
+} // namespace indicator

@@ -17,18 +17,16 @@
 // Created by jadjer on 28.08.23.
 //
 
-#include "ECU/HondaECU.hpp"
+#include "ecu/HondaECU.hpp"
 
 #include <chrono>
 #include <thread>
 
-namespace ECU
+namespace ecu
 {
 
-HondaECU::HondaECU(Interface::KLineNetworkConnectorPtr networkConnectorPtr) :
-    m_networkConnectorPtr(std::move(networkConnectorPtr)),
-    m_throttlePosition_InPercent(0),
-    m_speed_InKilometersPerHour(0),
+HondaECU::HondaECU(ecu::interface::KLineNetworkConnectorPtr networkConnectorPtr) :
+    m_networkConnectorPtr(std::move(networkConnectorPtr)), m_throttlePosition_InPercent(0), m_speed_InKilometersPerHour(0),
     m_revolutionPerMinute(0)
 {
     Bytes const wakeUpMessage = {0xFE, 0x04, 0xFF, 0xFF};
@@ -62,12 +60,14 @@ uint8_t HondaECU::getThrottlePositionInPercent() const
     return m_throttlePosition_InPercent;
 }
 
-void HondaECU::process() {
+void HondaECU::process()
+{
     updateRevolutePerMinuteData();
     updateSpeedData();
 }
 
-void HondaECU::updateSpeedData() {
+void HondaECU::updateSpeedData()
+{
     Bytes const speedSensorDataRequest = {0x72, 0x07, 0x72, 0x11, 0x13, 0x14, 0x00};
 
     m_networkConnectorPtr->writeData(speedSensorDataRequest);
@@ -77,7 +77,8 @@ void HondaECU::updateSpeedData() {
     // TODO Speed data from payload value
 }
 
-void HondaECU::updateRevolutePerMinuteData() {
+void HondaECU::updateRevolutePerMinuteData()
+{
     Bytes const rpmSensorDataRequest = {0x72, 0x07, 0x72, 0x11, 0x00, 0x01, 0x00};
 
     m_networkConnectorPtr->writeData(rpmSensorDataRequest);
@@ -87,4 +88,4 @@ void HondaECU::updateRevolutePerMinuteData() {
     // TODO RPM data from payload value
 }
 
-} // namespace Ecu
+} // namespace ecu

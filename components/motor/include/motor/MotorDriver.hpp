@@ -15,12 +15,15 @@
 
 #pragma once
 
-#include "Executor/Interface/Node.hpp"
+#include "executor/interface/Node.hpp"
+
+namespace motor
+{
 
 /**
  * @class MotorDriver
  */
-class MotorDriver : public Executor::Interface::Node
+class MotorDriver : public executor::interface::Node
 {
 public:
     /**
@@ -167,3 +170,5 @@ private:
     float _deceleration_InStepsPerUSPerUS;
     float _minimumPeriodForAStoppedMotion;
 };
+
+} // namespace motor

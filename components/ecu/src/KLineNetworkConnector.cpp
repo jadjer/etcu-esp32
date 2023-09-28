@@ -17,13 +17,13 @@
 // Created by jadjer on 28.08.23.
 //
 
-#include "ECU/KLineNetworkConnector.hpp"
-#include "ECU/exception.hpp"
+#include "ecu/KLineNetworkConnector.hpp"
+#include "ecu/exception.hpp"
 
 #include <thread>
 #include <driver/gpio.h>
 
-namespace ECU
+namespace ecu
 {
 
 void configurePin(Byte const numberOfPin)
@@ -39,7 +39,7 @@ void configurePin(Byte const numberOfPin)
     auto const errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
     if (errorCode != ErrorCode::Enum::Success)
     {
-        throw ECU::NetworkException("qwe", errorCode);
+        throw ecu::NetworkException("qwe", errorCode);
     }
 }
 
@@ -49,7 +49,7 @@ void setPin(Byte const numberOfPin, Byte const value)
     auto const errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
     if (errorCode != ErrorCode::Enum::Success)
     {
-        throw ECU::NetworkException("qwe", errorCode);
+        throw ecu::NetworkException("qwe", errorCode);
     }
 }
 
@@ -70,7 +70,7 @@ Byte calculateCheckSum(Byte resultCode, Byte dataLength, Byte queryType, Bytes c
     return calculatedCheckSum;
 }
 
-KLineNetworkConnector::KLineNetworkConnector(Byte const numberOfTxPin, Interface::UartNetworkConnectorPtr networkConnectorPtr) :
+KLineNetworkConnector::KLineNetworkConnector(Byte const numberOfTxPin, interface::UartNetworkConnectorPtr networkConnectorPtr) :
     m_networkConnectorPtr(std::move(networkConnectorPtr)), m_isConnected(false)
 {
     configurePin(numberOfTxPin);
@@ -110,7 +110,8 @@ Bytes KLineNetworkConnector::readData()
     }
 
     Byte const queryType = m_networkConnectorPtr->readByte();
-    if ((queryType != 0x71) or (queryType != 0x72)) {
+    if ((queryType != 0x71) or (queryType != 0x72))
+    {
         // TODO KLine invalid query type exception
     }
 
@@ -118,7 +119,8 @@ Bytes KLineNetworkConnector::readData()
 
     Byte const checkSum = m_networkConnectorPtr->readByte();
     Byte const calculatedCheckSum = calculateCheckSum(resultCode, dataLength, queryType, payload, checkSum);
-    if (checkSum != calculatedCheckSum) {
+    if (checkSum != calculatedCheckSum)
+    {
         // TODO KLine invalid data exception
     }
 
@@ -135,4 +137,4 @@ void KLineNetworkConnector::writeData(Bytes const& data)
     m_networkConnectorPtr->write(data);
 }
 
-} // namespace ECU
+} // namespace ecu

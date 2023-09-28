@@ -21,11 +21,15 @@
 
 #include <functional>
 
-#include "Executor/Interface/Node.hpp"
+#include "executor/interface/Node.hpp"
+
+namespace accelerator
+{
 
 using AcceleratorChangeValueCallbackFunction = std::function<void(uint32_t)>;
 
-class Accelerator : public Executor::Interface::Node {
+class Accelerator : public executor::interface::Node
+{
 public:
     Accelerator();
     ~Accelerator() override;
@@ -39,3 +43,5 @@ protected:
 private:
     AcceleratorChangeValueCallbackFunction m_acceleratorChangeValueCallbackFunction = nullptr;
 };
+
+} // namespace accelerator

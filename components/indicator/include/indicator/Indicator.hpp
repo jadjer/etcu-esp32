@@ -21,12 +21,16 @@
 
 #include <thread>
 
-#include "Executor/Interface/Node.hpp"
+#include "executor/interface/Node.hpp"
+
+namespace indicator
+{
 
 /**
  * @brief
  */
-class Indicator : public Executor::Interface::Node {
+class Indicator : public executor::interface::Node
+{
 public:
     explicit Indicator(int pinNum);
 
@@ -50,10 +54,10 @@ public:
     virtual void blink(int delayMs);
 
 protected:
-    bool _enableFlag;
-    uint8_t _pinNum;
-    uint8_t _taskValue;
-    std::thread _thread;
+    bool m_enableFlag;
+    uint8_t m_pinNum;
+    uint8_t m_taskValue;
+    std::thread m_thread;
 
 protected:
     /**
@@ -64,3 +68,5 @@ protected:
 
     void process() override;
 };
+
+} // namespace indicator

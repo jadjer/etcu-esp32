@@ -13,12 +13,15 @@
 // limitations under the License.
 //
 
-#include <motor/MotorDriver.hpp>
+#include "motor/MotorDriver.hpp"
 
 #include <cmath>
 
-#include <esp_timer.h>
-#include <driver/gpio.h>
+#include "esp_timer.h"
+#include "driver/gpio.h"
+
+namespace motor
+{
 
 constexpr uint8_t lowLevel = 0;
 constexpr uint8_t highLevel = 1;
@@ -43,7 +46,8 @@ void pinOutputConfiguration(uint8_t numberOfPin, uint8_t defaultLevel = lowLevel
         .intr_type = GPIO_INTR_DISABLE,
     };
 
-    if (defaultLevel == highLevel) {
+    if (defaultLevel == highLevel)
+    {
         pinConfig.pull_up_en = GPIO_PULLUP_ENABLE;
         pinConfig.pull_down_en = GPIO_PULLDOWN_DISABLE;
     }
@@ -367,3 +371,5 @@ uint32_t MotorDriver::calcDecelerationDistanceInSteps() const
     auto decelerationDistance_InSteps = static_cast<uint32_t>(decelerationDistance);
     return decelerationDistance_InSteps;
 }
+
+} // namespace motor

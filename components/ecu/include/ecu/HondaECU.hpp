@@ -21,22 +21,22 @@
 
 #include <shared_mutex>
 
-#include "Executor/Interface/Node.hpp"
-#include "ECU/Interface/KLineNetworkConnector.hpp"
+#include "executor/interface/Node.hpp"
+#include "ecu/interface/KLineNetworkConnector.hpp"
 
 /**
  * @namespace ECU
  */
-namespace ECU
+namespace ecu
 {
 
 /**
  * @class HondaECU
  */
-class HondaECU : public Executor::Interface::Node
+class HondaECU : public executor::interface::Node
 {
 public:
-    explicit HondaECU(Interface::KLineNetworkConnectorPtr networkConnectorPtr);
+    explicit HondaECU(interface::KLineNetworkConnectorPtr networkConnectorPtr);
 
 public:
     [[nodiscard]] uint16_t getRevolutionPerMinute() const;
@@ -52,7 +52,7 @@ private:
 
 private:
     mutable std::shared_mutex m_mutex;
-    Interface::KLineNetworkConnectorPtr m_networkConnectorPtr;
+    interface::KLineNetworkConnectorPtr m_networkConnectorPtr;
 
 private:
     uint8_t m_throttlePosition_InPercent;

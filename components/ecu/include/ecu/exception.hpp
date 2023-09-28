@@ -18,9 +18,9 @@
 #include "Common/Exception.hpp"
 
 /**
- * @namespace ECU
+ * @namespace ecu
  */
-namespace ECU
+namespace ecu
 {
 
 /**

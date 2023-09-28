@@ -14,7 +14,7 @@
 //
 
 //
-// Created by jadjer on 16.08.23.
+// Created by jadjer on 28.09.23.
 //
 
 #pragma once
@@ -24,35 +24,34 @@
 #include "button/Button.hpp"
 #include "executor/interface/Node.hpp"
 
-enum SetupButtonState
+enum ModeButtonState
 {
-    SETUP_BUTTON_RELEASED = 0,
-    SETUP_BUTTON_PRESSED,
-    SETUP_BUTTON_HELD,
-    SETUP_BUTTON_COUNT = 3
+    MODE_BUTTON_STATE_UNKNOWN = 0,
+    MODE_BUTTON_STATE_MODE_1,
+    MODE_BUTTON_STATE_MODE_2,
+    MODE_BUTTON_STATE_MODE_3,
+    MODE_BUTTON_COUNT = 4
 };
 
-using SetupButtonChangeStateCallbackFunction = std::function<void(SetupButtonState)>;
+using ModeButtonChangeStateCallbackFunction = std::function<void(ModeButtonState)>;
 
-class SetupButton : public executor::interface::Node
+class ModeButton : public executor::interface::Node
 {
 public:
-    explicit SetupButton(uint8_t pinNum, bool invertedValue = false);
-    ~SetupButton() override = default;
+    explicit ModeButton(uint8_t numberOfModeButton1Pin = 7, uint8_t numberOfModeButton2Pin = 6);
+    ~ModeButton() override = default;
 
 public:
-    void registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const& changeStateCallbackFunction);
+    void registerChangeValueCallback(ModeButtonChangeStateCallbackFunction const& changeStateCallbackFunction);
 
 private:
     void process() override;
 
 private:
-    SetupButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
+    ModeButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
 
 private:
-    bool m_isHeld;
-    bool m_isPressed;
-    int64_t m_pressTime_InUS;
-    int64_t m_releaseTime_InUS;
-    button::Button m_setupButton;
+    button::Button m_modeButton1;
+    button::Button m_modeButton2;
+    ModeButtonState m_modeButtonState;
 };

@@ -21,13 +21,17 @@
 
 #include <cstdlib>
 
-#include "Executor/Interface/Node.hpp"
+#include "executor/interface/Node.hpp"
+
+namespace button
+{
 
 /**
  * @class Button
  * @brief
  */
-class Button : public Executor::Interface::Node {
+class Button : public executor::interface::Node
+{
 public:
     explicit Button(uint8_t pinNum, bool invertedValue = false);
 
@@ -44,6 +48,8 @@ protected:
     void process() override;
 
 private:
-    uint8_t m_pinNum;
-    bool m_invertedValue;
+    bool const m_invertedValue;
+    uint8_t const m_numberOfPin;
 };
+
+} // namespace button

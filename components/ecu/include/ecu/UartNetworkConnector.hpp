@@ -2,18 +2,18 @@
 
 #include <mutex>
 
-#include "ECU/Interface/UartNetworkConnector.hpp"
+#include "ecu/interface/UartNetworkConnector.hpp"
 
 /**
- * @namespace ECU
+ * @namespace ecu
  */
-namespace ECU
+namespace ecu
 {
 
 /**
  * @class UartNetworkConnector
  */
-class UartNetworkConnector : public Interface::UartNetworkConnector
+class UartNetworkConnector : public ecu::interface::UartNetworkConnector
 {
 public:
     UartNetworkConnector(Byte numberOfRxPin, Byte numberOfTxPin, Byte numberOfUartPorts);
@@ -39,4 +39,4 @@ protected:
     uint16_t const m_baudRate;
 };
 
-} // namespace ECU
+} // namespace ecu

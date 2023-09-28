@@ -19,22 +19,22 @@
 
 #pragma once
 
-#include "ECU/Interface/KLineNetworkConnector.hpp"
-#include "ECU/Interface/UartNetworkConnector.hpp"
+#include "ecu/interface/KLineNetworkConnector.hpp"
+#include "ecu/interface/UartNetworkConnector.hpp"
 
 /**
- * @namespace ECU
+ * @namespace ecu
  */
-namespace ECU
+namespace ecu
 {
 
 /**
  * @class KLineNetworkConnector
  */
-class KLineNetworkConnector : public Interface::KLineNetworkConnector
+class KLineNetworkConnector : public interface::KLineNetworkConnector
 {
 public:
-    KLineNetworkConnector(Byte numberOfTxPin, Interface::UartNetworkConnectorPtr uartNetworkConnectorPtr);
+    KLineNetworkConnector(Byte numberOfTxPin, interface::UartNetworkConnectorPtr uartNetworkConnectorPtr);
 
 public:
     void connect() override;
@@ -44,10 +44,10 @@ public:
     void writeData(Bytes const& data) override;
 
 private:
-    Interface::UartNetworkConnectorPtr m_networkConnectorPtr;
+    interface::UartNetworkConnectorPtr m_networkConnectorPtr;
 
 private:
     bool m_isConnected;
 };
 
-} // namespace Ecu
+} // namespace ecu

@@ -19,59 +19,61 @@
 
 #pragma once
 
-#include <list>
-#include <thread>
-#include <mutex>
-
-#include "Executor/Interface/Node.hpp"
+#include <memory>
 
 /**
  * @namespace Executor
  */
-namespace Executor
+namespace executor
 {
 
-using Nodes = std::list<Interface::NodePtr>;
+class Executor;
 
 /**
- * @class Executor
+ * @namespace Executor::Interface
  */
-class Executor
+namespace interface
 {
-public:
-    /**
-     * Default constructor
-     */
-    Executor();
-
-    /**
-     * Default destructor
-     */
-    ~Executor();
+/**
+ * @interface Node
+ * Interface for node object
+ */
+class Node
+{
+    friend Executor;
 
 public:
+    explicit Node(uint32_t frequency = 100);
     /**
-     * Node add to list
-     * @param node Node ptr
+     * Virtual default destructor
      */
-    void addNode(Interface::NodePtr const&node);
-    /**
-     * Node remove from list
-     * @param node Node ptr
-     */
-    void removeNode(Interface::NodePtr const& node);
+    virtual ~Node() = default;
 
 public:
     /**
-     * Loop executor
+     * Set frequency for update node
+     * @param frequency
      */
-    void spin() const;
+    void setFrequency(uint32_t frequency);
+
+protected:
+    /**
+     * Service's method for call process() with settled frequency
+     */
+    void spinOnce();
 
 private:
-    Nodes m_nodes;
-    bool m_isEnabled;
-    std::mutex m_mutex;
-    std::thread m_thread;
+    /**
+     * Business data implementation
+     */
+    virtual void process() = 0;
+
+private:
+    uint32_t m_updatePeriod_InUS;
+    uint32_t m_lastSpinTime_InUS;
 };
 
+using NodePtr = std::shared_ptr<Node>;
+
+} // namespace Interface
 } // namespace Executor

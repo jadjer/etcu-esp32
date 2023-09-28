@@ -14,29 +14,48 @@
 //
 
 //
-// Created by jadjer on 26.09.23.
+// Created by jadjer on 27.09.23.
 //
 
 #pragma once
 
+#include <cassert>
+#include <cstdint>
 #include <functional>
 
-using ScalerChangeValueCallbackFunction = std::function<void(uint32_t)>;
+namespace accelerator
+{
+
+using ChangeValueCallbackFunction = std::function<void(uint32_t)>;
+
+struct ValueRange
+{
+    uint32_t minimalValue;
+    uint32_t maximalValue;
+
+    ValueRange(uint32_t minimal, uint32_t maximal)
+    {
+        assert(minimal < maximal);
+
+        minimalValue = minimal;
+        maximalValue = maximal;
+    }
+};
 
 /**
- * @class Scaler
+ * @class Formatter
  */
-class Scaler
+class Formatter
 {
 public:
-    explicit Scaler(uint32_t minimalValue = 0, uint32_t maximalValue = 100);
+    Formatter(uint32_t minimalValueFrom, uint32_t maximalValueFrom, uint32_t minimalValueTo, uint32_t maximalValueTo);
 
 public:
     /**
      * Register callback functor
      * @param changeValueCallbackFunction Callable functor
      */
-    void registerChangeValueCallback(ScalerChangeValueCallbackFunction const &changeValueCallbackFunction);
+    void registerChangeValueCallback(ChangeValueCallbackFunction const& changeValueCallbackFunction);
 
 public:
     /**
@@ -45,30 +64,18 @@ public:
      */
     void setValue(uint32_t value);
 
-public:
-    /**
-     * Enable scaling values
-     */
-    void enable();
-
-    /**
-     * Disable scaling values
-     */
-    void disable();
-
 private:
     /**
      * Scaling value and call callback functor
      */
-    void calculateValue();
+    void calculateValue(uint32_t value);
 
 private:
-    ScalerChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
+    ChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
 
 private:
-    float m_scalingFactor;
-    uint32_t m_scalingBase;
-    uint32_t m_currentValue;
-    uint32_t m_maximalValue;
-    uint32_t m_minimalValue;
+    ValueRange m_sourceRange;
+    ValueRange m_targetRange;
 };
+
+} // namespace accelerator

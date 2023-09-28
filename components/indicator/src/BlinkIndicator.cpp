@@ -16,20 +16,30 @@
 // Created by jadjer on 26.09.22.
 //
 
-#include <indicator/BlinkIndicator.hpp>
+#include "indicator/BlinkIndicator.hpp"
 
 #include <driver/gpio.h>
+
+namespace indicator
+{
+
+constexpr uint8_t lowLevel = 0;
+constexpr uint8_t highLevel = 1;
 
 BlinkIndicator::BlinkIndicator(int pinNum) : Indicator(pinNum) {}
 
 BlinkIndicator::~BlinkIndicator() = default;
 
-void BlinkIndicator::blinkTask() {
-    while (_enableFlag) {
-        gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
-        std::this_thread::sleep_for(std::chrono::milliseconds(_taskValue));
+void BlinkIndicator::blinkTask()
+{
+    while (m_enableFlag)
+    {
+        gpio_set_level(static_cast<gpio_num_t>(m_pinNum), highLevel);
+        std::this_thread::sleep_for(std::chrono::milliseconds(m_taskValue));
 
-        gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(_taskValue));
+        gpio_set_level(static_cast<gpio_num_t>(m_pinNum), lowLevel);
+        std::this_thread::sleep_for(std::chrono::milliseconds(m_taskValue));
     }
+}
+
 }

@@ -13,40 +13,43 @@
 // limitations under the License.
 //
 
-//
-// Created by jadjer on 29.08.23.
-//
-
 #pragma once
 
 #include <memory>
 
-#include "ECU/Interface/NetworkConnector.hpp"
+#include "ecu/interface/NetworkConnector.hpp"
 
 /**
- * @namespace ECU::Interface
+ * @namespace ecu::interface
  */
-namespace ECU::Interface
+namespace ecu::interface
 {
 
 /**
  * @interface INetworkConnector
  */
-class KLineNetworkConnector : public NetworkConnector
+class UartNetworkConnector : public NetworkConnector
 {
+
 public:
     /**
-     * Read data from network channel
+     * Read one byte from network channel
      * @return CommandResult struct
      */
-    virtual Bytes readData() = 0;
+    virtual Byte readByte() = 0;
+    /**
+     * Read data from network channel
+     * @param requiredLength Count of bytes
+     * @return
+     */
+    virtual Bytes readBytes(size_t requiredLength) = 0;
     /**
      * Write data to network channel
      * @param data Bytes array
      */
-    virtual void writeData(Bytes const& data) = 0;
+    virtual void write(Bytes const& data) = 0;
 };
 
-using KLineNetworkConnectorPtr = std::unique_ptr<KLineNetworkConnector>;
+using UartNetworkConnectorPtr = std::unique_ptr<UartNetworkConnector>;
 
-} // namespace ECU::Interface
+} // namespace ecu::interface

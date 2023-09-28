@@ -17,9 +17,12 @@
 // Created by jadjer on 25.09.23.
 //
 
-#include "Executor/Interface/Node.hpp"
+#include "executor/interface/Node.hpp"
 
 #include "esp_timer.h"
+
+namespace executor::interface
+{
 
 uint32_t convertFrequencyToPeriod_InUS(double frequency)
 {
@@ -29,17 +32,14 @@ uint32_t convertFrequencyToPeriod_InUS(double frequency)
     return period_InUS;
 }
 
-Executor::Interface::Node::Node(uint32_t frequency) :
-    m_updatePeriod_InUS(convertFrequencyToPeriod_InUS(frequency)), m_lastSpinTime_InUS(0)
-{
-}
+Node::Node(uint32_t frequency) : m_updatePeriod_InUS(convertFrequencyToPeriod_InUS(frequency)), m_lastSpinTime_InUS(0) {}
 
-void Executor::Interface::Node::setFrequency(uint32_t frequency)
+void Node::setFrequency(uint32_t frequency)
 {
     m_updatePeriod_InUS = convertFrequencyToPeriod_InUS(frequency);
 }
 
-void Executor::Interface::Node::spinOnce()
+void Node::spinOnce()
 {
     auto currentTime_InUS = esp_timer_get_time();
     auto diffTime_InUS = (currentTime_InUS - m_lastSpinTime_InUS);
@@ -50,3 +50,5 @@ void Executor::Interface::Node::spinOnce()
         process();
     }
 }
+
+} // namespace executor::interface

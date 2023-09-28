@@ -2,15 +2,15 @@
 // Created by Сергей Матышев on 19.08.23.
 //
 
-#include "ECU/UartNetworkConnector.hpp"
-#include "ECU/exception.hpp"
+#include "ecu/UartNetworkConnector.hpp"
+#include "ecu/exception.hpp"
 #include "Common/Interface/ErrorCode.hpp"
 
 #include <driver/uart.h>
 #include <thread>
 #include <cmath>
 
-namespace ECU
+namespace ecu
 {
 
 void writeDataToUart(Bytes const& data, Byte const numberOfUartPorts)
@@ -28,18 +28,20 @@ void writeDataToUart(Bytes const& data, Byte const numberOfUartPorts)
     if (sendLen != size)
     {
         std::string const errorMessage = "Data write error, abort write to uart operation";
-        throw ECU::UartWriteError(errorMessage, ErrorCode::OperationAborted);
+        throw ecu::UartWriteError(errorMessage, ErrorCode::OperationAborted);
     }
 }
 
-constexpr uint16_t calculateDelayForWaitDataFromUartInMilliseconds(size_t const bytes, uint16_t const baudRate) {
+constexpr uint16_t calculateDelayForWaitDataFromUartInMilliseconds(size_t const bytes, uint16_t const baudRate)
+{
     auto const bytePerBaud = 1;
     auto const bytePerSecond = baudRate * bytePerBaud;
     auto const bytesPerMillisecond = bytePerSecond / 1000;
 
     auto minimalDelay_InUS = 1;
 
-    if (bytes < bytesPerMillisecond) {
+    if (bytes < bytesPerMillisecond)
+    {
         return minimalDelay_InUS;
     }
 
@@ -61,7 +63,7 @@ void UartNetworkConnector::connect()
     if (errorCode != ErrorCode::Enum::Success)
     {
         auto const errorMessage = "Write error";
-        throw ECU::NetworkException(errorMessage, errorCode);
+        throw ecu::NetworkException(errorMessage, errorCode);
     }
 
     /**
@@ -80,14 +82,14 @@ void UartNetworkConnector::connect()
     errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
     if (errorCode != ErrorCode::Enum::Success)
     {
-        throw ECU::NetworkException("Write error", errorCode);
+        throw ecu::NetworkException("Write error", errorCode);
     }
 
     status = uart_set_pin(m_numberOfUartPorts, m_numberOfTxPin, m_numberOfRxPin, -1, -1);
     errorCode = ErrorCode::EspStatusCodeToErrorCode(status);
     if (errorCode != ErrorCode::Enum::Success)
     {
-        throw ECU::NetworkException("Write error", errorCode);
+        throw ecu::NetworkException("Write error", errorCode);
     }
 }
 
@@ -102,9 +104,10 @@ Byte UartNetworkConnector::readByte()
     auto delay_InUS = calculateDelayForWaitDataFromUartInMilliseconds(requiredLength, m_baudRate);
     auto resultLength = uart_read_bytes(m_numberOfUartPorts, &resultData, requiredLength, (delay_InUS / portTICK_PERIOD_MS));
 
-    if (resultLength != requiredLength) {
+    if (resultLength != requiredLength)
+    {
         // TODO Uart read data exception
-//        throw UartReadException();
+        //        throw UartReadException();
     }
 
     return resultData;
@@ -119,7 +122,8 @@ Bytes UartNetworkConnector::readBytes(size_t requiredLength)
     auto delay_InUS = calculateDelayForWaitDataFromUartInMilliseconds(requiredLength, m_baudRate);
     auto resultLength = uart_read_bytes(m_numberOfUartPorts, &resultData, requiredLength, (delay_InUS / portTICK_PERIOD_MS));
 
-    if (resultLength != requiredLength) {
+    if (resultLength != requiredLength)
+    {
         // TODO Uart read data exception
     }
 
@@ -146,7 +150,7 @@ void UartNetworkConnector::write(Bytes const& data)
     if (errorCode != ErrorCode::Enum::Success)
     {
         auto const errorMessage = "Write error";
-        throw ECU::NetworkException(errorMessage, errorCode);
+        throw ecu::NetworkException(errorMessage, errorCode);
     }
 
     writeDataToUart(data, m_numberOfUartPorts);
@@ -161,4 +165,4 @@ size_t UartNetworkConnector::getBufferSize() const
     return bufferSize;
 }
 
-} // namespace ECU
+} // namespace ecu

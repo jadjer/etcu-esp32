@@ -17,9 +17,9 @@
 // Created by jadjer on 15.08.23.
 //
 
-#include "Executor/Executor.hpp"
+#include "executor/Executor.hpp"
 
-namespace Executor
+namespace executor
 {
 
 Executor::Executor() : m_nodes(), m_isEnabled(true) {}
@@ -29,13 +29,13 @@ Executor::~Executor()
     m_isEnabled = false;
 }
 
-void Executor::addNode(Interface::NodePtr const& node)
+void Executor::addNode(interface::NodePtr const& node)
 {
     std::lock_guard lock(m_mutex);
     m_nodes.push_back(node);
 }
 
-void Executor::removeNode(Interface::NodePtr const& node)
+void Executor::removeNode(interface::NodePtr const& node)
 {
     std::lock_guard lock(m_mutex);
     m_nodes.remove(node);

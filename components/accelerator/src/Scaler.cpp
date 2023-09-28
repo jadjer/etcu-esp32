@@ -17,7 +17,12 @@
 // Created by jadjer on 26.09.23.
 //
 
-#include "Scaler.hpp"
+#include "accelerator/Scaler.hpp"
+
+#include <cassert>
+
+namespace accelerator
+{
 
 /**
  * Method for calculating the scaling factor
@@ -47,15 +52,7 @@ constexpr float calculateScalingFactor(uint32_t const minimalValue, uint32_t con
  */
 constexpr uint32_t calculateScaledValue(uint32_t const value, uint32_t const scalingBase, float const scalingFactor)
 {
-    (value - scalingBase * 100) /
     return scalingBase + static_cast<uint32_t>(static_cast<float>(value) * scalingFactor);
-}
-
-uint8_t convertAdcValueToPercentage(uint32_t adcValue, uint32_t maximalValue)
-{
-    auto percentage = adcValue * 100 / maximalValue;
-
-    return percentage;
 }
 
 Scaler::Scaler(uint32_t const minimalValue, uint32_t const maximalValue) :
@@ -65,7 +62,7 @@ Scaler::Scaler(uint32_t const minimalValue, uint32_t const maximalValue) :
     assert(minimalValue < maximalValue);
 }
 
-void Scaler::registerChangeValueCallback(ScalerChangeValueCallbackFunction const& changeValueCallbackFunction)
+void Scaler::registerChangeValueCallback(ChangeValueCallbackFunction const& changeValueCallbackFunction)
 {
     m_changeValueCallbackFunction = changeValueCallbackFunction;
 }
@@ -110,3 +107,5 @@ void Scaler::calculateValue()
         m_changeValueCallbackFunction(scaledValue);
     }
 }
+
+} // namespace accelerator

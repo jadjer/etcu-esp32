@@ -21,6 +21,9 @@
 
 #include "esp_adc/adc_oneshot.h"
 
+namespace accelerator
+{
+
 constexpr adc_unit_t adcUnitNum = ADC_UNIT_1;
 constexpr adc_channel_t adcChannelNum = ADC_CHANNEL_3;
 constexpr adc_atten_t adcAttenuation = ADC_ATTEN_DB_11;
@@ -85,3 +88,5 @@ void Accelerator::process()
 
     m_acceleratorChangeValueCallbackFunction(currentAcceleratorVoltage);
 }
+
+} // namespace accelerator

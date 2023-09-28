@@ -23,18 +23,18 @@
 #include <cstdint>
 
 /**
- * @namespace ECU
+ * @namespace ecu
  */
-namespace ECU
+namespace ecu
 {
 
 using Byte = uint8_t;
 using Bytes = std::vector<Byte>;
 
 /**
- * @namespace Interface
+ * @namespace interface
  */
-namespace Interface
+namespace interface
 {
 
 /**
@@ -50,4 +50,4 @@ public:
 };
 
 } // namespace Interface
-} // namespace ECU::Interface
+} // namespace ECU

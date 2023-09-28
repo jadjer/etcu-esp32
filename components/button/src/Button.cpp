@@ -17,23 +17,25 @@
 // Created by jadjer on 30.08.22.
 //
 
-#include <button/Button.hpp>
+#include "button/Button.hpp"
 
-#include <driver/gpio.h>
+#include "driver/gpio.h"
 
-Button::Button(uint8_t pinNum, bool invertedValue) :
-        m_pinNum(pinNum),
-        m_invertedValue(invertedValue) {
+namespace button
+{
 
+Button::Button(uint8_t numberOfPin, bool invertedValue) : m_invertedValue(invertedValue), m_numberOfPin(numberOfPin)
+{
     gpio_config_t buttonConfig = {
-            .pin_bit_mask = (1ull << m_pinNum),
-            .mode = GPIO_MODE_INPUT,
-            .pull_up_en = GPIO_PULLUP_DISABLE,
-            .pull_down_en = GPIO_PULLDOWN_ENABLE,
-            .intr_type = GPIO_INTR_DISABLE,
+        .pin_bit_mask = (1ull << m_numberOfPin),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_ENABLE,
+        .intr_type = GPIO_INTR_DISABLE,
     };
 
-    if (invertedValue) {
+    if (m_invertedValue)
+    {
         buttonConfig.pull_up_en = GPIO_PULLUP_ENABLE;
         buttonConfig.pull_down_en = GPIO_PULLDOWN_DISABLE;
     }
@@ -41,14 +43,17 @@ Button::Button(uint8_t pinNum, bool invertedValue) :
     gpio_config(&buttonConfig);
 }
 
-Button::~Button() {
-    gpio_isr_handler_remove(static_cast<gpio_num_t>(m_pinNum));
+Button::~Button()
+{
+    gpio_isr_handler_remove(static_cast<gpio_num_t>(m_numberOfPin));
 }
 
-bool Button::isPressed() const {
-    bool value = gpio_get_level(static_cast<gpio_num_t>(m_pinNum));
+bool Button::isPressed() const
+{
+    bool value = gpio_get_level(static_cast<gpio_num_t>(m_numberOfPin));
 
-    if (m_invertedValue) {
+    if (m_invertedValue)
+    {
         value = not value;
     }
 
@@ -56,3 +61,5 @@ bool Button::isPressed() const {
 }
 
 void Button::process() {}
+
+} // namespace button
