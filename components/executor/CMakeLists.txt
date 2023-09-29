@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.17)
 
 set(SOURCES
-        src/Executor.cpp)
+        src/Executor.cpp
+        src/Node.cpp)
 
-set(COMPONENTS)
+set(COMPONENTS
+        esp_timer)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})

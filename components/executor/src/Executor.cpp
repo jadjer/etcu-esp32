@@ -17,37 +17,55 @@
 // Created by jadjer on 15.08.23.
 //
 
-#include "Executor/Executor.hpp"
+#include "executor/Executor.hpp"
 
-namespace Executor
+namespace executor
 {
 
-Executor::Executor() : m_enable(true), m_nodes() {}
+Executor::Executor() : m_nodes(), m_isEnabled(true) {}
 
 Executor::~Executor()
 {
-    m_enable = false;
+    m_isEnabled = false;
 }
 
-void Executor::addNode(Interface::INodePtr node)
+void Executor::addNode(NodePtr const& node)
 {
-    m_nodes.push_back(std::move(node));
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_conditionVariable.wait(lock, []{return true;});
+
+    m_nodes.push_back(node);
+
+    lock.unlock();
+    m_conditionVariable.notify_one();
 }
 
-void Executor::removeNode(Interface::INodePtr const& node)
+void Executor::removeNode(NodePtr const& node)
 {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_conditionVariable.wait(lock);
+
     m_nodes.remove(node);
+
+    lock.unlock();
+    m_conditionVariable.notify_one();
 }
 
-void Executor::spin() const
+void Executor::spin()
 {
-    while (m_enable)
+    while (m_isEnabled)
     {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_conditionVariable.wait(lock);
+
         for (auto const& node : m_nodes)
         {
             node->spinOnce();
         }
+
+        lock.unlock();
+        m_conditionVariable.notify_one();
     }
 }
 
-} // namespace Executor
+} // namespace executor

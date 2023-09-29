@@ -20,15 +20,20 @@
 #pragma once
 
 #include <list>
-#include <Executor/Interface/INode.hpp>
+#include <thread>
+#include <mutex>
+#include <atomic>
+#include <condition_variable>
+
+#include "executor/Node.hpp"
 
 /**
  * @namespace Executor
  */
-namespace Executor
+namespace executor
 {
 
-using Nodes = std::list<Interface::INodePtr>;
+using Nodes = std::list<NodePtr>;
 
 /**
  * @class Executor
@@ -51,22 +56,25 @@ public:
      * Node add to list
      * @param node Node ptr
      */
-    void addNode(Interface::INodePtr node);
+    void addNode(NodePtr const& node);
     /**
      * Node remove from list
      * @param node Node ptr
      */
-    void removeNode(Interface::INodePtr const& node);
+    void removeNode(NodePtr const& node);
 
 public:
     /**
      * Loop executor
      */
-    void spin() const;
+    void spin();
 
 private:
-    bool m_enable;
     Nodes m_nodes;
+    std::mutex m_mutex;
+    std::thread m_thread;
+    std::atomic<bool> m_isEnabled;
+    std::condition_variable m_conditionVariable;
 };
 
-} // namespace Executor
+} // namespace executor
