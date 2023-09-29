@@ -21,31 +21,27 @@
 
 #include <cstdlib>
 
-namespace pin
-{
+#include "gpio/interface/IPin.hpp"
 
-enum PinValue {
-    PIN_LOW_VALUE = 0,
-    PIN_HIGH_VALUE = 1,
-    PIN_VALUE_COUNT = 2
-};
+namespace gpio
+{
 
 /**
  * @class Pin
  * @brief
  */
-class Pin
+class Pin : public interface::IPin
 {
 public:
-    explicit Pin(uint8_t numberOfPin, bool invertedValue = false);
+    explicit Pin(uint8_t numberOfPin, bool reverseValue = false);
 
 public:
-    [[nodiscard]] PinValue getValue() const;
-    void setValue(PinValue value) const;
+    [[nodiscard]] PinLevel getLevel() const override;
+    void setLevel(PinLevel value) override;
 
 private:
-    bool const m_invertedValue;
+    bool const m_reverseValue;
     uint8_t const m_numberOfPin;
 };
 
-} // namespace button
+} // namespace gpio
