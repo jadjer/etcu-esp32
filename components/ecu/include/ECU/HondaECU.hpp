@@ -21,7 +21,7 @@
 
 #include <shared_mutex>
 
-#include "Executor/Interface/INode.hpp"
+#include "executor/Node.hpp"
 #include "ECU/Interface/KLineNetworkConnector.hpp"
 
 /**
@@ -33,7 +33,7 @@ namespace ECU
 /**
  * @class HondaECU
  */
-class HondaECU : public Executor::Interface::INode
+class HondaECU : public executor::Node
 {
 public:
     HondaECU(Interface::KLineNetworkConnectorPtr networkConnectorPtr);
@@ -44,7 +44,7 @@ public:
     [[nodiscard]] uint8_t getThrottlePosition_InPercent() const;
 
 protected:
-    void spinOnce() override;
+    void process() override;
 
 private:
     void updateAllSensorsData();
