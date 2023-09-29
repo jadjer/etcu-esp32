@@ -14,45 +14,36 @@
 //
 
 //
-// Created by jadjer on 15.08.23.
+// Created by jadjer on 29.09.23.
 //
 
 #pragma once
 
-#include <memory>
-
-/**
- * @namespace Executor
- */
-namespace Executor
+namespace gpio
 {
 
-class Executor;
-
-/**
- * @namespace Executor::Interface
- */
-namespace Interface
+enum PinLevel
 {
-/**
- * @class INode
- * Interface for node object
- */
-class INode
-{
-    friend Executor;
-
-public:
-    /**
-     * Virtual default destructor
-     */
-    virtual ~INode() = default;
-
-protected:
-    virtual void spinOnce() = 0;
+    PIN_LEVEL_LOW = 0,
+    PIN_LEVEL_HIGH = 1
 };
 
-using INodePtr = std::unique_ptr<INode>;
+namespace interface
+{
 
-} // namespace Interface
-} // namespace Executor
+class IPin
+{
+public:
+    virtual ~IPin() = default;
+
+public:
+    [[nodiscard]] virtual PinLevel getLevel() const = 0;
+    virtual void setLevel(PinLevel value) = 0;
+};
+
+} // namespace interface
+} // namespace gpio
+
+#include <memory>
+
+using IPinPtr = std::unique_ptr<gpio::interface::IPin>;
