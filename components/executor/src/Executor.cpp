@@ -32,23 +32,21 @@ Executor::~Executor()
 void Executor::addNode(NodePtr const& node)
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    m_conditionVariable.wait(lock, []{return true;});
 
     m_nodes.push_back(node);
 
     lock.unlock();
-    m_conditionVariable.notify_one();
+    m_conditionVariable.notify_all();
 }
 
 void Executor::removeNode(NodePtr const& node)
 {
     std::unique_lock<std::mutex> lock(m_mutex);
-    m_conditionVariable.wait(lock);
 
     m_nodes.remove(node);
 
     lock.unlock();
-    m_conditionVariable.notify_one();
+    m_conditionVariable.notify_all();
 }
 
 void Executor::spin()
@@ -64,7 +62,6 @@ void Executor::spin()
         }
 
         lock.unlock();
-        m_conditionVariable.notify_one();
     }
 }
 
