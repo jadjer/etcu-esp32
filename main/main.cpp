@@ -27,6 +27,7 @@
 #include "ECU/UartNetworkConnector.hpp"
 #include "ECU/KLineNetworkConnector.hpp"
 
+#include "ModeButton.hpp"
 #include "Controller.hpp"
 #include "SetupButton.hpp"
 
@@ -61,6 +62,10 @@ requires std::is_arithmetic_v<T> T averageFilter(T const value, float const thre
 
     return value;
 }
+
+constexpr uint32_t const motorDefaultSpeed = (32 * 200 * 1000) / 60;
+constexpr uint32_t const motorDefaultAcceleration = motorDefaultSpeed;
+constexpr uint32_t const motorDefaultDeceleration = motorDefaultSpeed * 2;
 
 constexpr uint32_t const acceleratorMinimalValue = 840;
 constexpr uint32_t const acceleratorMaximalValue = 2570;
@@ -123,22 +128,58 @@ extern "C" void app_main(void)
             std::cout << std::endl;
         });
 
-    auto setupButtonPtr = std::make_shared<SetupButton>(15, false);
+    auto setupButtonPtr = std::make_shared<SetupButton>();
     setupButtonPtr->registerChangeValueCallback(
-        [&](SetupButtonState setupButtonState)
+        [&](SetupButtonState const setupButtonState)
         {
             if (setupButtonState == SETUP_BUTTON_HELD)
             {
                 scalerPtr->enable();
                 controllerPtr->enable();
-                indicatorPtr->enable();
             }
             if (setupButtonState == SETUP_BUTTON_PRESSED)
             {
                 scalerPtr->disable();
                 controllerPtr->disable();
-                indicatorPtr->disable();
             }
+        });
+
+    auto modeButtonPtr = std::make_shared<ModeButton>();
+    modeButtonPtr->registerChangeValueCallback(
+        [&](ModeButtonState const modeButtonState)
+        {
+            float accelerationRate;
+
+            switch (modeButtonState)
+            {
+            case MODE_BUTTON_STATE_MODE_1:
+            {
+                accelerationRate = 2.0;
+                std::cout << std::endl << "Motor mode 1" << std::endl;
+
+                break;
+            }
+            case MODE_BUTTON_STATE_MODE_2:
+            {
+                accelerationRate = 1.0;
+                std::cout << std::endl << "Motor mode 2" << std::endl;
+
+                break;
+            }
+            default:
+            case MODE_BUTTON_STATE_MODE_3:
+            {
+                accelerationRate = 0.5;
+                std::cout << std::endl << "Motor mode 3" << std::endl;
+
+                break;
+            }
+            }
+
+            auto acceleration = motorDefaultAcceleration * accelerationRate;
+
+            motorDriverPtr->setAccelerationInStepsPerSecondPerSecond(acceleration);
+            motorDriverPtr->setDecelerationInStepsPerSecondPerSecond(acceleration);
         });
 
     auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);
