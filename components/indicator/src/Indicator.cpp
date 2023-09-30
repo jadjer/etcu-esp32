@@ -12,51 +12,62 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <indicator/Indicator.hpp>
+#include "indicator/Indicator.hpp"
 
-#include <driver/gpio.h>
+#include "gpio/Pin.hpp"
 
-Indicator::Indicator(int pinNum) :
-        _enableFlag(true),
-        _pinNum(pinNum),
-        _taskValue(0) {
+namespace indicator
+{
 
-    gpio_config_t buttonConfig = {
-            .pin_bit_mask = (1ull << _pinNum),
-            .mode = GPIO_MODE_OUTPUT,
-            .pull_up_en = GPIO_PULLUP_DISABLE,
-            .pull_down_en = GPIO_PULLDOWN_ENABLE,
-            .intr_type = GPIO_INTR_DISABLE,
-    };
-    gpio_config(&buttonConfig);
+Indicator::Indicator(uint8_t pinNum) :
+    m_enableFlag(true), m_taskValue(0), m_indicatorPin(std::make_unique<gpio::Pin>(pinNum, gpio::PIN_LEVEL_LOW))
+{
 }
 
-Indicator::~Indicator() {
-    _enableFlag = false;
-    if (_thread.joinable()) {
-        _thread.join();
+Indicator::~Indicator()
+{
+    m_enableFlag = false;
+    if (m_thread.joinable())
+    {
+        m_thread.join();
     }
 }
 
-void Indicator::enable() {
-    _enableFlag = false;
-    if (_thread.joinable()) { _thread.join(); }
+void Indicator::enable()
+{
+    m_enableFlag = false;
+    if (m_thread.joinable())
+    {
+        m_thread.join();
+    }
 
-    gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
+    m_indicatorPin->setLevel(gpio::PIN_LEVEL_HIGH);
 }
 
-void Indicator::disable() {
-    _enableFlag = false;
-    if (_thread.joinable()) { _thread.join(); }
+void Indicator::disable()
+{
+    m_enableFlag = false;
+    if (m_thread.joinable())
+    {
+        m_thread.join();
+    }
 
-    gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
+    m_indicatorPin->setLevel(gpio::PIN_LEVEL_LOW);
 }
 
-void Indicator::blink(int value) {
-    _taskValue = value;
+void Indicator::blink(int value)
+{
+    m_taskValue = value;
 
-    if (_enableFlag) { return; }
+    if (m_enableFlag)
+    {
+        return;
+    }
 
-    _enableFlag = true;
-    _thread = std::thread(&Indicator::blinkTask, this);
+    m_enableFlag = true;
+    m_thread = std::thread(&Indicator::blinkTask, this);
 }
+
+void Indicator::process() {}
+
+} // namespace indicator

@@ -16,9 +16,17 @@
 // Created by jadjer on 26.09.22.
 //
 
-#include <indicator/ErrorCodeIndicator.hpp>
+#include "indicator/ErrorCodeIndicator.hpp"
 
-#include <driver/gpio.h>
+#include "driver/gpio.h"
+
+namespace indicator
+{
+
+constexpr uint32_t longLight_InMS = 500;
+constexpr uint32_t shortLight_InMS = 250;
+constexpr uint32_t delayBetweenDigits_InMS = 250;
+constexpr uint32_t delayBetweenCodes_InMS = 3000;
 
 ErrorCodeIndicator::ErrorCodeIndicator(int pinNum) : Indicator(pinNum) {}
 
@@ -28,27 +36,35 @@ void ErrorCodeIndicator::enable() {}
 
 void ErrorCodeIndicator::disable() {}
 
-void ErrorCodeIndicator::blinkTask() {
-    while (_enableFlag) {
-        uint8_t firstDigit = _taskValue / 10;
-        uint8_t secondDigit = _taskValue % 10;
+void ErrorCodeIndicator::blinkTask()
+{
+    while (m_enableFlag)
+    {
+        uint8_t firstDigit = m_taskValue / 10;
+        uint8_t secondDigit = m_taskValue % 10;
 
-        for (size_t i = 0; i < firstDigit; i++) {
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        for (size_t i = 0; i < firstDigit; i++)
+        {
+            m_indicatorPin->setLevel(gpio::PIN_LEVEL_HIGH);
+            std::this_thread::sleep_for(std::chrono::milliseconds(longLight_InMS));
 
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(500));
+            m_indicatorPin->setLevel(gpio::PIN_LEVEL_LOW);
+            std::this_thread::sleep_for(std::chrono::milliseconds(longLight_InMS));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-        for (size_t i = 0; i < secondDigit; i++) {
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayBetweenDigits_InMS));
 
-            gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
-            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        for (size_t i = 0; i < secondDigit; i++)
+        {
+            m_indicatorPin->setLevel(gpio::PIN_LEVEL_HIGH);
+            std::this_thread::sleep_for(std::chrono::milliseconds(shortLight_InMS));
+
+            m_indicatorPin->setLevel(gpio::PIN_LEVEL_LOW);
+            std::this_thread::sleep_for(std::chrono::milliseconds(shortLight_InMS));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(delayBetweenCodes_InMS));
     }
 }
+
+} // namespace indicator

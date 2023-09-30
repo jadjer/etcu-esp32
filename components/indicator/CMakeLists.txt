@@ -6,6 +6,7 @@ set(SOURCES
         src/ErrorCodeIndicator.cpp)
 
 set(COMPONENTS
-        driver)
+        gpio
+        executor)
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS include REQUIRES ${COMPONENTS})
