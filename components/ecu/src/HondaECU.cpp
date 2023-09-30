@@ -61,7 +61,7 @@ uint8_t HondaECU::getThrottlePosition_InPercent() const
     return m_throttlePosition_InPercent;
 }
 
-void HondaECU::spinOnce() {
+void HondaECU::process() {
     updateAllSensorsData();
 }
 
