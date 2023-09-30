@@ -1,0 +1,3 @@
+[submodule "components/executor"]
+	path = components/executor
+	url = https://github.com/jadjer/esp-executor.git
