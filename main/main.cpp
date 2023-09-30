@@ -15,7 +15,7 @@
 
 #include <cmath>
 
-#include "Executor/Executor.hpp"
+#include "executor/Executor.hpp"
 #include "motor/MotorDriver.hpp"
 #include "accelerator/Accelerator.hpp"
 #include "indicator/BlinkIndicator.hpp"
@@ -113,9 +113,9 @@ extern "C" void app_main(void) {
 
     auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);
     auto kLine = std::make_unique<ECU::KLineNetworkConnector>(1, std::move(uart));
-    auto ecu = std::make_unique<ECU::HondaECU>(std::move(kLine));
+    auto ecu = std::make_shared<ECU::HondaECU>(std::move(kLine));
 
-    auto executorPtr = std::make_unique<Executor::Executor>();
-    executorPtr->addNode(std::move(ecu));
+    auto executorPtr = std::make_unique<executor::Executor>();
+    executorPtr->addNode(ecu);
     executorPtr->spin();
 }
