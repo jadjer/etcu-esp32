@@ -19,26 +19,29 @@
 
 #pragma once
 
-#include <cstdlib>
 #include <functional>
+
+#include "executor/Node.hpp"
+
+namespace accelerator
+{
 
 using AcceleratorChangeValueCallbackFunction = std::function<void(uint32_t)>;
 
-class Accelerator {
+class Accelerator : public executor::Node
+{
 public:
     Accelerator();
-    ~Accelerator();
+    ~Accelerator() override;
 
 public:
-    void registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const& acceleratorChangeValueCallbackFunction);
+    void registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const& changeValueCallbackFunction);
 
-public:
-    void process();
-
-private:
-    AcceleratorChangeValueCallbackFunction _acceleratorChangeValueCallbackFunction = nullptr;
+protected:
+    void process() override;
 
 private:
-    uint32_t _minimalValue;
-    uint32_t _lastStepTime_InUS;
+    AcceleratorChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
 };
+
+} // namespace accelerator

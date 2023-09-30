@@ -17,51 +17,79 @@
 // Created by jadjer on 15.08.23.
 //
 
-#include <accelerator/Accelerator.hpp>
-#include <driver/adc.h>
-#include <esp_timer.h>
+#include "accelerator/Accelerator.hpp"
 
-Accelerator::Accelerator() {
-    ESP_ERROR_CHECK(adc1_config_width(ADC_WIDTH_BIT_12));
-    ESP_ERROR_CHECK(adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11));
+#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
 
-    auto rawValue = adc1_get_raw(ADC1_CHANNEL_0);
-    if (rawValue < 0) {
-        rawValue = 0;
-    }
+namespace accelerator
+{
 
-    _minimalValue = rawValue;
-    _lastStepTime_InUS = esp_timer_get_time();
+constexpr adc_unit_t adcUnitNum = ADC_UNIT_1;
+constexpr adc_channel_t adcChannelNum = ADC_CHANNEL_3;
+constexpr adc_atten_t adcAttenuation = ADC_ATTEN_DB_11;
+constexpr adc_bitwidth_t adcBitWidth = ADC_BITWIDTH_12;
+
+adc_oneshot_unit_handle_t adcHandle = nullptr;
+adc_cali_handle_t adcCalibrationHandle = nullptr;
+
+uint32_t getVoltageFromAdc()
+{
+    int rawValue = 0;
+    int voltage = 0;
+
+    ESP_ERROR_CHECK(adc_oneshot_read(adcHandle, adcChannelNum, &rawValue));
+    ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adcCalibrationHandle, rawValue, &voltage));
+
+    return voltage;
 }
 
-Accelerator::~Accelerator() = default;
+Accelerator::Accelerator()
+{
+    adc_oneshot_unit_init_cfg_t unitConfiguration = {
+        .unit_id = adcUnitNum,
+        .clk_src = ADC_RTC_CLK_SRC_DEFAULT,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&unitConfiguration, &adcHandle));
 
-void Accelerator::registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const &acceleratorChangeValueCallbackFunction) {
-    _acceleratorChangeValueCallbackFunction = acceleratorChangeValueCallbackFunction;
+    adc_oneshot_chan_cfg_t channelConfiguration = {
+        .atten = adcAttenuation,
+        .bitwidth = adcBitWidth,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adcHandle, adcChannelNum, &channelConfiguration));
+
+    adc_cali_curve_fitting_config_t calibrationConfig = {
+        .unit_id = adcUnitNum,
+        .chan = adcChannelNum,
+        .atten = adcAttenuation,
+        .bitwidth = adcBitWidth,
+    };
+    ESP_ERROR_CHECK(adc_cali_create_scheme_curve_fitting(&calibrationConfig, &adcCalibrationHandle));
 }
 
-void Accelerator::process() {
-    auto currentTime_InUS = esp_timer_get_time();
-    auto diffTime_InUS = currentTime_InUS - _lastStepTime_InUS;
-    if (diffTime_InUS < 10000) {
+Accelerator::~Accelerator()
+{
+    ESP_ERROR_CHECK(adc_cali_delete_scheme_curve_fitting(adcCalibrationHandle));
+    ESP_ERROR_CHECK(adc_oneshot_del_unit(adcHandle));
+}
+
+void Accelerator::registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const& changeValueCallbackFunction)
+{
+    m_changeValueCallbackFunction = changeValueCallbackFunction;
+}
+
+void Accelerator::process()
+{
+    if (not m_changeValueCallbackFunction)
+    {
         return;
     }
-    _lastStepTime_InUS = currentTime_InUS;
 
-    auto rawValue = adc1_get_raw(ADC1_CHANNEL_0);
-    if (rawValue < 0) {
-        rawValue = 0;
-    }
+    auto currentAcceleratorVoltage = getVoltageFromAdc();
 
-    if (rawValue < _minimalValue) {
-        _minimalValue = rawValue;
-    }
-
-    auto currentValue = rawValue - _minimalValue;
-
-    if (_acceleratorChangeValueCallbackFunction) {
-        _acceleratorChangeValueCallbackFunction(currentValue);
-    }
+    m_changeValueCallbackFunction(currentAcceleratorVoltage);
 }
 
-
+} // namespace accelerator

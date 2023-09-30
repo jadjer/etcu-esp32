@@ -23,7 +23,7 @@ namespace accelerator
 {
 
 /**
- * Function for scaling values by scaling base and scaling factor
+ * Function to format from one value range to other value range
  *
  * scaled_x = scaling_base + (scaling_factor * x)
  *
