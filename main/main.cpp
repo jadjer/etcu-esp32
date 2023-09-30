@@ -18,7 +18,7 @@
 #include <iostream>
 
 #include "executor/Executor.hpp"
-#include "motor/MotorDriver.hpp"
+#include "motor/Motor.hpp"
 #include "accelerator/Scaler.hpp"
 #include "accelerator/Formatter.hpp"
 #include "accelerator/Accelerator.hpp"
@@ -27,6 +27,7 @@
 #include "ECU/UartNetworkConnector.hpp"
 #include "ECU/KLineNetworkConnector.hpp"
 
+#include "Drv8825.hpp"
 #include "ModeButton.hpp"
 #include "Controller.hpp"
 #include "SetupButton.hpp"
@@ -74,24 +75,25 @@ constexpr uint8_t const throttlePositionMaximalValue = 100;
 
 extern "C" void app_main(void)
 {
-    auto indicatorPtr = std::make_shared<BlinkIndicator>(2);
+    auto indicatorPtr = std::make_shared<indicator::BlinkIndicator>(2);
 
-    auto motorDriverPtr = std::make_shared<MotorDriver>(13, 12);
-    motorDriverPtr->setAccelerationInStepsPerSecondPerSecond(200000);
-    motorDriverPtr->setDecelerationInStepsPerSecondPerSecond(400000);
-    motorDriverPtr->setSpeedInStepsPerSecond(100000);
+    auto motorDriverPtr = std::make_unique<DRV8825>();
+    motorDriverPtr->setMicroSteps(motor::driver::MOTOR_32_MICRO_STEPS);
+
+    auto motorPtr = std::make_shared<motor::Motor>(std::move(motorDriverPtr));
+    motorPtr->setFrequency(1000000);
+    motorPtr->setSpeedInStepsPerSecond(motorDefaultSpeed);
+    motorPtr->setAccelerationInStepsPerSecondPerSecond(motorDefaultAcceleration);
+    motorPtr->setDecelerationInStepsPerSecondPerSecond(motorDefaultDeceleration);
 
     auto controllerPtr = std::make_shared<Controller>();
     controllerPtr->registerChangeValueCallback(
-        [&motorDriverPtr](int32_t controlValue)
+        [&](uint32_t const acceleratorValue)
         {
-            auto diff_InSteps = std::fabs(motorDriverPtr->getTargetPositionInSteps() - controlValue);
-            if (diff_InSteps < 16)
-            {
-                return;
-            }
+            auto steps = static_cast<int32_t>(acceleratorValue * 115);
+            std::cout << "| Motor: " << steps << " ";
 
-            motorDriverPtr->setTargetPositionInSteps(controlValue);
+            motorPtr->setTargetPositionInSteps(steps);
         });
 
     auto scalerPtr = std::make_shared<accelerator::Scaler>(throttlePositionMinimalValue, throttlePositionMaximalValue);
@@ -178,8 +180,8 @@ extern "C" void app_main(void)
 
             auto acceleration = motorDefaultAcceleration * accelerationRate;
 
-            motorDriverPtr->setAccelerationInStepsPerSecondPerSecond(acceleration);
-            motorDriverPtr->setDecelerationInStepsPerSecondPerSecond(acceleration);
+            motorPtr->setAccelerationInStepsPerSecondPerSecond(acceleration);
+            motorPtr->setDecelerationInStepsPerSecondPerSecond(acceleration);
         });
 
     auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);

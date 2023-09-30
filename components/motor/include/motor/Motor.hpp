@@ -15,27 +15,29 @@
 
 #pragma once
 
-#include <cstdlib>
+#include "executor/Node.hpp"
+#include "gpio/interface/IPin.hpp"
+#include "motor/driver/interface/IDriver.hpp"
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
+namespace motor
+{
 
 /**
  * @class MotorDriver
  */
-class MotorDriver {
+class Motor : public executor::Node
+{
 public:
     /**
      * Connect the stepper object to the IO pins
-     * @param directionPin IO pin number for the direction signal
-     * @param stepPin IO pin number for the Step signal
+     * @param driver Motor driver implementation
      */
-    MotorDriver(uint8_t directionPin, uint8_t stepPin);
+    explicit Motor(IDriverPtr driver);
 
     /**
      * Destructor
      */
-    ~MotorDriver();
+    ~Motor() override = default;
 
 public:
     /**
@@ -106,7 +108,7 @@ public:
      * Exit:  velocity speed in steps per second returned, signed
      * @return
      */
-    [[nodiscard]] double getCurrentVelocityInStepsPerSecond() const;
+    [[nodiscard]] float getCurrentVelocityInStepsPerSecond() const;
 
     /**
      * get the current position of the motor in steps, this functions is updated
@@ -137,26 +139,8 @@ public:
      */
     [[nodiscard]] bool isMotionComplete() const;
 
-public:
-    /**
-     * Start as service
-     * @param coreNumber Number of cores
-     * @return
-     */
-    bool startAsService(uint8_t coreNumber = 1);
-
-    /**
-     * Stop service
-     */
-    void stopService();
-
-public:
-    /**
-     * if it is time, move one step
-     * Exit:  true returned if movement complete, false returned not a final target position yet
-     * @return
-     */
-    void process();
+protected:
+    void process() override;
 
 private:
     /**
@@ -172,15 +156,6 @@ private:
     [[nodiscard]] uint32_t calcDecelerationDistanceInSteps() const;
 
 private:
-    /**
-     *
-     * @param parameter
-     */
-    [[noreturn]] static void taskRunner(void *parameter);
-
-private:
-    uint8_t _stepPin;
-    uint8_t _directionPin;
     int8_t _directionOfMotion;
     float _nextStepPeriod_InUS;
     uint64_t _lastStepTime_InUS;
@@ -195,5 +170,7 @@ private:
     float _minimumPeriodForAStoppedMotion;
 
 private:
-    TaskHandle_t _handle = nullptr;
+    IDriverPtr m_driver;
 };
+
+} // namespace motor
