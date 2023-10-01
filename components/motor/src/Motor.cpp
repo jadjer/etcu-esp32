@@ -120,14 +120,15 @@ int64_t Motor::getTargetPositionInSteps() const
 
 bool Motor::isMotionComplete() const
 {
-    if (_directionOfMotion == 0 and (_currentPosition_InSteps == _targetPosition_InSteps))
-    {
-        return true;
-    }
-    else
-    {
+    if (_directionOfMotion != 0) {
         return false;
     }
+
+    if (_currentPosition_InSteps ==! _targetPosition_InSteps) {
+        return false;
+    }
+
+    return true;
 }
 
 void Motor::process()
@@ -165,8 +166,8 @@ void Motor::process()
 
     // determine how much time has elapsed since the last step (Note 1: this method
     // works even if the time has wrapped. Note 2: all variables must be unsigned)
-    uint64_t currentTime_InUS = esp_timer_get_time();
-    uint64_t periodSinceLastStep_InUS = currentTime_InUS - _lastStepTime_InUS;
+    uint64_t const currentTime_InUS = esp_timer_get_time();
+    uint64_t const periodSinceLastStep_InUS = currentTime_InUS - _lastStepTime_InUS;
     // if it is not time for the next step, return
     if (periodSinceLastStep_InUS < _nextStepPeriod_InUS)
     {
@@ -212,7 +213,7 @@ uint32_t Motor::determinePeriodOfNextStep()
     bool targetInPositiveDirectionFlag = false;
     bool targetInNegativeDirectionFlag = false;
 
-    auto distanceToTarget_Signed = _targetPosition_InSteps - _currentPosition_InSteps;
+    auto const distanceToTarget_Signed = _targetPosition_InSteps - _currentPosition_InSteps;
     if (distanceToTarget_Signed >= 0)
     {
         distanceToTarget_Unsigned = distanceToTarget_Signed;
@@ -224,8 +225,8 @@ uint32_t Motor::determinePeriodOfNextStep()
         targetInNegativeDirectionFlag = true;
     }
 
-    auto currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
-    auto decelerationDistance_InSteps = calcDecelerationDistanceInSteps();
+    auto const currentStepPeriodSquared = _currentStepPeriod_InUS * _currentStepPeriod_InUS;
+    auto const decelerationDistance_InSteps = calcDecelerationDistanceInSteps();
 
     if (_directionOfMotion == 1) {
         if (targetInPositiveDirectionFlag) {
