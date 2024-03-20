@@ -14,6 +14,8 @@
 //
 
 #include <cmath>
+#include <vector>
+#include <cstdint>
 
 #include "executor/Executor.hpp"
 #include "motor/MotorDriver.hpp"
@@ -26,7 +28,6 @@
 #include "Controller.hpp"
 #include "SetupButton.hpp"
 
-#include <vector>
 
 
 int64_t averageFilter(int64_t const value, float const threshold) {
