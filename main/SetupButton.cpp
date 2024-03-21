@@ -21,62 +21,107 @@
 
 #include <esp_timer.h>
 
-SetupButton::SetupButton(uint8_t pinNum, bool invertedValue) :
-        Button(pinNum, invertedValue),
-        _isHeld(false),
-        _isPressed(false),
-        _pressTime_InUS(esp_timer_get_time()),
-        _releaseTime_InUS(esp_timer_get_time()) {
+#include "gpio/Pin.hpp"
 
+constexpr uint8_t numberOfSetupButtonPin = 5;
+
+constexpr float threshold_InSeconds = 0.1;
+constexpr float holdTimeDelay_InSeconds = 1.0;
+
+SetupButton::SetupButton() :
+    m_isHeld(false), m_isPressed(false), m_pressTime_InUS(esp_timer_get_time()), m_releaseTime_InUS(esp_timer_get_time()),
+    m_setupButton(std::make_unique<gpio::Pin>(numberOfSetupButtonPin, gpio::PIN_LEVEL_HIGH))
+{
     assert(SETUP_BUTTON_COUNT == 3);
 }
 
-SetupButton::~SetupButton() = default;
-
-void SetupButton::registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const &setupButtonChangeStateCallbackFunction) {
-    _setupButtonChangeStateCallbackFunction = setupButtonChangeStateCallbackFunction;
+void SetupButton::registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const& changeStateCallbackFunction)
+{
+    m_changeStateCallbackFunction = changeStateCallbackFunction;
 }
 
-void SetupButton::process() {
-    auto buttonState = Button::isPressed();
+void SetupButton::process()
+{
+    auto buttonState = m_setupButton->getLevel();
+    switch (buttonState)
+    {
+    case gpio::PIN_LEVEL_LOW:
+        return processLowLevel();
+
+    case gpio::PIN_LEVEL_HIGH:
+        return processHighLevel();
+    }
+}
+
+void SetupButton::processLowLevel()
+{
+    if (not m_isPressed)
+    {
+        return;
+    }
+
     auto currentTime_InUS = esp_timer_get_time();
 
-    if (buttonState == 0 and _isPressed) {
-        _releaseTime_InUS = currentTime_InUS;
-        _isHeld = false;
-        _isPressed = false;
+    m_releaseTime_InUS = currentTime_InUS;
+    m_isHeld = false;
+    m_isPressed = false;
 
-        if (_setupButtonChangeStateCallbackFunction) {
-            _setupButtonChangeStateCallbackFunction(SETUP_BUTTON_RELEASED);
-        }
+    if (m_changeStateCallbackFunction)
+    {
+        m_changeStateCallbackFunction(SETUP_BUTTON_RELEASED);
+    }
+}
+
+void SetupButton::processHighLevel()
+{
+    if (m_isHeld)
+    {
+        return;
     }
 
-    if (buttonState == 1) {
-        auto idleTime_InUS = currentTime_InUS - _releaseTime_InUS;
-        auto idleTime_InSeconds = static_cast<float>(idleTime_InUS) / 1e6;
-        if (idleTime_InSeconds < 0.1) {
-            return;
-        }
+    auto currentTime_InUS = esp_timer_get_time();
+
+    auto idleTime_InUS = currentTime_InUS - m_releaseTime_InUS;
+    auto idleTime_InSeconds = static_cast<float>(idleTime_InUS) / 1000000;
+    if (idleTime_InSeconds < threshold_InSeconds)
+    {
+        return;
     }
 
-    if (buttonState == 1 and not _isPressed and not _isHeld) {
-        _pressTime_InUS = currentTime_InUS;
-        _isPressed = true;
-
-        if (_setupButtonChangeStateCallbackFunction) {
-            _setupButtonChangeStateCallbackFunction(SETUP_BUTTON_PRESSED);
-        }
+    if (m_isPressed)
+    {
+        return processHighLevelWhenPressed();
     }
 
-    if (buttonState == 1 and _isPressed and not _isHeld) {
-        auto holdTime_InUS = currentTime_InUS - _pressTime_InUS;
-        auto holdTime_InSeconds = static_cast<float>(holdTime_InUS) / 1e6;
-        if (holdTime_InSeconds > 1) {
-            _isHeld = true;
+    return processHighLevelWhenUnpressed();
+}
 
-            if (_setupButtonChangeStateCallbackFunction) {
-                _setupButtonChangeStateCallbackFunction(SETUP_BUTTON_HELD);
-            }
+void SetupButton::processHighLevelWhenPressed()
+{
+    auto currentTime_InUS = esp_timer_get_time();
+
+    auto holdTime_InUS = currentTime_InUS - m_pressTime_InUS;
+    auto holdTime_InSeconds = static_cast<float>(holdTime_InUS) / 1e6;
+    if (holdTime_InSeconds > holdTimeDelay_InSeconds)
+    {
+        m_isHeld = true;
+
+        if (m_changeStateCallbackFunction)
+        {
+            m_changeStateCallbackFunction(SETUP_BUTTON_HELD);
         }
+    }
+}
+
+void SetupButton::processHighLevelWhenUnpressed()
+{
+    auto currentTime_InUS = esp_timer_get_time();
+
+    m_pressTime_InUS = currentTime_InUS;
+    m_isPressed = true;
+
+    if (m_changeStateCallbackFunction)
+    {
+        m_changeStateCallbackFunction(SETUP_BUTTON_PRESSED);
     }
 }

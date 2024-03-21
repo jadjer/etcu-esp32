@@ -1,12 +1,9 @@
-[submodule "components/esp32-stepper-motor"]
-	path = components/esp32-stepper-motor
-	url = https://github.com/jadjer/esp32-stepper-motor.git
-	branch = dev
-[submodule "components/esp32-gpio"]
-	path = components/esp32-gpio
-	url = https://github.com/jadjer/esp32-gpio.git
-	branch = dev
-[submodule "components/esp32-executor"]
-	path = components/esp32-executor
+[submodule "components/executor"]
+	path = components/executor
 	url = https://github.com/jadjer/esp32-executor.git
-	branch = dev
+[submodule "components/gpio"]
+	path = components/gpio
+	url = https://github.com/jadjer/esp32-gpio.git
+[submodule "components/motor"]
+	path = components/motor
+	url = https://github.com/jadjer/esp32-stepper-motor.git

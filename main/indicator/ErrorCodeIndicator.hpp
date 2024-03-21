@@ -14,31 +14,31 @@
 //
 
 //
-// Created by jadjer on 15.08.23.
+// Created by jadjer on 26.09.22.
 //
 
 #pragma once
 
-#include <cstdlib>
-#include <functional>
+#include "indicator/Indicator.hpp"
 
-using AcceleratorChangeValueCallbackFunction = std::function<void(uint32_t)>;
+namespace indicator
+{
 
-class Accelerator {
+/**
+ * @brief
+ */
+class ErrorCodeIndicator : public Indicator
+{
 public:
-    Accelerator();
-    ~Accelerator();
+    explicit ErrorCodeIndicator(int pinNum);
+    ~ErrorCodeIndicator() override;
 
 public:
-    void registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const& acceleratorChangeValueCallbackFunction);
+    void enable() override;
+    void disable() override;
 
-public:
-    void process();
-
-private:
-    AcceleratorChangeValueCallbackFunction _acceleratorChangeValueCallbackFunction = nullptr;
-
-private:
-    uint32_t _minimalValue;
-    uint32_t _lastStepTime_InUS;
+protected:
+    void blinkTask() override;
 };
+
+} // namespace indicator

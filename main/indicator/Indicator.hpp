@@ -21,14 +21,21 @@
 
 #include <thread>
 
+#include "executor/Node.hpp"
+#include "gpio/interface/IPin.hpp"
+
+namespace indicator
+{
+
 /**
  * @brief
  */
-class Indicator {
+class Indicator : public executor::Node
+{
 public:
-    explicit Indicator(int pinNum);
+    explicit Indicator(uint8_t pinNum);
 
-    virtual ~Indicator();
+    ~Indicator() override;
 
 public:
     /**
@@ -48,10 +55,10 @@ public:
     virtual void blink(int delayMs);
 
 protected:
-    bool _enableFlag;
-    uint8_t _pinNum;
-    uint8_t _taskValue;
-    std::thread _thread;
+    bool m_enableFlag;
+    uint8_t m_taskValue;
+    std::thread m_thread;
+    std::unique_ptr<gpio::interface::IPin> m_indicatorPin;
 
 protected:
     /**
@@ -59,4 +66,8 @@ protected:
      * @param delayMs
      */
     virtual void blinkTask() = 0;
+
+    void process() override;
 };
+
+} // namespace indicator
