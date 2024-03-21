@@ -23,25 +23,23 @@
 
 #include "executor/Node.hpp"
 
-namespace accelerator
-{
+namespace accelerator {
 
 using AcceleratorChangeValueCallbackFunction = std::function<void(uint32_t)>;
 
-class Accelerator : public executor::Node
-{
+class Accelerator : public executor::Node {
 public:
-    Accelerator();
-    ~Accelerator() override;
+  Accelerator();
+  ~Accelerator() override;
 
 public:
-    void registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const& changeValueCallbackFunction);
+  void registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const &changeValueCallbackFunction);
 
 protected:
-    void process() override;
+  void process() override;
 
 private:
-    AcceleratorChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
+  AcceleratorChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
 };
 
 } // namespace accelerator
