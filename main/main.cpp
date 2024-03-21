@@ -16,6 +16,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <cstdint>
 
 #include "executor/Executor.hpp"
 #include "motor/Motor.hpp"
