@@ -1,4 +1,4 @@
-// Copyright 2022 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,25 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 //
 // Created by jadjer on 26.09.22.
 //
 
-#include <indicator/BlinkIndicator.hpp>
+#pragma once
 
-#include <driver/gpio.h>
+#include "indicator/Indicator.hpp"
 
-BlinkIndicator::BlinkIndicator(int pinNum) : Indicator(pinNum) {}
+namespace indicator
+{
 
-BlinkIndicator::~BlinkIndicator() = default;
+class BlinkIndicator : public Indicator
+{
+public:
+    explicit BlinkIndicator(int pinNum);
 
-void BlinkIndicator::blinkTask() {
-    while (_enableFlag) {
-        gpio_set_level(static_cast<gpio_num_t>(_pinNum), 1);
-        std::this_thread::sleep_for(std::chrono::milliseconds(_taskValue));
+    ~BlinkIndicator() override;
 
-        gpio_set_level(static_cast<gpio_num_t>(_pinNum), 0);
-        std::this_thread::sleep_for(std::chrono::milliseconds(_taskValue));
-    }
-}
+protected:
+    void blinkTask() override;
+};
+
+} // namespace indicator

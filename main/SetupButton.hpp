@@ -19,10 +19,14 @@
 
 #pragma once
 
+#include <memory>
 #include <functional>
-#include <button/Button.hpp>
 
-enum SetupButtonState {
+#include "gpio/interface/IPin.hpp"
+#include "executor/Node.hpp"
+
+enum SetupButtonState
+{
     SETUP_BUTTON_RELEASED = 0,
     SETUP_BUTTON_PRESSED,
     SETUP_BUTTON_HELD,
@@ -31,23 +35,31 @@ enum SetupButtonState {
 
 using SetupButtonChangeStateCallbackFunction = std::function<void(SetupButtonState)>;
 
-class SetupButton : public Button {
+class SetupButton : public executor::Node
+{
 public:
-    explicit SetupButton(uint8_t pinNum, bool invertedValue = false);
-    ~SetupButton() override;
+    SetupButton();
+    ~SetupButton() override = default;
 
 public:
-    void registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const& setupButtonChangeStateCallbackFunction);
-
-public:
-    void process();
+    void registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const& changeStateCallbackFunction);
 
 private:
-    SetupButtonChangeStateCallbackFunction _setupButtonChangeStateCallbackFunction = nullptr;
+    void process() override;
 
 private:
-    bool _isHeld;
-    bool _isPressed;
-    int64_t _pressTime_InUS;
-    int64_t _releaseTime_InUS;
+    void processLowLevel();
+    void processHighLevel();
+    void processHighLevelWhenPressed();
+    void processHighLevelWhenUnpressed();
+
+private:
+    SetupButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
+
+private:
+    bool m_isHeld;
+    bool m_isPressed;
+    int64_t m_pressTime_InUS;
+    int64_t m_releaseTime_InUS;
+    std::unique_ptr<gpio::interface::IPin> m_setupButton;
 };

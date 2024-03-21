@@ -18,7 +18,7 @@
 #include <iostream>
 
 #include "executor/Executor.hpp"
-#include "motor/MotorDriver.hpp"
+#include "motor/Motor.hpp"
 #include "accelerator/Scaler.hpp"
 #include "accelerator/Formatter.hpp"
 #include "accelerator/Accelerator.hpp"
@@ -27,6 +27,8 @@
 #include "ECU/UartNetworkConnector.hpp"
 #include "ECU/KLineNetworkConnector.hpp"
 
+#include "Drv8825.hpp"
+#include "ModeButton.hpp"
 #include "Controller.hpp"
 #include "SetupButton.hpp"
 
@@ -62,6 +64,10 @@ requires std::is_arithmetic_v<T> T averageFilter(T const value, float const thre
     return value;
 }
 
+constexpr uint32_t const motorDefaultSpeed = (32 * 200 * 1000) / 60;
+constexpr uint32_t const motorDefaultAcceleration = motorDefaultSpeed;
+constexpr uint32_t const motorDefaultDeceleration = motorDefaultSpeed * 2;
+
 constexpr uint32_t const acceleratorMinimalValue = 840;
 constexpr uint32_t const acceleratorMaximalValue = 2570;
 constexpr uint8_t const throttlePositionMinimalValue = 0;
@@ -69,24 +75,25 @@ constexpr uint8_t const throttlePositionMaximalValue = 100;
 
 extern "C" void app_main(void)
 {
-    auto indicatorPtr = std::make_shared<BlinkIndicator>(2);
+    auto indicatorPtr = std::make_shared<indicator::BlinkIndicator>(2);
 
-    auto motorDriverPtr = std::make_shared<MotorDriver>(13, 12);
-    motorDriverPtr->setAccelerationInStepsPerSecondPerSecond(200000);
-    motorDriverPtr->setDecelerationInStepsPerSecondPerSecond(400000);
-    motorDriverPtr->setSpeedInStepsPerSecond(100000);
+    auto motorDriverPtr = std::make_unique<DRV8825>();
+    motorDriverPtr->setMicroSteps(motor::driver::MOTOR_32_MICRO_STEPS);
+
+    auto motorPtr = std::make_shared<motor::Motor>(std::move(motorDriverPtr));
+    motorPtr->setFrequency(1000000);
+    motorPtr->setSpeedInStepsPerSecond(motorDefaultSpeed);
+    motorPtr->setAccelerationInStepsPerSecondPerSecond(motorDefaultAcceleration);
+    motorPtr->setDecelerationInStepsPerSecondPerSecond(motorDefaultDeceleration);
 
     auto controllerPtr = std::make_shared<Controller>();
     controllerPtr->registerChangeValueCallback(
-        [&motorDriverPtr](int32_t controlValue)
+        [&](uint32_t const acceleratorValue)
         {
-            auto diff_InSteps = std::fabs(motorDriverPtr->getTargetPositionInSteps() - controlValue);
-            if (diff_InSteps < 16)
-            {
-                return;
-            }
+            auto steps = static_cast<int32_t>(acceleratorValue * 115);
+            std::cout << "| Motor: " << steps << " ";
 
-            motorDriverPtr->setTargetPositionInSteps(controlValue);
+            motorPtr->setTargetPositionInSteps(steps);
         });
 
     auto scalerPtr = std::make_shared<accelerator::Scaler>(throttlePositionMinimalValue, throttlePositionMaximalValue);
@@ -123,22 +130,58 @@ extern "C" void app_main(void)
             std::cout << std::endl;
         });
 
-    auto setupButtonPtr = std::make_shared<SetupButton>(15, false);
+    auto setupButtonPtr = std::make_shared<SetupButton>();
     setupButtonPtr->registerChangeValueCallback(
-        [&](SetupButtonState setupButtonState)
+        [&](SetupButtonState const setupButtonState)
         {
             if (setupButtonState == SETUP_BUTTON_HELD)
             {
                 scalerPtr->enable();
                 controllerPtr->enable();
-                indicatorPtr->enable();
             }
             if (setupButtonState == SETUP_BUTTON_PRESSED)
             {
                 scalerPtr->disable();
                 controllerPtr->disable();
-                indicatorPtr->disable();
             }
+        });
+
+    auto modeButtonPtr = std::make_shared<ModeButton>();
+    modeButtonPtr->registerChangeValueCallback(
+        [&](ModeButtonState const modeButtonState)
+        {
+            float accelerationRate;
+
+            switch (modeButtonState)
+            {
+            case MODE_BUTTON_STATE_MODE_1:
+            {
+                accelerationRate = 2.0;
+                std::cout << std::endl << "Motor mode 1" << std::endl;
+
+                break;
+            }
+            case MODE_BUTTON_STATE_MODE_2:
+            {
+                accelerationRate = 1.0;
+                std::cout << std::endl << "Motor mode 2" << std::endl;
+
+                break;
+            }
+            default:
+            case MODE_BUTTON_STATE_MODE_3:
+            {
+                accelerationRate = 0.5;
+                std::cout << std::endl << "Motor mode 3" << std::endl;
+
+                break;
+            }
+            }
+
+            auto acceleration = motorDefaultAcceleration * accelerationRate;
+
+            motorPtr->setAccelerationInStepsPerSecondPerSecond(acceleration);
+            motorPtr->setDecelerationInStepsPerSecondPerSecond(acceleration);
         });
 
     auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);

@@ -14,31 +14,32 @@
 //
 
 //
-// Created by jadjer on 30.08.22.
+// Created by jadjer on 15.08.23.
 //
 
 #pragma once
 
-#include <cstdlib>
+#include <functional>
 
-/**
- * @class Button
- * @brief
- */
-class Button {
+#include "executor/Node.hpp"
+
+namespace accelerator {
+
+using AcceleratorChangeValueCallbackFunction = std::function<void(uint32_t)>;
+
+class Accelerator : public executor::Node {
 public:
-    explicit Button(uint8_t pinNum, bool invertedValue = false);
-
-    virtual ~Button();
+  Accelerator();
+  ~Accelerator() override;
 
 public:
-    /**
-     * @brief
-     * @return
-     */
-    [[nodiscard]] bool isPressed() const;
+  void registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const &changeValueCallbackFunction);
+
+protected:
+  void process() override;
 
 private:
-    uint8_t _pinNum;
-    bool _invertedValue;
+  AcceleratorChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
 };
+
+} // namespace accelerator
