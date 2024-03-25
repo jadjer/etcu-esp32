@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 //
 // Created by jadjer on 28.09.23.
@@ -22,37 +21,37 @@
 #include <memory>
 #include <functional>
 
-#include "gpio/interface/IPin.hpp"
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/IInputPin.hpp"
 #include "executor/Node.hpp"
 
-enum ModeButtonState
-{
-    MODE_BUTTON_STATE_UNKNOWN = 0,
-    MODE_BUTTON_STATE_MODE_1,
-    MODE_BUTTON_STATE_MODE_2,
-    MODE_BUTTON_STATE_MODE_3,
-    MODE_BUTTON_COUNT = 4
+enum ModeButtonState {
+  MODE_BUTTON_STATE_UNKNOWN = 0,
+  MODE_BUTTON_STATE_MODE_1,
+  MODE_BUTTON_STATE_MODE_2,
+  MODE_BUTTON_STATE_MODE_3,
+  MODE_BUTTON_COUNT = 4
 };
 
+using PinLevel = gpio::PinLevel;
 using ModeButtonChangeStateCallbackFunction = std::function<void(ModeButtonState)>;
 
-class ModeButton : public executor::Node
-{
+class ModeButton : public executor::Node {
 public:
-    ModeButton();
-    ~ModeButton() override = default;
+  ModeButton();
+  ~ModeButton() override = default;
 
 public:
-    void registerChangeValueCallback(ModeButtonChangeStateCallbackFunction const& changeStateCallbackFunction);
+  void registerChangeValueCallback(ModeButtonChangeStateCallbackFunction const &changeStateCallbackFunction);
 
 private:
-    void process() override;
+  void process() override;
 
 private:
-    ModeButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
+  ModeButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
 
 private:
-    ModeButtonState m_modeButtonState;
-    std::unique_ptr<gpio::interface::IPin> m_modeButton1;
-    std::unique_ptr<gpio::interface::IPin> m_modeButton2;
+  ModeButtonState m_modeButtonState;
+  IInputPinPtr<PinLevel> m_modeButton1;
+  IInputPinPtr<PinLevel> m_modeButton2;
 };

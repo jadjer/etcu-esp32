@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,34 +11,20 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 //
-// Created by jadjer on 26.09.22.
+// Created by jadjer on 3/23/24.
 //
 
-#pragma once
+#include "Limiter.hpp"
 
-#include "indicator/Indicator.hpp"
+#include "gpio/InputPin.hpp"
 
-namespace indicator
-{
+Limiter::Limiter() : m_homeLimitPin(std::make_unique<gpio::InputPin>(0, gpio::PIN_LEVEL_HIGH)) {
 
-/**
- * @brief
- */
-class ErrorCodeIndicator : public Indicator
-{
-public:
-    explicit ErrorCodeIndicator(int pinNum);
-    ~ErrorCodeIndicator() override;
+}
 
-public:
-    void enable() override;
-    void disable() override;
+bool Limiter::isActive() const {
+  return m_homeLimitPin->getLevel() == gpio::PinLevel::PIN_LEVEL_LOW;
+}
 
-protected:
-    void blinkTask() override;
-};
-
-} // namespace indicator

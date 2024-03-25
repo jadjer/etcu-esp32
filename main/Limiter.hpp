@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,35 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 //
-// Created by jadjer on 15.08.23.
+// Created by jadjer on 3/23/24.
 //
 
 #pragma once
 
-#include <functional>
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/IInputPin.hpp"
+#include "motor/interface/ILimiter.hpp"
 
-#include "executor/Node.hpp"
+using PinLevel = gpio::PinLevel;
+using PinInput = IInputPinPtr<PinLevel>;
 
-namespace accelerator {
-
-using AcceleratorChangeValueCallbackFunction = std::function<void(uint32_t)>;
-
-class Accelerator : public executor::Node {
+class Limiter : public motor::interface::ILimiter {
 public:
-  Accelerator();
-  ~Accelerator() override;
+  Limiter();
+  ~Limiter() override = default;
 
 public:
-  void registerChangeAccelerateCallback(AcceleratorChangeValueCallbackFunction const &changeValueCallbackFunction);
-
-protected:
-  void process() override;
+  [[nodiscard]] bool isActive() const override;
 
 private:
-  AcceleratorChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
+  PinInput m_homeLimitPin;
 };
-
-} // namespace accelerator

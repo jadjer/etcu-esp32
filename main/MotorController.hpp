@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,28 +11,34 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 //
-// Created by jadjer on 26.09.22.
+// Created by jadjer on 3/24/24.
 //
 
 #pragma once
 
-#include "indicator/Indicator.hpp"
+#include "executor/Node.hpp"
+#include "motor/MotorController.hpp"
+#include "motor/interface/ILimiter.hpp"
+#include "motor/driver/interface/IDriver.hpp"
 
-namespace indicator
-{
-
-class BlinkIndicator : public Indicator
-{
+class MotorController : public executor::Node {
 public:
-    explicit BlinkIndicator(int pinNum);
+  MotorController();
+  ~MotorController() override = default;
 
-    ~BlinkIndicator() override;
+public:
+  void setSpeed(float speed);
+  void setAcceleration(float acceleration);
+  void setDeceleration(float deceleration);
 
-protected:
-    void blinkTask() override;
+public:
+  void setPosition(int32_t position);
+
+private:
+  void process() override;
+
+private:
+  MotorControllerPtr m_motorController;
 };
-
-} // namespace indicator

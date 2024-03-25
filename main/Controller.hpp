@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 //
 // Created by jadjer on 29.08.22.
@@ -26,38 +25,38 @@ using ControllerChangeValueCallbackFunction = std::function<void(uint32_t)>;
 
 class Controller {
 public:
-    Controller();
+  Controller();
 
-    ~Controller();
-
-public:
-    void registerChangeValueCallback(ControllerChangeValueCallbackFunction const &controllerChangeValueCallbackFunction);
+  ~Controller();
 
 public:
-    void setRPM(uint32_t revolutionPerMinute);
-
-    void setSpeed(uint32_t speedInKilometersPerHour);
-
-    void setClutch(bool clutchIsEnabled);
-
-    void setAcceleration(uint32_t accelerationValue);
+  void registerChangeValueCallback(ControllerChangeValueCallbackFunction const &controllerChangeValueCallbackFunction);
 
 public:
-    void enable();
+  void setRPM(uint32_t revolutionPerMinute);
 
-    void disable();
+  void setSpeed(uint32_t speedInKilometersPerHour);
+
+  void setClutch(bool clutchIsEnabled);
+
+  void setAcceleration(uint32_t accelerationValue);
 
 public:
-    void process();
+  void enable();
+
+  void disable();
+
+public:
+  void process();
 
 private:
-    ControllerChangeValueCallbackFunction _controllerChangeValueCallbackFunction = nullptr;
+  ControllerChangeValueCallbackFunction _controllerChangeValueCallbackFunction = nullptr;
 
 private:
-    bool _clutchIsEnabled;
-    uint32_t _accelerationValue;
-    uint32_t _revolutionPerMinute;
-    uint32_t _minimalAccelerationValue;
-    uint32_t _speed_InKilometersPerHour;
-    uint32_t _cruiseSpeed_InKilometersPerHour;
+  bool _clutchIsEnabled;
+  uint32_t _accelerationValue;
+  uint32_t _revolutionPerMinute;
+  uint32_t _minimalAccelerationValue;
+  uint32_t _speed_InKilometersPerHour;
+  uint32_t _cruiseSpeed_InKilometersPerHour;
 };

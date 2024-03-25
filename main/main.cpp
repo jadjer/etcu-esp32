@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,183 +13,103 @@
 // limitations under the License.
 //
 
-#include <cmath>
-#include <vector>
 #include <iostream>
 #include <cstdint>
 
 #include "executor/Executor.hpp"
-#include "motor/Motor.hpp"
-#include "accelerator/Scaler.hpp"
-#include "accelerator/Formatter.hpp"
-#include "accelerator/Accelerator.hpp"
-#include "indicator/BlinkIndicator.hpp"
-#include "ECU/HondaECU.hpp"
-#include "ECU/UartNetworkConnector.hpp"
-#include "ECU/KLineNetworkConnector.hpp"
 
-#include "Drv8825.hpp"
+#include "MotorController.hpp"
+#include "MotorDriver.hpp"
+#include "Scaller.hpp"
+#include "Formatter.hpp"
+#include "Accelerator.hpp"
+#include "Accelerator.hpp"
 #include "ModeButton.hpp"
-#include "Controller.hpp"
 #include "SetupButton.hpp"
+#include "Controller.hpp"
 
-template<typename T>
-requires std::is_arithmetic_v<T> T averageFilter(T const value, float const threshold)
-{
-    static size_t const windowSize = 3;
-    static std::vector<T> accelerationItems;
+constexpr uint32_t const motorDefaultSpeed = 1000;
+constexpr uint32_t const motorDefaultAcceleration = 10000;
+constexpr uint32_t const motorDefaultDeceleration = 20000;
 
-    accelerationItems.reserve(windowSize);
+extern "C" void app_main(void) {
+  auto motorController = std::make_shared<MotorController>();
+  motorController->setFrequency(250000);
+  motorController->setSpeed(motorDefaultSpeed);
+  motorController->setAcceleration(motorDefaultAcceleration);
+  motorController->setDeceleration(motorDefaultDeceleration);
 
-    for (size_t i = 0; i < windowSize - 1; i++)
-    {
-        accelerationItems[i] = accelerationItems[i + 1];
-    }
+//  auto etcController = std::make_shared<Controller>();
+//  etcController->registerChangeValueCallback(
+//      [&](uint32_t const acceleratorValue) {
+//        auto steps = static_cast<int32_t>(acceleratorValue * 115);
+//        std::cout << "| Motor: " << steps << " ";
+//
+//        motorController->setPosition(steps);
+//      });
 
-    accelerationItems.at(windowSize - 1) = value;
+  auto accelerator = std::make_shared<Accelerator>();
+  accelerator->setFrequency(100000);
+  accelerator->registerChangeAccelerateCallback(
+      [&](uint32_t acceleratorValue_InPercentage) {
+        motorController->setPosition(acceleratorValue_InPercentage);
+      });
 
-    T result = 0;
+//  auto setupButton = std::make_shared<SetupButton>();
+//  setupButton->registerChangeValueCallback(
+//      [&](SetupButtonState const setupButtonState) {
+//        if (setupButtonState == SETUP_BUTTON_HELD) {
+//          scaller->enable();
+//          etcController->enable();
+//        }
+//        if (setupButtonState == SETUP_BUTTON_PRESSED) {
+//          scaller->disable();
+//          etcController->disable();
+//        }
+//      });
 
-    for (auto const accelerationItem : accelerationItems)
-    {
-        result += accelerationItem;
-    }
+//  auto modeButtonPtr = std::make_shared<ModeButton>();
+//  modeButtonPtr->registerChangeValueCallback(
+//      [&](ModeButtonState const modeButtonState) {
+//        float accelerationRate;
+//
+//        switch (modeButtonState) {
+//        case MODE_BUTTON_STATE_MODE_1: {
+//          accelerationRate = 2.0;
+//          std::cout << std::endl << "Motor mode 1" << std::endl;
+//
+//          break;
+//        }
+//        case MODE_BUTTON_STATE_MODE_2: {
+//          accelerationRate = 1.0;
+//          std::cout << std::endl << "Motor mode 2" << std::endl;
+//
+//          break;
+//        }
+//        default:
+//        case MODE_BUTTON_STATE_MODE_3: {
+//          accelerationRate = 0.5;
+//          std::cout << std::endl << "Motor mode 3" << std::endl;
+//
+//          break;
+//        }
+//        }
+//
+//        auto acceleration = motorDefaultAcceleration * accelerationRate;
+//
+//        motorController->setAcceleration(acceleration);
+//        motorController->setDeceleration(acceleration);
+//      });
 
-    result /= windowSize;
+//  auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);
+//  auto kLine = std::make_unique<ECU::KLineNetworkConnector>(1, std::move(uart));
+//  auto ecu = std::make_shared<ECU::HondaECU>(std::move(kLine));
 
-    if (std::fabs(value - result) > threshold)
-    {
-        return result;
-    }
-
-    return value;
-}
-
-constexpr uint32_t const motorDefaultSpeed = (32 * 200 * 1000) / 60;
-constexpr uint32_t const motorDefaultAcceleration = motorDefaultSpeed;
-constexpr uint32_t const motorDefaultDeceleration = motorDefaultSpeed * 2;
-
-constexpr uint32_t const acceleratorMinimalValue = 840;
-constexpr uint32_t const acceleratorMaximalValue = 2570;
-constexpr uint8_t const throttlePositionMinimalValue = 0;
-constexpr uint8_t const throttlePositionMaximalValue = 100;
-
-extern "C" void app_main(void)
-{
-    auto indicatorPtr = std::make_shared<indicator::BlinkIndicator>(2);
-
-    auto motorDriverPtr = std::make_unique<DRV8825>();
-    motorDriverPtr->setMicroSteps(motor::driver::MOTOR_32_MICRO_STEPS);
-
-    auto motorPtr = std::make_shared<motor::Motor>(std::move(motorDriverPtr));
-    motorPtr->setFrequency(1000000);
-    motorPtr->setSpeedInStepsPerSecond(motorDefaultSpeed);
-    motorPtr->setAccelerationInStepsPerSecondPerSecond(motorDefaultAcceleration);
-    motorPtr->setDecelerationInStepsPerSecondPerSecond(motorDefaultDeceleration);
-
-    auto controllerPtr = std::make_shared<Controller>();
-    controllerPtr->registerChangeValueCallback(
-        [&](uint32_t const acceleratorValue)
-        {
-            auto steps = static_cast<int32_t>(acceleratorValue * 115);
-            std::cout << "| Motor: " << steps << " ";
-
-            motorPtr->setTargetPositionInSteps(steps);
-        });
-
-    auto scalerPtr = std::make_shared<accelerator::Scaler>(throttlePositionMinimalValue, throttlePositionMaximalValue);
-    scalerPtr->registerChangeValueCallback(
-        [&](uint32_t const scaledValue)
-        {
-            std::cout << "| Scaled value: " << scaledValue << " ";
-            controllerPtr->setAcceleration(scaledValue);
-        });
-
-    auto formatterPtr = std::make_shared<accelerator::Formatter>(
-        acceleratorMinimalValue, acceleratorMaximalValue, throttlePositionMinimalValue, throttlePositionMaximalValue);
-    formatterPtr->registerChangeValueCallback(
-        [&](uint32_t const formattedValue)
-        {
-            std::cout << "| Formatted value: " << formattedValue << " ";
-            scalerPtr->setValue(formattedValue);
-        });
-
-    auto acceleratorPtr = std::make_shared<accelerator::Accelerator>();
-    acceleratorPtr->setFrequency(8);
-    acceleratorPtr->registerChangeAccelerateCallback(
-        [&](uint32_t acceleratorValue_InPercentage)
-        {
-            std::cout << "Accelerator: " << acceleratorValue_InPercentage << "mV ";
-
-            acceleratorValue_InPercentage = static_cast<uint32_t>(static_cast<float>(acceleratorValue_InPercentage) * 0.1) * 10;
-            std::cout << "| Accelerator(filter1): " << acceleratorValue_InPercentage << " ";
-
-            acceleratorValue_InPercentage = averageFilter(acceleratorValue_InPercentage, 20);
-            std::cout << "| Accelerator(filter2): " << acceleratorValue_InPercentage << " ";
-
-            formatterPtr->setValue(acceleratorValue_InPercentage);
-            std::cout << std::endl;
-        });
-
-    auto setupButtonPtr = std::make_shared<SetupButton>();
-    setupButtonPtr->registerChangeValueCallback(
-        [&](SetupButtonState const setupButtonState)
-        {
-            if (setupButtonState == SETUP_BUTTON_HELD)
-            {
-                scalerPtr->enable();
-                controllerPtr->enable();
-            }
-            if (setupButtonState == SETUP_BUTTON_PRESSED)
-            {
-                scalerPtr->disable();
-                controllerPtr->disable();
-            }
-        });
-
-    auto modeButtonPtr = std::make_shared<ModeButton>();
-    modeButtonPtr->registerChangeValueCallback(
-        [&](ModeButtonState const modeButtonState)
-        {
-            float accelerationRate;
-
-            switch (modeButtonState)
-            {
-            case MODE_BUTTON_STATE_MODE_1:
-            {
-                accelerationRate = 2.0;
-                std::cout << std::endl << "Motor mode 1" << std::endl;
-
-                break;
-            }
-            case MODE_BUTTON_STATE_MODE_2:
-            {
-                accelerationRate = 1.0;
-                std::cout << std::endl << "Motor mode 2" << std::endl;
-
-                break;
-            }
-            default:
-            case MODE_BUTTON_STATE_MODE_3:
-            {
-                accelerationRate = 0.5;
-                std::cout << std::endl << "Motor mode 3" << std::endl;
-
-                break;
-            }
-            }
-
-            auto acceleration = motorDefaultAcceleration * accelerationRate;
-
-            motorPtr->setAccelerationInStepsPerSecondPerSecond(acceleration);
-            motorPtr->setDecelerationInStepsPerSecondPerSecond(acceleration);
-        });
-
-    auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);
-    auto kLine = std::make_unique<ECU::KLineNetworkConnector>(1, std::move(uart));
-    auto ecu = std::make_shared<ECU::HondaECU>(std::move(kLine));
-
-    auto executorPtr = std::make_unique<executor::Executor>();
-    executorPtr->addNode(ecu);
-    executorPtr->spin();
+  auto executor = std::make_unique<executor::Executor>();
+  executor->addNode(motorController);
+  executor->addNode(accelerator);
+//  executor->addNode(setupButton);
+//  executor->addNode(modeButtonPtr);
+//  executor->addNode(ecu);
+  executor->spin();
 }

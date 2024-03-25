@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 //
 // Created by jadjer on 16.08.23.
@@ -22,44 +21,44 @@
 #include <memory>
 #include <functional>
 
-#include "gpio/interface/IPin.hpp"
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/IInputPin.hpp"
 #include "executor/Node.hpp"
 
-enum SetupButtonState
-{
-    SETUP_BUTTON_RELEASED = 0,
-    SETUP_BUTTON_PRESSED,
-    SETUP_BUTTON_HELD,
-    SETUP_BUTTON_COUNT = 3
+enum SetupButtonState {
+  SETUP_BUTTON_RELEASED = 0,
+  SETUP_BUTTON_PRESSED,
+  SETUP_BUTTON_HELD,
+  SETUP_BUTTON_COUNT = 3
 };
 
+using PinLevel = gpio::PinLevel;
 using SetupButtonChangeStateCallbackFunction = std::function<void(SetupButtonState)>;
 
-class SetupButton : public executor::Node
-{
+class SetupButton : public executor::Node {
 public:
-    SetupButton();
-    ~SetupButton() override = default;
+  SetupButton();
+  ~SetupButton() override = default;
 
 public:
-    void registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const& changeStateCallbackFunction);
+  void registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const &changeStateCallbackFunction);
 
 private:
-    void process() override;
+  void process() override;
 
 private:
-    void processLowLevel();
-    void processHighLevel();
-    void processHighLevelWhenPressed();
-    void processHighLevelWhenUnpressed();
+  void processLowLevel();
+  void processHighLevel();
+  void processHighLevelWhenPressed();
+  void processHighLevelWhenUnpressed();
 
 private:
-    SetupButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
+  SetupButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
 
 private:
-    bool m_isHeld;
-    bool m_isPressed;
-    int64_t m_pressTime_InUS;
-    int64_t m_releaseTime_InUS;
-    std::unique_ptr<gpio::interface::IPin> m_setupButton;
+  bool m_isHeld;
+  bool m_isPressed;
+  uint32_t m_pressTime_InUS;
+  uint32_t m_releaseTime_InUS;
+  IInputPinPtr<PinLevel> m_setupButton;
 };
