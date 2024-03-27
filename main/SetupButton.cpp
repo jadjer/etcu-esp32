@@ -18,21 +18,22 @@
 
 #include "SetupButton.hpp"
 
+#include <esp_log.h>
 #include <esp_timer.h>
 
 #include "gpio/InputPin.hpp"
 
-constexpr uint8_t numberOfSetupButtonPin = 5;
+constexpr char const * tag = "setup_button";
 
-constexpr float threshold_InSeconds = 0.1;
-constexpr float holdTimeDelay_InSeconds = 1.0;
-
-SetupButton::SetupButton() : m_isHeld(false),
-                             m_isPressed(false),
-                             m_pressTime_InUS(esp_timer_get_time()),
-                             m_releaseTime_InUS(esp_timer_get_time()),
-                             m_setupButton(std::make_unique<gpio::InputPin>(numberOfSetupButtonPin, gpio::PIN_LEVEL_HIGH)) {
-  assert(SETUP_BUTTON_COUNT == 3);
+SetupButton::SetupButton(uint8_t const numberOfSetupButtonPin, uint32_t const holdTimeInUS, uint32_t const thresholdInUS) :
+    m_changeStateCallbackFunction(nullptr),
+    m_setupButton(std::make_unique<gpio::InputPin>(numberOfSetupButtonPin, gpio::PIN_LEVEL_HIGH)),
+    m_holdTime_InUS(holdTimeInUS),
+    m_threshold_InUS(thresholdInUS),
+    m_isHeld(false),
+    m_isPressed(false),
+    m_pressTime_InUS(0),
+    m_releaseTime_InUS(0) {
 }
 
 void SetupButton::registerChangeValueCallback(SetupButtonChangeStateCallbackFunction const &changeStateCallbackFunction) {
@@ -40,74 +41,66 @@ void SetupButton::registerChangeValueCallback(SetupButtonChangeStateCallbackFunc
 }
 
 void SetupButton::process() {
-  auto buttonState = m_setupButton->getLevel();
-
-  if (buttonState == gpio::PIN_LEVEL_LOW) {
-    return processLowLevel();
-  }
+  auto const buttonState = m_setupButton->getLevel();
 
   if (buttonState == gpio::PIN_LEVEL_HIGH) {
-    return processHighLevel();
+    return processButtonReleased();
+  }
+
+  if (buttonState == gpio::PIN_LEVEL_LOW) {
+    return processButtonPressed();
   }
 }
 
-void SetupButton::processLowLevel() {
+void SetupButton::processButtonReleased() {
   if (not m_isPressed) {
     return;
   }
 
-  auto currentTime_InUS = esp_timer_get_time();
-
-  m_releaseTime_InUS = currentTime_InUS;
+  m_releaseTime_InUS = esp_timer_get_time();
   m_isHeld = false;
   m_isPressed = false;
+
+  ESP_LOGI(tag, "Released");
 
   if (m_changeStateCallbackFunction) {
     m_changeStateCallbackFunction(SETUP_BUTTON_RELEASED);
   }
 }
 
-void SetupButton::processHighLevel() {
+void SetupButton::processButtonPressed() {
   if (m_isHeld) {
     return;
   }
 
-  auto currentTime_InUS = esp_timer_get_time();
+  auto const currentTime_InUS = esp_timer_get_time();
 
-  auto idleTime_InUS = currentTime_InUS - m_releaseTime_InUS;
-  auto idleTime_InSeconds = static_cast<float>(idleTime_InUS) / 1000000.0f;
-  if (idleTime_InSeconds < threshold_InSeconds) {
+  auto const idleTime_InUS = currentTime_InUS - m_releaseTime_InUS;
+  if (idleTime_InUS < m_threshold_InUS) {
     return;
   }
 
   if (m_isPressed) {
-    return processHighLevelWhenPressed();
-  }
+    auto const holdTime_InUS = currentTime_InUS - m_pressTime_InUS;
+    if (holdTime_InUS > m_holdTime_InUS) {
+      m_isHeld = true;
 
-  return processHighLevelWhenUnpressed();
-}
+      ESP_LOGI(tag, "Held");
 
-void SetupButton::processHighLevelWhenPressed() {
-  auto currentTime_InUS = esp_timer_get_time();
-
-  auto holdTime_InUS = currentTime_InUS - m_pressTime_InUS;
-  auto holdTime_InSeconds = static_cast<float>(holdTime_InUS) / 1e+6;
-  if (holdTime_InSeconds > holdTimeDelay_InSeconds) {
-    m_isHeld = true;
-
-    if (m_changeStateCallbackFunction) {
-      m_changeStateCallbackFunction(SETUP_BUTTON_HELD);
+      if (m_changeStateCallbackFunction) {
+        m_changeStateCallbackFunction(SETUP_BUTTON_HELD);
+      }
     }
   }
-}
 
-void SetupButton::processHighLevelWhenUnpressed() {
-  auto currentTime_InUS = esp_timer_get_time();
+  if (not m_isPressed) {
+    m_pressTime_InUS = currentTime_InUS;
+    m_isPressed = true;
 
-  m_pressTime_InUS = currentTime_InUS;
-  m_isPressed = true;
+    ESP_LOGI(tag, "Pressed");
 
-  if (m_changeStateCallbackFunction) {
-    m_changeStateCallbackFunction(SETUP_BUTTON_PRESSED);
+    if (m_changeStateCallbackFunction) {
+      m_changeStateCallbackFunction(SETUP_BUTTON_PRESSED);
+    }
   }
 }

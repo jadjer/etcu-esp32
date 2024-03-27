@@ -2,15 +2,12 @@ cmake_minimum_required(VERSION 3.17)
 
 set(SOURCES
         main.cpp
-        Scaller.cpp
         Limiter.cpp
-        MotorDriver.cpp
-        Formatter.cpp
-        Accelerator.cpp
-        Accelerator.cpp
         ModeButton.cpp
+        Accelerator.cpp
+        MotorDriver.cpp
         SetupButton.cpp
-        Controller.cpp
+        EtcController.cpp
         MotorController.cpp
 )
 

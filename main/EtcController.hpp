@@ -21,16 +21,16 @@
 #include <cstdlib>
 #include <functional>
 
-using ControllerChangeValueCallbackFunction = std::function<void(uint32_t)>;
+using EtcControllerChangeValueCallbackFunction = std::function<void(uint32_t)>;
 
-class Controller {
+class EtcController {
 public:
-  Controller();
+  EtcController();
 
-  ~Controller();
+  ~EtcController();
 
 public:
-  void registerChangeValueCallback(ControllerChangeValueCallbackFunction const &controllerChangeValueCallbackFunction);
+  void registerChangeValueCallback(EtcControllerChangeValueCallbackFunction const &controllerChangeValueCallbackFunction);
 
 public:
   void setRPM(uint32_t revolutionPerMinute);
@@ -42,21 +42,23 @@ public:
   void setAcceleration(uint32_t accelerationValue);
 
 public:
-  void enable();
+  void modeEnable();
 
-  void disable();
+  void modeDisable();
 
 public:
   void process();
 
 private:
-  ControllerChangeValueCallbackFunction _controllerChangeValueCallbackFunction = nullptr;
+  EtcControllerChangeValueCallbackFunction m_changeValueCallbackFunction;
 
 private:
-  bool _clutchIsEnabled;
-  uint32_t _accelerationValue;
-  uint32_t _revolutionPerMinute;
-  uint32_t _minimalAccelerationValue;
-  uint32_t _speed_InKilometersPerHour;
-  uint32_t _cruiseSpeed_InKilometersPerHour;
+  bool m_clutchIsEnabled;
+
+private:
+  uint32_t m_accelerationValue;
+  uint32_t m_revolutionPerMinute;
+  uint32_t m_minimalAccelerationValue;
+  uint32_t m_speed_InKilometersPerHour;
+  uint32_t m_cruiseSpeed_InKilometersPerHour;
 };

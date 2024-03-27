@@ -26,11 +26,10 @@
 #include "executor/Node.hpp"
 
 enum ModeButtonState {
-  MODE_BUTTON_STATE_UNKNOWN = 0,
-  MODE_BUTTON_STATE_MODE_1,
-  MODE_BUTTON_STATE_MODE_2,
-  MODE_BUTTON_STATE_MODE_3,
-  MODE_BUTTON_COUNT = 4
+  MODE_BUTTON_STATE_UNKNOWN = -1,
+  MODE_BUTTON_STATE_MODE_1 = 1,
+  MODE_BUTTON_STATE_MODE_2 = 2,
+  MODE_BUTTON_STATE_MODE_3 = 3
 };
 
 using PinLevel = gpio::PinLevel;
@@ -38,7 +37,7 @@ using ModeButtonChangeStateCallbackFunction = std::function<void(ModeButtonState
 
 class ModeButton : public executor::Node {
 public:
-  ModeButton();
+  explicit ModeButton(uint8_t numberOfModeButton1Pin = 7, uint8_t numberOfModeButton2Pin = 6);
   ~ModeButton() override = default;
 
 public:

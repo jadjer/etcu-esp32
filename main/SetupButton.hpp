@@ -28,8 +28,7 @@
 enum SetupButtonState {
   SETUP_BUTTON_RELEASED = 0,
   SETUP_BUTTON_PRESSED,
-  SETUP_BUTTON_HELD,
-  SETUP_BUTTON_COUNT = 3
+  SETUP_BUTTON_HELD
 };
 
 using PinLevel = gpio::PinLevel;
@@ -37,7 +36,7 @@ using SetupButtonChangeStateCallbackFunction = std::function<void(SetupButtonSta
 
 class SetupButton : public executor::Node {
 public:
-  SetupButton();
+  explicit SetupButton(uint8_t numberOfSetupButtonPin = 5, uint32_t holdTimeInUS = 1000000, uint32_t thresholdInUS = 100000);
   ~SetupButton() override = default;
 
 public:
@@ -47,18 +46,24 @@ private:
   void process() override;
 
 private:
-  void processLowLevel();
-  void processHighLevel();
-  void processHighLevelWhenPressed();
-  void processHighLevelWhenUnpressed();
+  void processButtonReleased();
+  void processButtonPressed();
 
 private:
-  SetupButtonChangeStateCallbackFunction m_changeStateCallbackFunction = nullptr;
+  SetupButtonChangeStateCallbackFunction m_changeStateCallbackFunction;
+
+private:
+  IInputPinPtr<PinLevel> m_setupButton;
+
+private:
+  uint32_t const m_holdTime_InUS;
+  uint32_t const m_threshold_InUS;
 
 private:
   bool m_isHeld;
   bool m_isPressed;
+
+private:
   uint32_t m_pressTime_InUS;
   uint32_t m_releaseTime_InUS;
-  IInputPinPtr<PinLevel> m_setupButton;
 };

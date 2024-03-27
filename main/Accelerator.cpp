@@ -34,7 +34,7 @@ constexpr adc_digi_output_format_t adcOutputFormat = ADC_DIGI_OUTPUT_FORMAT_TYPE
 constexpr adc_digi_iir_filter_coeff_t adcFilterCoefficient = ADC_DIGI_IIR_FILTER_COEFF_64;
 constexpr adc_channel_t adcChannels[1] = {adcChannelNum};
 
-constexpr uint32_t frameSize = 512;
+constexpr uint32_t frameSize = 1024;
 
 adc_continuous_handle_t adcHandle = nullptr;
 adc_iir_filter_handle_t filterHandle = nullptr;
