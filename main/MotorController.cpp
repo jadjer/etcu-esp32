@@ -18,28 +18,56 @@
 
 #include "MotorController.hpp"
 
+#include <esp_log.h>
+
 #include "MotorDriver.hpp"
 
-MotorController::MotorController() : m_motorController(std::make_unique<motor::MotorController>(std::make_unique<MotorDriver>())) {
+constexpr char const *tag = "motor_controller";
 
+MotorController::MotorController(float const minSpeed, float const maxSpeed, uint32_t const maxSteps) :
+    m_maxSteps(maxSteps),
+    m_maxSpeed(maxSpeed),
+    m_minSpeed(minSpeed),
+    m_motorController(std::make_unique<motor::MotorController>(std::make_unique<MotorDriver>())),
+    m_speed(m_maxSpeed) {
+  m_motorController->setMicrostep(32);
+}
+
+void MotorController::setSpeed(float const speed) {
+  m_speed = speed;
+
+  if (m_speed > m_maxSpeed) {
+    m_speed = m_maxSpeed;
+  }
+
+  if (m_speed < m_minSpeed) {
+    m_speed = m_minSpeed;
+  }
+}
+
+void MotorController::setAcceleration(float const acceleration) {
+  m_motorController->setAccelerationInStepsPerSecondPerSecond(acceleration);
+}
+
+void MotorController::setDeceleration(float const deceleration) {
+  m_motorController->setDecelerationInStepsPerSecondPerSecond(deceleration);
+}
+
+void MotorController::setPosition(uint32_t const position) {
+  auto const position_InSteps = position * m_maxSteps / 100;
+  auto const distanceToTargetSigned = m_motorController->getDistanceToTargetSigned();
+
+  if (distanceToTargetSigned > 0) {
+    m_motorController->setSpeedInStepsPerSecond(m_speed);
+  }
+
+  if (distanceToTargetSigned < 0) {
+    m_motorController->setSpeedInStepsPerSecond(m_maxSpeed);
+  }
+
+  m_motorController->setTargetPositionInSteps(static_cast<int32_t>(position_InSteps));
 }
 
 void MotorController::process() {
   m_motorController->processMovement();
-}
-
-void MotorController::setSpeed(float speed) {
-  m_motorController->setSpeedInStepsPerSecond(speed);
-}
-
-void MotorController::setAcceleration(float acceleration) {
-  m_motorController->setAccelerationInStepsPerSecondPerSecond(acceleration);
-}
-
-void MotorController::setDeceleration(float deceleration) {
-  m_motorController->setDecelerationInStepsPerSecondPerSecond(deceleration);
-}
-
-void MotorController::setPosition(int32_t position) {
-  m_motorController->setTargetPositionInSteps(position);
 }

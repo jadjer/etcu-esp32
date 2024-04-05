@@ -41,6 +41,10 @@ void SetupButton::registerChangeValueCallback(SetupButtonChangeStateCallbackFunc
 }
 
 void SetupButton::process() {
+  if (not m_changeStateCallbackFunction) {
+    return;
+  }
+
   auto const buttonState = m_setupButton->getLevel();
 
   if (buttonState == gpio::PIN_LEVEL_HIGH) {
@@ -53,6 +57,10 @@ void SetupButton::process() {
 }
 
 void SetupButton::processButtonReleased() {
+  if (not m_changeStateCallbackFunction) {
+    return;
+  }
+
   if (not m_isPressed) {
     return;
   }
@@ -61,14 +69,16 @@ void SetupButton::processButtonReleased() {
   m_isHeld = false;
   m_isPressed = false;
 
-  ESP_LOGI(tag, "Released");
+  m_changeStateCallbackFunction(SETUP_BUTTON_RELEASED);
 
-  if (m_changeStateCallbackFunction) {
-    m_changeStateCallbackFunction(SETUP_BUTTON_RELEASED);
-  }
+  ESP_LOGI(tag, "Released");
 }
 
 void SetupButton::processButtonPressed() {
+  if (not m_changeStateCallbackFunction) {
+    return;
+  }
+
   if (m_isHeld) {
     return;
   }
@@ -85,22 +95,19 @@ void SetupButton::processButtonPressed() {
     if (holdTime_InUS > m_holdTime_InUS) {
       m_isHeld = true;
 
-      ESP_LOGI(tag, "Held");
+      m_changeStateCallbackFunction(SETUP_BUTTON_HELD);
 
-      if (m_changeStateCallbackFunction) {
-        m_changeStateCallbackFunction(SETUP_BUTTON_HELD);
-      }
+      ESP_LOGI(tag, "Held");
     }
   }
 
   if (not m_isPressed) {
-    m_pressTime_InUS = currentTime_InUS;
     m_isPressed = true;
 
-    ESP_LOGI(tag, "Pressed");
+    m_pressTime_InUS = currentTime_InUS;
 
-    if (m_changeStateCallbackFunction) {
-      m_changeStateCallbackFunction(SETUP_BUTTON_PRESSED);
-    }
+    m_changeStateCallbackFunction(SETUP_BUTTON_PRESSED);
+
+    ESP_LOGI(tag, "Pressed");
   }
 }

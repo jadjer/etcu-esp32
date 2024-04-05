@@ -13,9 +13,7 @@
 // limitations under the License.
 //
 
-#include <iostream>
 #include <cstdint>
-#include <thread>
 
 #include "executor/Executor.hpp"
 
@@ -31,7 +29,7 @@ constexpr uint32_t const motorDefaultAcceleration = 10000;
 constexpr uint32_t const motorDefaultDeceleration = 20000;
 
 extern "C" void app_main(void) {
-  auto motorController = std::make_shared<MotorController>();
+  auto motorController = std::make_shared<MotorController>(100, motorDefaultSpeed);
   motorController->setSpeed(motorDefaultSpeed);
   motorController->setAcceleration(motorDefaultAcceleration);
   motorController->setDeceleration(motorDefaultDeceleration);
@@ -44,8 +42,8 @@ extern "C" void app_main(void) {
 
   auto accelerator = std::make_shared<Accelerator>();
   accelerator->registerChangeAccelerateCallback(
-      [&](uint32_t acceleratorValue_InPercentage) {
-        etcController->setAcceleration(acceleratorValue_InPercentage);
+      [&](uint32_t const acceleratorValue_InPercentage) {
+        etcController->setAcceleratorValue(acceleratorValue_InPercentage);
       });
 
   auto setupButton = std::make_shared<SetupButton>();
@@ -62,29 +60,23 @@ extern "C" void app_main(void) {
   auto modeButton = std::make_shared<ModeButton>();
   modeButton->registerChangeValueCallback(
       [&](ModeButtonState const modeButtonState) {
-        float accelerationRate;
+        float speedRate = 1.0;
 
-        switch (modeButtonState) {
-        case MODE_BUTTON_STATE_MODE_1: {
-          accelerationRate = 2.0;
-          break;
-        }
-        case MODE_BUTTON_STATE_MODE_2: {
-          accelerationRate = 1.0;
-          break;
-        }
-        default:
-        case MODE_BUTTON_STATE_MODE_3: {
-          accelerationRate = 0.5;
-          break;
-        }
+        if (modeButtonState == MODE_BUTTON_STATE_MODE_1) {
+          speedRate = 0.1;
         }
 
-        auto const acceleration = motorDefaultAcceleration * accelerationRate;
-        auto const deceleration = motorDefaultDeceleration * accelerationRate;
+        if (modeButtonState == MODE_BUTTON_STATE_MODE_2) {
+          speedRate = 0.3;
+        }
 
-        motorController->setAcceleration(acceleration);
-        motorController->setDeceleration(deceleration);
+        if (modeButtonState == MODE_BUTTON_STATE_MODE_3) {
+          speedRate = 1.0;
+        }
+
+        auto const speed = motorDefaultSpeed * speedRate;
+
+        motorController->setSpeed(speed);
       });
 
 //  auto uart = std::make_unique<ECU::UartNetworkConnector>(3, 1, 2);
@@ -92,8 +84,9 @@ extern "C" void app_main(void) {
 //  auto ecu = std::make_shared<ECU::HondaECU>(std::move(kLine));
 
   auto executor = std::make_unique<executor::Executor>();
-  executor->addNode(motorController, 250000);
-  executor->addNode(accelerator, 80000);
+  executor->addNode(motorController, 300000);
+  executor->addNode(etcController, 1000);
+  executor->addNode(accelerator, 1000);
   executor->addNode(setupButton, 1000);
   executor->addNode(modeButton, 1000);
 //  executor->addNode(ecu);

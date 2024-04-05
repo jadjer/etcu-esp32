@@ -35,8 +35,11 @@ public:
   ~MotorDriver() override = default;
 
 public:
-  void setStep(motor::driver::MotorStep step) override;
-  void setDirection(motor::driver::MotorRotateDirection direction) override;
+  [[nodiscard]] uint32_t getMicrostep() const override;
+
+public:
+  void setDirection(int8_t direction) override;
+  void setMicrostep(uint32_t microstep) override;
 
 public:
   [[nodiscard]] bool isEnabled() const override;
@@ -79,6 +82,9 @@ private:
 private:
   uint32_t const m_minimalPeriod;
   uint32_t m_lastStepTime;
+
+private:
+  uint32_t m_microstep;
 };
 
 #include <memory>

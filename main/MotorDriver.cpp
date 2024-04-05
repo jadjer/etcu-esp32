@@ -20,80 +20,97 @@
 #include "MotorDriver.hpp"
 
 #include <thread>
-#include <cassert>
 #include <esp_timer.h>
 
 #include "gpio/InputPin.hpp"
 #include "gpio/OutputPin.hpp"
 
 MotorDriver::MotorDriver() : m_stepPin(std::make_unique<gpio::OutputPin>(11)),
-                     m_decayPin(std::make_unique<gpio::OutputPin>(14)),
-                     m_mode0Pin(std::make_unique<gpio::OutputPin>(10)),
-                     m_mode1Pin(std::make_unique<gpio::OutputPin>(9)),
-                     m_mode2Pin(std::make_unique<gpio::OutputPin>(20)),
-                     m_resetPin(std::make_unique<gpio::OutputPin>(48, gpio::PIN_LEVEL_HIGH)),
-                     m_sleepPin(std::make_unique<gpio::OutputPin>(47, gpio::PIN_LEVEL_HIGH)),
-                     m_enablePin(std::make_unique<gpio::OutputPin>(12)),
-                     m_directionPin(std::make_unique<gpio::OutputPin>(13)),
+                             m_decayPin(std::make_unique<gpio::OutputPin>(14)),
+                             m_mode0Pin(std::make_unique<gpio::OutputPin>(10)),
+                             m_mode1Pin(std::make_unique<gpio::OutputPin>(9)),
+                             m_mode2Pin(std::make_unique<gpio::OutputPin>(20)),
+                             m_resetPin(std::make_unique<gpio::OutputPin>(48, gpio::PIN_LEVEL_HIGH)),
+                             m_sleepPin(std::make_unique<gpio::OutputPin>(47, gpio::PIN_LEVEL_HIGH)),
+                             m_enablePin(std::make_unique<gpio::OutputPin>(12)),
+                             m_directionPin(std::make_unique<gpio::OutputPin>(13)),
 
-                     m_inHomePin(std::make_unique<gpio::InputPin>(19, gpio::PIN_LEVEL_HIGH)),
-                     m_isFaultPin(std::make_unique<gpio::InputPin>(21, gpio::PIN_LEVEL_HIGH)),
+                             m_inHomePin(std::make_unique<gpio::InputPin>(19, gpio::PIN_LEVEL_HIGH)),
+                             m_isFaultPin(std::make_unique<gpio::InputPin>(21, gpio::PIN_LEVEL_HIGH)),
 
-                     m_stepMinimalTime(2),
-                     m_stepUpTime(0),
-                     m_stepDownTime(0),
+                             m_stepMinimalTime(2),
+                             m_stepUpTime(0),
+                             m_stepDownTime(0),
 
-                     m_minimalPeriod(1 / 250000),
-                     m_lastStepTime(0) {
-  assert(motor::driver::MOTOR_STEP_COUNT == 9);
-  assert(motor::driver::MOTOR_ROTATE_COUNT == 2);
+                             m_minimalPeriod(1 / 250000),
+                             m_lastStepTime(0),
+
+                             m_microstep(1) {
+  MotorDriver::setDirection(motor::driver::MOTOR_ROTATE_CW);
+  MotorDriver::setMicrostep(motor::driver::MOTOR_FULL_STEP);
 }
 
-void MotorDriver::setStep(motor::driver::MotorStep step) {
-  if (step == motor::driver::MOTOR_1_STEP) {
-    m_mode0Pin->setLevel(gpio::PIN_LEVEL_LOW);
-    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
-    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
-  }
-
-  if (step == motor::driver::MOTOR_1_2_STEP) {
-    m_mode0Pin->setLevel(gpio::PIN_LEVEL_HIGH);
-    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
-    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
-  }
-
-  if (step == motor::driver::MOTOR_1_4_STEP) {
-    m_mode0Pin->setLevel(gpio::PIN_LEVEL_LOW);
-    m_mode1Pin->setLevel(gpio::PIN_LEVEL_HIGH);
-    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
-  }
-
-  if (step == motor::driver::MOTOR_1_8_STEP) {
-    m_mode0Pin->setLevel(gpio::PIN_LEVEL_HIGH);
-    m_mode1Pin->setLevel(gpio::PIN_LEVEL_HIGH);
-    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
-  }
-
-  if (step == motor::driver::MOTOR_1_16_STEP) {
-    m_mode0Pin->setLevel(gpio::PIN_LEVEL_LOW);
-    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
-    m_mode2Pin->setLevel(gpio::PIN_LEVEL_HIGH);
-  }
-
-  if (step == motor::driver::MOTOR_1_32_STEP) {
-    m_mode0Pin->setLevel(gpio::PIN_LEVEL_HIGH);
-    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
-    m_mode2Pin->setLevel(gpio::PIN_LEVEL_HIGH);
-  }
+uint32_t MotorDriver::getMicrostep() const {
+  return m_microstep;
 }
 
-void MotorDriver::setDirection(motor::driver::MotorRotateDirection direction) {
+void MotorDriver::setDirection(int8_t direction) {
   if (direction == motor::driver::MOTOR_ROTATE_CW) {
     m_directionPin->setLevel(gpio::PIN_LEVEL_LOW);
   }
 
   if (direction == motor::driver::MOTOR_ROTATE_CCW) {
     m_directionPin->setLevel(gpio::PIN_LEVEL_HIGH);
+  }
+}
+
+void MotorDriver::setMicrostep(uint32_t const microstep) {
+  if (microstep >= 32) {
+    m_microstep = 32;
+    m_mode0Pin->setLevel(gpio::PIN_LEVEL_HIGH);
+    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_mode2Pin->setLevel(gpio::PIN_LEVEL_HIGH);
+    return;
+  }
+
+  if (microstep >= 16) {
+    m_microstep = 16;
+    m_mode0Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_mode2Pin->setLevel(gpio::PIN_LEVEL_HIGH);
+    return;
+  }
+
+  if (microstep >= 8) {
+    m_microstep = 8;
+    m_mode0Pin->setLevel(gpio::PIN_LEVEL_HIGH);
+    m_mode1Pin->setLevel(gpio::PIN_LEVEL_HIGH);
+    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    return;
+  }
+
+  if (microstep >= 4) {
+    m_microstep = 4;
+    m_mode0Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_mode1Pin->setLevel(gpio::PIN_LEVEL_HIGH);
+    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    return;
+  }
+
+  if (microstep >= 2) {
+    m_microstep = 2;
+    m_mode0Pin->setLevel(gpio::PIN_LEVEL_HIGH);
+    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    return;
+  }
+
+  if (microstep >= 1) {
+    m_microstep = 1;
+    m_mode0Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_mode1Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_mode2Pin->setLevel(gpio::PIN_LEVEL_LOW);
+    return;
   }
 }
 

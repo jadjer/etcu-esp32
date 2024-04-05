@@ -35,20 +35,24 @@ void ModeButton::registerChangeValueCallback(ModeButtonChangeStateCallbackFuncti
 }
 
 void ModeButton::process() {
-  auto const mode1ButtonState = m_modeButton1->getLevel();
-  auto const mode2ButtonState = m_modeButton2->getLevel();
+  if (not m_changeStateCallbackFunction) {
+    return;
+  }
+
+  auto const mode1ButtonLevel = m_modeButton1->getLevel();
+  auto const mode2ButtonLevel = m_modeButton2->getLevel();
 
   ModeButtonState modeButtonState = MODE_BUTTON_STATE_UNKNOWN;
 
-  if ((mode1ButtonState == gpio::PIN_LEVEL_LOW) and (mode2ButtonState == gpio::PIN_LEVEL_HIGH)) {
+  if ((mode1ButtonLevel == gpio::PIN_LEVEL_LOW) and (mode2ButtonLevel == gpio::PIN_LEVEL_HIGH)) {
     modeButtonState = MODE_BUTTON_STATE_MODE_1;
   }
 
-  if ((mode1ButtonState == gpio::PIN_LEVEL_HIGH) and (mode2ButtonState == gpio::PIN_LEVEL_HIGH)) {
+  if ((mode1ButtonLevel == gpio::PIN_LEVEL_HIGH) and (mode2ButtonLevel == gpio::PIN_LEVEL_HIGH)) {
     modeButtonState = MODE_BUTTON_STATE_MODE_2;
   }
 
-  if ((mode1ButtonState == gpio::PIN_LEVEL_HIGH) and (mode2ButtonState == gpio::PIN_LEVEL_LOW)) {
+  if ((mode1ButtonLevel == gpio::PIN_LEVEL_HIGH) and (mode2ButtonLevel == gpio::PIN_LEVEL_LOW)) {
     modeButtonState = MODE_BUTTON_STATE_MODE_3;
   }
 
@@ -56,11 +60,9 @@ void ModeButton::process() {
     return;
   }
 
-  ESP_LOGI(tag, "Mode %d", modeButtonState);
+  m_changeStateCallbackFunction(modeButtonState);
 
-  if (m_changeStateCallbackFunction) {
-    m_changeStateCallbackFunction(modeButtonState);
-  }
+  ESP_LOGI(tag, "Mode %d", modeButtonState);
 
   m_modeButtonState = modeButtonState;
 }

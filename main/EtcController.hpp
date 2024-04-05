@@ -18,47 +18,51 @@
 
 #pragma once
 
+#include "executor/Node.hpp"
 #include <cstdlib>
 #include <functional>
 
 using EtcControllerChangeValueCallbackFunction = std::function<void(uint32_t)>;
 
-class EtcController {
+class EtcController : public executor::Node {
 public:
   EtcController();
 
-  ~EtcController();
+  ~EtcController() override = default;
 
 public:
-  void registerChangeValueCallback(EtcControllerChangeValueCallbackFunction const &controllerChangeValueCallbackFunction);
+  void registerChangeValueCallback(EtcControllerChangeValueCallbackFunction const &changeMotorPositionCallbackFunction);
 
 public:
-  void setRPM(uint32_t revolutionPerMinute);
+  void setVehicleRPM(uint32_t revolutionPerMinute);
+  void setVehicleSpeed(uint32_t speedInKilometersPerHour);
+  void setVehicleClutchState(bool clutchIsEnabled);
 
-  void setSpeed(uint32_t speedInKilometersPerHour);
-
-  void setClutch(bool clutchIsEnabled);
-
-  void setAcceleration(uint32_t accelerationValue);
+public:
+  void setAcceleratorValue(uint32_t acceleratorValue);
 
 public:
   void modeEnable();
-
   void modeDisable();
 
-public:
-  void process();
-
 private:
-  EtcControllerChangeValueCallbackFunction m_changeValueCallbackFunction;
+  EtcControllerChangeValueCallbackFunction m_changeMotorPositionCallbackFunction;
 
 private:
   bool m_clutchIsEnabled;
 
 private:
-  uint32_t m_accelerationValue;
-  uint32_t m_revolutionPerMinute;
-  uint32_t m_minimalAccelerationValue;
-  uint32_t m_speed_InKilometersPerHour;
+  uint32_t m_acceleratorCurrentValue;
+  uint32_t m_acceleratorMinimalValue;
+
+private:
+  uint32_t m_vehicleTPS_InMillivolts;
+  uint32_t m_vehicleSpeed_InKilometersPerHour;
+  uint32_t m_vehicleRevolutions_InRevolutionsPerMinute;
+
+private:
   uint32_t m_cruiseSpeed_InKilometersPerHour;
+
+private:
+  void process() override;
 };

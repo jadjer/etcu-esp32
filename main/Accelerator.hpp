@@ -36,5 +36,16 @@ protected:
   void process() override;
 
 private:
-  AcceleratorChangeValueCallbackFunction m_changeValueCallbackFunction = nullptr;
+  [[nodiscard]] uint32_t convertVoltageToPercentage(uint32_t voltageInMillivolts) const;
+
+private:
+  uint32_t const m_minimalVoltage_InMillivolts;
+  uint32_t const m_maximalVoltage_InMillivolts;
+  uint32_t const m_trashholdVoltage_InMillivolts;
+
+private:
+  AcceleratorChangeValueCallbackFunction m_changeValueCallbackFunction;
+
+private:
+  uint32_t m_lastValue_InMillivolts = 0;
 };
