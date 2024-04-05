@@ -25,7 +25,7 @@
 
 class MotorController : public executor::Node {
 public:
-  MotorController();
+  explicit MotorController(float minSpeed = 100, float maxSpeed = 1000, uint32_t maxSteps = 200);
   ~MotorController() override = default;
 
 public:
@@ -34,11 +34,19 @@ public:
   void setDeceleration(float deceleration);
 
 public:
-  void setPosition(int32_t position);
+  void setPosition(uint32_t position);
 
 private:
   void process() override;
 
 private:
+  uint32_t const m_maxSteps;
+  float const m_maxSpeed;
+  float const m_minSpeed;
+
+private:
   MotorControllerPtr m_motorController;
+
+private:
+  float m_speed;
 };
