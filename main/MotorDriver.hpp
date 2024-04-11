@@ -86,7 +86,3 @@ private:
 private:
   uint32_t m_microstep;
 };
-
-#include <memory>
-
-using MotorDriverPtr = std::unique_ptr<MotorDriver>;

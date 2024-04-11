@@ -18,6 +18,7 @@
 
 #include "MotorController.hpp"
 
+#include <thread>
 #include <esp_log.h>
 
 #include "MotorDriver.hpp"
@@ -28,7 +29,8 @@ MotorController::MotorController(float const minSpeed, float const maxSpeed, uin
     m_maxSteps(maxSteps),
     m_maxSpeed(maxSpeed),
     m_minSpeed(minSpeed),
-    m_motorController(std::make_unique<motor::MotorController>(std::make_unique<MotorDriver>())),
+    m_motorDriver(std::make_shared<MotorDriver>()),
+    m_motorController(std::make_unique<motor::MotorController>(m_motorDriver)),
     m_speed(m_maxSpeed) {
   m_motorController->setMicrostep(32);
 }
@@ -70,4 +72,11 @@ void MotorController::setPosition(uint32_t const position) {
 
 void MotorController::process() {
   m_motorController->processMovement();
+
+  if (m_motorDriver->isFault()) {
+    ESP_LOGI(tag, "Motor is fault. Resetting... (sleeping 1 second)");
+    m_motorDriver->disable();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    m_motorDriver->enable();
+  }
 }

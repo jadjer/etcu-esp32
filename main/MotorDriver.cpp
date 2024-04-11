@@ -26,7 +26,7 @@
 #include "gpio/OutputPin.hpp"
 
 MotorDriver::MotorDriver() : m_stepPin(std::make_unique<gpio::OutputPin>(11)),
-                             m_decayPin(std::make_unique<gpio::OutputPin>(14)),
+                             m_decayPin(std::make_unique<gpio::OutputPin>(14, gpio::PIN_LEVEL_HIGH)),
                              m_mode0Pin(std::make_unique<gpio::OutputPin>(10)),
                              m_mode1Pin(std::make_unique<gpio::OutputPin>(9)),
                              m_mode2Pin(std::make_unique<gpio::OutputPin>(20)),
@@ -56,11 +56,11 @@ uint32_t MotorDriver::getMicrostep() const {
 
 void MotorDriver::setDirection(int8_t direction) {
   if (direction == motor::driver::MOTOR_ROTATE_CW) {
-    m_directionPin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_directionPin->setLevel(gpio::PIN_LEVEL_HIGH);
   }
 
   if (direction == motor::driver::MOTOR_ROTATE_CCW) {
-    m_directionPin->setLevel(gpio::PIN_LEVEL_HIGH);
+    m_directionPin->setLevel(gpio::PIN_LEVEL_LOW);
   }
 }
 

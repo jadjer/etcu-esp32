@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "MotorDriver.hpp"
 #include "executor/Node.hpp"
 #include "motor/MotorController.hpp"
 #include "motor/interface/ILimiter.hpp"
@@ -45,6 +46,7 @@ private:
   float const m_minSpeed;
 
 private:
+  IDriverPtr m_motorDriver;
   MotorControllerPtr m_motorController;
 
 private:

@@ -24,12 +24,12 @@
 #include "SetupButton.hpp"
 #include "EtcController.hpp"
 
-constexpr uint32_t const motorDefaultSpeed = 1000;
+constexpr uint32_t const motorDefaultSpeed = 1500;
 constexpr uint32_t const motorDefaultAcceleration = 10000;
 constexpr uint32_t const motorDefaultDeceleration = 20000;
 
 extern "C" void app_main(void) {
-  auto motorController = std::make_shared<MotorController>(100, motorDefaultSpeed);
+  auto motorController = std::make_shared<MotorController>(500, motorDefaultSpeed, 450);
   motorController->setSpeed(motorDefaultSpeed);
   motorController->setAcceleration(motorDefaultAcceleration);
   motorController->setDeceleration(motorDefaultDeceleration);
@@ -63,11 +63,11 @@ extern "C" void app_main(void) {
         float speedRate = 1.0;
 
         if (modeButtonState == MODE_BUTTON_STATE_MODE_1) {
-          speedRate = 0.1;
+          speedRate = 0.3;
         }
 
         if (modeButtonState == MODE_BUTTON_STATE_MODE_2) {
-          speedRate = 0.3;
+          speedRate = 0.5;
         }
 
         if (modeButtonState == MODE_BUTTON_STATE_MODE_3) {
