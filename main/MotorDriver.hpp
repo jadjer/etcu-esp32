@@ -84,5 +84,7 @@ private:
   uint32_t m_lastStepTime;
 
 private:
+  bool m_isEnabled;
+  bool m_isSleeping;
   uint32_t m_microstep;
 };

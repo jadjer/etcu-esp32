@@ -25,14 +25,15 @@
 #include "EtcController.hpp"
 
 constexpr uint32_t const motorDefaultSpeed = 1500;
-constexpr uint32_t const motorDefaultAcceleration = 10000;
-constexpr uint32_t const motorDefaultDeceleration = 20000;
+constexpr uint32_t const motorDefaultAcceleration = 15000;
+constexpr uint32_t const motorDefaultDeceleration = 30000;
 
 extern "C" void app_main(void) {
-  auto motorController = std::make_shared<MotorController>(500, motorDefaultSpeed, 450);
+  auto motorController = std::make_shared<MotorController>(500, motorDefaultSpeed, 500);
   motorController->setSpeed(motorDefaultSpeed);
   motorController->setAcceleration(motorDefaultAcceleration);
   motorController->setDeceleration(motorDefaultDeceleration);
+  motorController->moveToHome();
 
   auto etcController = std::make_shared<EtcController>();
   etcController->registerChangeValueCallback(

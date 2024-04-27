@@ -45,6 +45,8 @@ MotorDriver::MotorDriver() : m_stepPin(std::make_unique<gpio::OutputPin>(11)),
                              m_minimalPeriod(1 / 250000),
                              m_lastStepTime(0),
 
+                             m_isEnabled(false),
+                             m_isSleeping(false),
                              m_microstep(1) {
   MotorDriver::setDirection(motor::driver::MOTOR_ROTATE_CW);
   MotorDriver::setMicrostep(motor::driver::MOTOR_FULL_STEP);
@@ -56,11 +58,11 @@ uint32_t MotorDriver::getMicrostep() const {
 
 void MotorDriver::setDirection(int8_t direction) {
   if (direction == motor::driver::MOTOR_ROTATE_CW) {
-    m_directionPin->setLevel(gpio::PIN_LEVEL_HIGH);
+    m_directionPin->setLevel(gpio::PIN_LEVEL_LOW);
   }
 
   if (direction == motor::driver::MOTOR_ROTATE_CCW) {
-    m_directionPin->setLevel(gpio::PIN_LEVEL_LOW);
+    m_directionPin->setLevel(gpio::PIN_LEVEL_HIGH);
   }
 }
 
@@ -115,11 +117,11 @@ void MotorDriver::setMicrostep(uint32_t const microstep) {
 }
 
 bool MotorDriver::isEnabled() const {
-  return m_isFaultPin->getLevel() == gpio::PIN_LEVEL_LOW;
+  return m_isEnabled;
 }
 
 bool MotorDriver::isSleeping() const {
-  return m_isFaultPin->getLevel() == gpio::PIN_LEVEL_LOW;
+  return m_isSleeping;
 }
 
 bool MotorDriver::inHome() const {
@@ -132,18 +134,22 @@ bool MotorDriver::isFault() const {
 
 void MotorDriver::enable() {
   m_enablePin->setLevel(gpio::PIN_LEVEL_LOW);
+  m_isEnabled = true;
 }
 
 void MotorDriver::disable() {
   m_enablePin->setLevel(gpio::PIN_LEVEL_HIGH);
+  m_isEnabled = false;
 }
 
 void MotorDriver::sleep() {
   m_sleepPin->setLevel(gpio::PIN_LEVEL_LOW);
+  m_isSleeping = true;
 }
 
 void MotorDriver::wake() {
   m_sleepPin->setLevel(gpio::PIN_LEVEL_HIGH);
+  m_isSleeping = false;
 }
 
 void MotorDriver::stepUp() {
