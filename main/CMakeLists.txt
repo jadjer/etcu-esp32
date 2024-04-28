@@ -9,6 +9,8 @@ set(SOURCES
         SetupButton.cpp
         EtcController.cpp
         MotorController.cpp
+
+        ble/gatt_svr.cpp
 )
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS .)
