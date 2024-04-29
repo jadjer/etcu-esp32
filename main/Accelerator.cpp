@@ -137,6 +137,10 @@ void Accelerator::process() {
 
   uint32_t voltageDifference_InMillivolts = 0;
 
+  if (voltage_InMillivolts == m_lastValue_InMillivolts) {
+    return;
+  }
+
   if (voltage_InMillivolts > m_lastValue_InMillivolts) {
     voltageDifference_InMillivolts = voltage_InMillivolts - m_lastValue_InMillivolts;
   }

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "stepper/MotorDriver.hpp"
 #include "executor/Node.hpp"
 #include "motor/MotorController.hpp"
 #include "motor/interface/ILimiter.hpp"
@@ -36,17 +37,23 @@ public:
 public:
   void setPosition(uint32_t position);
 
+public:
+  void moveToHome();
+
 private:
   void process() override;
 
 private:
   uint32_t const m_maxSteps;
+  uint32_t const m_sleepAfterMotion_InUS;
   float const m_maxSpeed;
   float const m_minSpeed;
 
 private:
+  IDriverPtr m_motorDriver;
   MotorControllerPtr m_motorController;
 
 private:
   float m_speed;
+  uint32_t m_lastMotionTime_InUS;
 };

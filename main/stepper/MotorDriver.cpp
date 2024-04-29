@@ -1,4 +1,4 @@
-// Copyright 2023 Pavel Suprunov
+// Copyright 2024 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,7 +11,6 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 //
 // Created by jadjer on 29.09.23.
@@ -26,7 +25,7 @@
 #include "gpio/OutputPin.hpp"
 
 MotorDriver::MotorDriver() : m_stepPin(std::make_unique<gpio::OutputPin>(11)),
-                             m_decayPin(std::make_unique<gpio::OutputPin>(14)),
+                             m_decayPin(std::make_unique<gpio::OutputPin>(14, gpio::PIN_LEVEL_HIGH)),
                              m_mode0Pin(std::make_unique<gpio::OutputPin>(10)),
                              m_mode1Pin(std::make_unique<gpio::OutputPin>(9)),
                              m_mode2Pin(std::make_unique<gpio::OutputPin>(20)),
@@ -45,14 +44,16 @@ MotorDriver::MotorDriver() : m_stepPin(std::make_unique<gpio::OutputPin>(11)),
                              m_minimalPeriod(1 / 250000),
                              m_lastStepTime(0),
 
+                             m_isEnabled(false),
+                             m_isSleeping(false),
                              m_microstep(1) {
   MotorDriver::setDirection(motor::driver::MOTOR_ROTATE_CW);
   MotorDriver::setMicrostep(motor::driver::MOTOR_FULL_STEP);
 }
 
-uint32_t MotorDriver::getMicrostep() const {
-  return m_microstep;
-}
+//uint32_t MotorDriver::getMicrostep() const {
+//  return m_microstep;
+//}
 
 void MotorDriver::setDirection(int8_t direction) {
   if (direction == motor::driver::MOTOR_ROTATE_CW) {
@@ -115,36 +116,40 @@ void MotorDriver::setMicrostep(uint32_t const microstep) {
 }
 
 bool MotorDriver::isEnabled() const {
-  return m_isFaultPin->getLevel() == gpio::PIN_LEVEL_LOW;
+  return m_isEnabled;
 }
 
-bool MotorDriver::isSleeping() const {
-  return m_isFaultPin->getLevel() == gpio::PIN_LEVEL_LOW;
-}
+//bool MotorDriver::isSleeping() const {
+//  return m_isSleeping;
+//}
 
-bool MotorDriver::inHome() const {
-  return m_inHomePin->getLevel() == gpio::PIN_LEVEL_LOW;
-}
+//bool MotorDriver::inHome() const {
+//  return m_inHomePin->getLevel() == gpio::PIN_LEVEL_LOW;
+//}
 
-bool MotorDriver::isFault() const {
-  return m_isFaultPin->getLevel() == gpio::PIN_LEVEL_LOW;
-}
+//bool MotorDriver::isFault() const {
+//  return m_isFaultPin->getLevel() == gpio::PIN_LEVEL_LOW;
+//}
 
 void MotorDriver::enable() {
   m_enablePin->setLevel(gpio::PIN_LEVEL_LOW);
+  m_isEnabled = true;
 }
 
 void MotorDriver::disable() {
   m_enablePin->setLevel(gpio::PIN_LEVEL_HIGH);
+  m_isEnabled = false;
 }
 
-void MotorDriver::sleep() {
-  m_sleepPin->setLevel(gpio::PIN_LEVEL_LOW);
-}
+//void MotorDriver::sleep() {
+//  m_sleepPin->setLevel(gpio::PIN_LEVEL_LOW);
+//  m_isSleeping = true;
+//}
 
-void MotorDriver::wake() {
-  m_sleepPin->setLevel(gpio::PIN_LEVEL_HIGH);
-}
+//void MotorDriver::wake() {
+//  m_sleepPin->setLevel(gpio::PIN_LEVEL_HIGH);
+//  m_isSleeping = false;
+//}
 
 void MotorDriver::stepUp() {
   auto const currentTime = esp_timer_get_time();
