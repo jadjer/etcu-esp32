@@ -15,25 +15,26 @@
 
 #include <cstdint>
 
-#include "executor/Executor.hpp"
-#include "bluetooth/Bluetooth.hpp"
+//#include "executor/Executor.hpp"
+
+#include "sdkconfig.h"
+
+#include "NimBLEDevice.h"
 
 //#include "Accelerator.hpp"
 //#include "ModeButton.hpp"
 //#include "SetupButton.hpp"
 //#include "EtcController.hpp"
 //#include "stepper/MotorController.hpp"
-#include "bluetooth/ThrottlePositionCharacteristic.hpp"
 
 constexpr uint32_t const motorDefaultSpeed = 1500;
 constexpr uint32_t const motorDefaultAcceleration = 15000;
 constexpr uint32_t const motorDefaultDeceleration = 30000;
 
 extern "C" void app_main(void) {
-  auto throttlePositionCharacteristic = std::make_shared<ThrottlePositionCharacteristic>();
-  auto bluetooth = std::make_unique<bluetooth::Bluetooth>("ETCU");
-  bluetooth->addCharacteristic(throttlePositionCharacteristic);
-  bluetooth->start();
+    NimBLEDevice::init("ETCU");
+    NimBLEDevice::setMTU(517);
+    NimBLEDevice::startAdvertising();
 
 //  auto motorController = std::make_shared<MotorController>(500, motorDefaultSpeed, 500);
 //  motorController->setSpeed(motorDefaultSpeed);

@@ -11,8 +11,6 @@ set(SOURCES
 #
 #        stepper/MotorDriver.cpp
 #        stepper/MotorController.cpp
-
-        bluetooth/ThrottlePositionCharacteristic.cpp
 )
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS .)
