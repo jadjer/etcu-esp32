@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "MotorDriver.hpp"
+#include "stepper/MotorDriver.hpp"
 #include "executor/Node.hpp"
 #include "motor/MotorController.hpp"
 #include "motor/interface/ILimiter.hpp"

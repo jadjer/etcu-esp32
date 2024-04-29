@@ -21,9 +21,9 @@
 #include <memory>
 
 #include "gpio/PinLevel.hpp"
-#include "motor/driver/interface/IDriver.hpp"
 #include "gpio/interface/IInputPin.hpp"
 #include "gpio/interface/IOutputPin.hpp"
+#include "motor/driver/interface/IDriver.hpp"
 
 using PinLevel = gpio::PinLevel;
 using PinInput = IInputPinPtr<PinLevel>;
