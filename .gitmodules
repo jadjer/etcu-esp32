@@ -7,6 +7,6 @@
 [submodule "components/stepper"]
 	path = components/stepper
 	url = https://github.com/jadjer/esp32-stepper.git
-[submodule "components/bluetooth"]
-	path = components/bluetooth
+[submodule "components/nimble"]
+	path = components/nimble
 	url = https://github.com/jadjer/esp32-nimble.git
