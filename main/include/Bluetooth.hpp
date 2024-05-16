@@ -13,18 +13,22 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 3/23/24.
+// Created by jadjer on 5/16/24.
 //
 
-#include "Limiter.hpp"
+#pragma once
 
-#include "gpio/InputPin.hpp"
+class Updater;
 
-Limiter::Limiter() : m_homeLimitPin(std::make_unique<gpio::InputPin>(0, gpio::PIN_LEVEL_HIGH)) {
+class Bluetooth {
+public:
+  explicit Bluetooth(char const * deviceName);
+  ~Bluetooth();
 
-}
+public:
+  void setUpdater(Updater *updater);
 
-bool Limiter::isActive() const {
-  return m_homeLimitPin->getLevel() == gpio::PinLevel::PIN_LEVEL_LOW;
-}
-
+public:
+  void start();
+  void stop();
+};

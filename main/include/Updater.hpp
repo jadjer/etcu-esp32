@@ -13,26 +13,36 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 3/23/24.
+// Created by jadjer on 5/16/24.
 //
 
 #pragma once
 
-#include "gpio/PinLevel.hpp"
-#include "gpio/interface/IInputPin.hpp"
-#include "motor/interface/ILimiter.hpp"
+#include <esp_ota_ops.h>
+#include <esp_partition.h>
+#include <freertos/ringbuf.h>
 
-using PinLevel = gpio::PinLevel;
-using PinInput = IInputPinPtr<PinLevel>;
-
-class Limiter : public motor::interface::ILimiter {
+class Updater {
 public:
-  Limiter();
-  ~Limiter() override = default;
+  Updater();
+  ~Updater();
 
 public:
-  [[nodiscard]] bool isActive() const override;
+  size_t writeData(void const *data, size_t dataSize);
+  esp_err_t finish() const;
+  esp_err_t abort() const;
 
 private:
-  PinInput m_homeLimitPin;
+  static void otaTask(void *arg);
+
+private:
+  esp_err_t writeImagePart(void const *data, size_t dataSize);
+
+private:
+  RingbufHandle_t m_ringBuffer = nullptr;
+  esp_partition_t const *m_otaPartition = nullptr;
+
+private:
+  bool m_imageHeaderWasChecked = false;
+  esp_ota_handle_t m_otaHandle = 0;
 };

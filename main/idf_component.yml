@@ -1,0 +1,10 @@
+dependencies:
+  espressif/ble_ota: "^0.1.12"
+
+  jadjer/gpio:
+    git: https://github.com/jadjer/esp32-gpio.git
+  jadjer/stepper:
+    git: https://github.com/jadjer/esp32-stepper.git
+
+  idf:
+    version: ">=5.4.0"

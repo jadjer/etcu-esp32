@@ -1,16 +1,15 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.28.1)
 
-set(SOURCES
-        main.cpp
-
-#        Limiter.cpp
-#        ModeButton.cpp
-#        Accelerator.cpp
-#        SetupButton.cpp
-#        EtcController.cpp
-#
-#        stepper/MotorDriver.cpp
-#        stepper/MotorController.cpp
+set(INCLUDE_DIRS
+        include
 )
 
-idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS .)
+set(SOURCES
+        app_main.cpp
+
+        src/Updater.cpp
+        src/Bluetooth.cpp
+        src/Configuration.cpp
+)
+
+idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS ${INCLUDE_DIRS})
