@@ -13,36 +13,13 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 5/16/24.
+// Created by jadjer on 5/23/24.
 //
 
 #pragma once
 
-#include <esp_ota_ops.h>
-#include <esp_partition.h>
-#include <freertos/ringbuf.h>
+#include <cstdint>
 
-class Updater {
-public:
-  Updater();
-  ~Updater();
+void print_bytes(uint8_t const *bytes, std::size_t len);
 
-public:
-  size_t writeData(void const *data, size_t dataSize);
-  esp_err_t finish() const;
-  esp_err_t abort() const;
-
-private:
-  static void otaTask(void *arg);
-
-private:
-  esp_err_t writeImagePart(void const *data, size_t dataSize);
-
-private:
-  RingbufHandle_t m_ringBuffer = nullptr;
-  esp_partition_t const *m_otaPartition = nullptr;
-
-private:
-  bool m_imageHeaderWasChecked = false;
-  esp_ota_handle_t m_otaHandle = 0;
-};
+void print_addr(void const *addr);

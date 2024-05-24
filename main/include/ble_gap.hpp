@@ -13,22 +13,12 @@
 // limitations under the License.
 
 //
-// Created by jadjer on 5/16/24.
+// Created by jadjer on 5/23/24.
 //
 
 #pragma once
 
-class Updater;
+#include <esp_err.h>
 
-class Bluetooth {
-public:
-  explicit Bluetooth(char const * deviceName);
-  ~Bluetooth();
+esp_err_t gap_init();
 
-public:
-  void setUpdater(Updater *updater);
-
-public:
-  void start();
-  void stop();
-};

@@ -12,23 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
-// Created by jadjer on 5/16/24.
-//
-
 #pragma once
 
-#include <nvs_flash.h>
+#include "nimble/ble.h"
+#include "modlog/modlog.h"
 
-class Configuration {
-public:
-  Configuration();
-  ~Configuration();
+#define GATT_DEVICE_INFO_UUID                   0x180A
+#define GATT_MANUFACTURER_NAME_UUID             0x2A29
+#define GATT_MODEL_NUMBER_UUID                  0x2A24
 
-public:
-  uint32_t getValue(char const *name) const;
-  void setValue(char const *name, uint32_t value) const;
+#define GATT_OTA_UUID                           0x2A13
+#define GATT_OTA_DATA_UUID                      0x2A14
+#define GATT_OTA_CONTROL_UUID                   0x2A15
 
-private:
-  uint32_t m_handle = 0;
-};
+
+extern uint16_t hrs_hrm_handle;
+
+struct ble_hs_cfg;
+struct ble_gatt_register_ctxt;
+
+void gatt_svr_register_cb(struct ble_gatt_register_ctxt *ctxt, void *arg);
+int gatt_svr_init(void);
