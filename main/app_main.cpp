@@ -12,9 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "NimBLEDevice.h"
+#include "nimble/Device.hpp"
 
 void app_main() {
-  BLEDevice::init("ETCU");
+  nimble::Device::init("ETCU");
 
+  auto const server = nimble::Device::createServer();
+
+  auto const deviceInfoService = server->createService(nimble::UUID(static_cast<uint16_t>(0x180A)));
+  auto const deviceName = deviceInfoService->createCharacteristic(nimble::UUID(static_cast<uint16_t>(0x2A00)), nimble::Property::READ);
+  auto const deviceSerialNumber = deviceInfoService->createCharacteristic(nimble::UUID(static_cast<uint16_t>(0x2A25)), nimble::Property::READ);
+  auto const deviceModelNumber = deviceInfoService->createCharacteristic(nimble::UUID(static_cast<uint16_t>(0x2A24)), nimble::Property::READ);
+
+  deviceInfoService->start();
+
+  server->start();
+
+  auto const advertising = server->getAdvertising();
+  advertising->addServiceUUID(deviceInfoService->getUUID());
+  advertising->start();
 }

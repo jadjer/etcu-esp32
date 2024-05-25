@@ -6,9 +6,6 @@ set(INCLUDE_DIR
 
 set(SOURCES
         app_main.cpp
-
-        src/gap_svr.cpp
-        src/gatt_svr.cpp
 )
 
 
