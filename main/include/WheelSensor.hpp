@@ -12,16 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bluetooth/Bluetooth.hpp"
-#include "configuration/Configuration.hpp"
-#include "controller/Controller.hpp"
+//
+// Created by jadjer on 3/19/24.
+//
 
-extern "C" void app_main() {
-  auto configuration = std::make_shared<Configuration>();
+#pragma once
 
-  Bluetooth bluetooth(configuration);
-  bluetooth.advertise();
+#include <cstdint>
 
-  Controller controller(configuration);
-  controller.spin();
-}
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/InputPin.hpp"
+
+class WheelSensor {
+  using PinLevel = gpio::PinLevel;
+  using WheelSensorPin = InputPinPtr<PinLevel>;
+
+public:
+  WheelSensor(std::uint8_t numberOfPin, float wheelLength);
+
+public:
+  [[nodiscard]] float getDistance() const;
+  [[nodiscard]] float getSpeed() const;
+
+private:
+  float m_wheelLength = 0;
+  WheelSensorPin m_wheelSensorPin = nullptr;
+};
+
+#include <memory>
+
+using WheelSensorPtr = std::unique_ptr<WheelSensor>;

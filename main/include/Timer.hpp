@@ -12,16 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bluetooth/Bluetooth.hpp"
-#include "configuration/Configuration.hpp"
-#include "controller/Controller.hpp"
+#pragma once
 
-extern "C" void app_main() {
-  auto configuration = std::make_shared<Configuration>();
+#include <cstdint>
+#include <functional>
 
-  Bluetooth bluetooth(configuration);
-  bluetooth.advertise();
+#include <esp_timer.h>
 
-  Controller controller(configuration);
-  controller.spin();
-}
+using TimerCallback = std::function<void()>;
+
+class Timer {
+public:
+  Timer();
+
+public:
+  [[nodiscard]] bool isEnabled() const;
+
+public:
+  void start(std::uint32_t delay, TimerCallback callback);
+  void stop();
+
+private:
+  static void callback(void *arg);
+
+private:
+  TimerCallback m_callback = nullptr;
+  esp_timer_handle_t m_timerHandle = nullptr;
+};
+
+#include <memory>
+
+using TimerPtr = std::unique_ptr<Timer>;

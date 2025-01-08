@@ -12,16 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bluetooth/Bluetooth.hpp"
-#include "configuration/Configuration.hpp"
-#include "controller/Controller.hpp"
+//
+// Created by jadjer on 9/24/24.
+//
 
-extern "C" void app_main() {
-  auto configuration = std::make_shared<Configuration>();
+#pragma once
 
-  Bluetooth bluetooth(configuration);
-  bluetooth.advertise();
+#include <esp_task_wdt.h>
 
-  Controller controller(configuration);
-  controller.spin();
-}
+class ControllerBase {
+public:
+  virtual ~ControllerBase() = default;
+
+public:
+  [[noreturn]] void spin();
+
+protected:
+  virtual void spinOnce() = 0;
+
+private:
+  esp_task_wdt_user_handle_t m_watchdogHandle = nullptr;
+};

@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2023 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bluetooth/Bluetooth.hpp"
-#include "configuration/Configuration.hpp"
-#include "controller/Controller.hpp"
+//
+// Created by jadjer on 01.10.23.
+//
 
-extern "C" void app_main() {
-  auto configuration = std::make_shared<Configuration>();
+#pragma once
 
-  Bluetooth bluetooth(configuration);
-  bluetooth.advertise();
+#include <cstdint>
 
-  Controller controller(configuration);
-  controller.spin();
-}
+#include "gpio/PinLevel.hpp"
+#include "gpio/interface/InputPin.hpp"
+
+class ExternalPower {
+  using PinLevel = gpio::PinLevel;
+  using ExternalPowerPin = InputPinPtr<PinLevel>;
+
+public:
+  explicit ExternalPower(std::uint8_t numberOfPin);
+
+public:
+  [[nodiscard]] bool isEnabled() const;
+
+private:
+  ExternalPowerPin m_externalPowerPin = nullptr;
+};
+
+#include <memory>
+
+using ExternalPowerPtr = std::unique_ptr<ExternalPower>;

@@ -12,16 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bluetooth/Bluetooth.hpp"
-#include "configuration/Configuration.hpp"
-#include "controller/Controller.hpp"
+//
+// Created by jadjer on 9/24/24.
+//
 
-extern "C" void app_main() {
-  auto configuration = std::make_shared<Configuration>();
+#include "controller/ControllerBase.hpp"
 
-  Bluetooth bluetooth(configuration);
-  bluetooth.advertise();
+auto constexpr TASK_RESET_PERIOD_MICROSECOND = 3000;
 
-  Controller controller(configuration);
-  controller.spin();
+[[noreturn]] void ControllerBase::spin() {
+  ESP_ERROR_CHECK(esp_task_wdt_add_user("controller_spin", &m_watchdogHandle));
+
+  while (true) {
+    ESP_ERROR_CHECK(esp_task_wdt_reset_user(m_watchdogHandle));
+    spinOnce();
+    vTaskDelay(pdMS_TO_TICKS(TASK_RESET_PERIOD_MICROSECOND));
+  }
+
+  ESP_ERROR_CHECK(esp_task_wdt_delete_user(m_watchdogHandle));
 }
