@@ -87,8 +87,7 @@ Bluetooth::~Bluetooth() {
 
 void Bluetooth::advertise() {
   auto const advertising = NimBLEDevice::getAdvertising();
-  advertising->setManufacturerData("  jadjer");
+  advertising->setManufacturerData("jadjer");
   advertising->addServiceUUID(ADVERTISING_UUID);
-  advertising->setScanResponse(true);
   advertising->start();
 }

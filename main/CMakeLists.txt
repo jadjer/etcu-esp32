@@ -7,11 +7,8 @@ set(INCLUDE_DIRS
 set(SOURCES
         app_main.cpp
 
-        src/Pump.cpp
         src/Timer.cpp
-        src/WheelSensor.cpp
         src/Configuration.cpp
-        src/ExternalPower.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ConfigurationCharacteristicCallback.cpp

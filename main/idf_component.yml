@@ -1,5 +1,5 @@
 dependencies:
-  idf: ">=5.3"
+  idf: ">=5.3.2"
   gpio:
     git: https://github.com/jadjer/esp32-gpio.git
     version: "*"

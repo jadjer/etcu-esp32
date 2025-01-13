@@ -18,10 +18,7 @@
 
 #pragma once
 
-#include "ExternalPower.hpp"
-#include "Pump.hpp"
 #include "Timer.hpp"
-#include "WheelSensor.hpp"
 
 #include "configuration/interface/Configuration.hpp"
 #include "controller/ControllerBase.hpp"
@@ -35,16 +32,8 @@ private:
   void spinOnce() override;
 
 private:
-  void pumpEnable();
-  void pumpDisable();
-  void sleep();
-
-private:
   ConfigurationPtr m_configuration = nullptr;
 
 private:
-  PumpPtr m_pumpPtr = nullptr;
   TimerPtr m_timerPtr = nullptr;
-  WheelSensorPtr m_wheelSensorPtr = nullptr;
-  ExternalPowerPtr m_externalPowerPtr = nullptr;
 };
