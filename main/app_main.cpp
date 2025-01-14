@@ -17,16 +17,13 @@
 #include "controller/Controller.hpp"
 
 //#include <motor/MotorController.hpp>
-#include <motor/driver/TMC2209.hpp>
 #include <esp_log.h>
-
-//motor::MotorController motorController(motorDriver);
-
-//motor::driver::TMC2209 motorDriver(1, 115200, 23, 22, motor::driver::SLAVE_ADDRESS_0);
-
-TMC2209 motorDriver(1, SERIAL_ADDRESS_0, 22, 23);
+#include <motor/driver/TMC2209.hpp>
 
 extern "C" void app_main() {
+  auto motorDriver = motor::driver::TMC2209(1, motor::driver::SLAVE_ADDRESS_0, 22, 23);
+  motor::MotorController motorController(motorDriver);
+
   auto const settings = motorDriver.getSettings();
   ESP_LOGI("TMC", "SETTINGS ------>");
   ESP_LOGI("TMC", "Version: %d", motorDriver.getVersion());
