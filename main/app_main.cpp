@@ -16,17 +16,16 @@
 #include "configuration/Configuration.hpp"
 #include "controller/Controller.hpp"
 
-//#include <motor/MotorController.hpp>
 #include <esp_log.h>
+#include <motor/MotorController.hpp>
 #include <motor/driver/TMC2209.hpp>
 
 extern "C" void app_main() {
-  auto motorDriver = motor::driver::TMC2209(1, motor::driver::SLAVE_ADDRESS_0, 22, 23);
-  motor::MotorController motorController(motorDriver);
+  auto const motorDriver = std::make_shared<motor::driver::TMC2209>(1, motor::driver::SLAVE_ADDRESS_0, 22, 23);
 
-  auto const settings = motorDriver.getSettings();
+  auto const settings = motorDriver->getSettings();
   ESP_LOGI("TMC", "SETTINGS ------>");
-  ESP_LOGI("TMC", "Version: %d", motorDriver.getVersion());
+  ESP_LOGI("TMC", "Version: %d", motorDriver->getVersion());
   ESP_LOGI("TMC", "settings.is_communicating = %d", settings.is_communicating);
   ESP_LOGI("TMC", "settings.is_setup = %d", settings.is_setup);
   ESP_LOGI("TMC", "settings.software_enabled = %d", settings.software_enabled);
@@ -46,7 +45,7 @@ extern "C" void app_main() {
   ESP_LOGI("TMC", "settings.analog_current_scaling_enabled = %d", settings.analog_current_scaling_enabled);
   ESP_LOGI("TMC", "settings.internal_sense_resistors_enabled = %d", settings.internal_sense_resistors_enabled);
 
-  auto const status = motorDriver.getStatus();
+  auto const status = motorDriver->getStatus();
   ESP_LOGI("TMC", "STATUS ------>");
   ESP_LOGI("TMC", "status.over_temperature_warning = %d", status.over_temperature_warning);
   ESP_LOGI("TMC", "status.over_temperature_shutdown = %d", status.over_temperature_shutdown);
@@ -63,6 +62,28 @@ extern "C" void app_main() {
   ESP_LOGI("TMC", "status.current_scaling = %d", status.current_scaling);
   ESP_LOGI("TMC", "status.stealth_chop_mode = %d", status.stealth_chop_mode);
   ESP_LOGI("TMC", "status.standstill = %d", status.standstill);
+
+//  motor::MotorController motorController(motorDriver);
+//
+//  motorController.setAccelerationInStepsPerSecondPerSecond(1000);
+//  motorController.setDecelerationInStepsPerSecondPerSecond(1000);
+//  motorController.setSpeedInStepsPerSecond(1000);
+
+  motorDriver->enable();
+  motorDriver->setDirection(motor::Direction::MOTOR_ROTATE_CW);
+
+//  ESP_LOGI("TMC", "Move revolute -1");
+//  motorController.moveRelativeInRevolutions(-1);
+//  ESP_LOGI("TMC", "Set as home");
+//  motorController.setCurrentPositionAsHomeAndStop();
+//
+//  ESP_LOGI("TMC", "Move revolute 50");
+//  motorController.moveRelativeInRevolutions(50);
+//  ESP_LOGI("TMC", "Move to home");
+//  motorController.moveToHome();
+
+  motorDriver->moveAtVelocity(100);
+  motorDriver->disable();
 
   //  auto configuration = std::make_shared<Configuration>();
 
