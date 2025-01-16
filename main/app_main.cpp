@@ -23,6 +23,17 @@
 extern "C" void app_main() {
   auto const motorDriver = std::make_shared<motor::driver::TMC2209>(1, motor::driver::SLAVE_ADDRESS_0, 22, 23);
 
+  motor::MotorController motorController(motorDriver);
+
+  motorController.setAccelerationInStepsPerSecondPerSecond(10);
+  motorController.setDecelerationInStepsPerSecondPerSecond(1000);
+  motorController.setSpeedInStepsPerSecond(600);
+
+  motorDriver->setRunCurrent(100);
+  motorDriver->enableCoolStep();
+  motorDriver->setMicroSteps(motor::MOTOR_PER_STEP_8_MICRO_STEPS);
+  motorDriver->setStallGuardThreshold(255);
+
   auto const settings = motorDriver->getSettings();
   ESP_LOGI("TMC", "SETTINGS ------>");
   ESP_LOGI("TMC", "Version: %d", motorDriver->getVersion());
@@ -63,33 +74,12 @@ extern "C" void app_main() {
   ESP_LOGI("TMC", "status.stealth_chop_mode = %d", status.stealth_chop_mode);
   ESP_LOGI("TMC", "status.standstill = %d", status.standstill);
 
-//  motor::MotorController motorController(motorDriver);
-//
-//  motorController.setAccelerationInStepsPerSecondPerSecond(1000);
-//  motorController.setDecelerationInStepsPerSecondPerSecond(1000);
-//  motorController.setSpeedInStepsPerSecond(1000);
-
   motorDriver->enable();
-  motorDriver->setDirection(motor::Direction::MOTOR_ROTATE_CW);
 
-//  ESP_LOGI("TMC", "Move revolute -1");
-//  motorController.moveRelativeInRevolutions(-1);
-//  ESP_LOGI("TMC", "Set as home");
-//  motorController.setCurrentPositionAsHomeAndStop();
-//
-//  ESP_LOGI("TMC", "Move revolute 50");
-//  motorController.moveRelativeInRevolutions(50);
-//  ESP_LOGI("TMC", "Move to home");
-//  motorController.moveToHome();
+  motorController.setCurrentPositionAsHomeAndStop();
 
-  motorDriver->moveAtVelocity(100);
-  motorDriver->disable();
-
-  //  auto configuration = std::make_shared<Configuration>();
-
-  //  Bluetooth bluetooth(configuration);
-  //  bluetooth.advertise();
-
-  //  Controller controller(configuration);
-  //  controller.spin();
+  while (true) {
+    motorController.moveRelativeInRevolutions(0.25);
+    motorController.moveToHome();
+  }
 }
