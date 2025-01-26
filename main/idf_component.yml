@@ -6,6 +6,3 @@ dependencies:
   nimble:
     git: https://github.com/h2zero/esp-nimble-cpp.git
     version: "*"
-  stepper:
-    git: https://github.com/jadjer/esp32-stepper.git
-    version: "*"
