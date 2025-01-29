@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2025 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "controller/ControllerBase.hpp"
+#include "sensor/TwistPosition.hpp"
 
-auto constexpr TASK_RESET_MILLISECONDS = 10;
+TwistPosition::TwistPosition() : m_sensor1(), m_sensor2() {
+  auto const sensorVoltage1 = m_sensor1.getVoltage();
+  auto const sensorVoltage2 = m_sensor2.getVoltage();
 
-[[noreturn]] void ControllerBase::spin() {
-  ESP_ERROR_CHECK(esp_task_wdt_add_user("controller_spin", &m_watchdogHandle));
+  auto const voltageDifferenceFromSensors = sensorVoltage2 - sensorVoltage1;
+  if (voltageDifferenceFromSensors) {
 
-  while (true) {
-    ESP_ERROR_CHECK(esp_task_wdt_reset_user(m_watchdogHandle));
-    spinOnce();
-    vTaskDelay(pdMS_TO_TICKS(TASK_RESET_MILLISECONDS));
   }
+}
 
-  ESP_ERROR_CHECK(esp_task_wdt_delete_user(m_watchdogHandle));
+Percent TwistPosition::getPercent() const {
+  return 0;
 }

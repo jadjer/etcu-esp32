@@ -28,40 +28,42 @@ void ConfigurationCharacteristicCallback::onRead(NimBLECharacteristic *pCharacte
 
   NimBLEUUID const uuid = pCharacteristic->getUUID();
 
-  if (uuid == CHARACTERISTIC_PUMP_TIMEOUT_UUID) {
-    uint64_t const pumpTimeout = m_configuration->getPumpTimeout();
-    pCharacteristic->setValue<uint64_t>(pumpTimeout);
-  }
+  //  TODO Edit characteristics
 
-  //  if (uuid == CHARACTERISTIC_WHEEL_DIAMETER_UUID) {
-  //    auto const pumpTimeout = m_configuration->getWheelLength();
-  //    pCharacteristic->setValue(pumpTimeout);
+  //  if (uuid == CHARACTERISTIC_PUMP_TIMEOUT_UUID) {
+  //    uint64_t const pumpTimeout = m_configuration->getPumpTimeout();
+  //    pCharacteristic->setValue<uint64_t>(pumpTimeout);
   //  }
-
-  if (uuid == CHARACTERISTIC_MINIMAL_SPEED_UUID) {
-    float const minimalSpeed = m_configuration->getMinimalSpeed();
-    pCharacteristic->setValue<float>(minimalSpeed);
-  }
-
-  if (uuid == CHARACTERISTIC_DISTANCE_FOR_ENABLE_UUID) {
-    float const distanceForEnable = m_configuration->getDistanceForEnable();
-    pCharacteristic->setValue<float>(distanceForEnable);
-  }
-
-  if (uuid == CHARACTERISTIC_TOTAL_DISTANCE_UUID) {
-    float const totalDistance = m_configuration->getTotalDistance();
-    pCharacteristic->setValue<float>(totalDistance);
-  }
-
-  if (uuid == CHARACTERISTIC_NEXT_DISTANCE_UUID) {
-    float const nextDistance = m_configuration->getNextDistance();
-    pCharacteristic->setValue<float>(nextDistance);
-  }
-
-  if (uuid == CHARACTERISTIC_MANUAL_LUBRICATE_UUID) {
-    bool const manualLubricate = m_configuration->isManualLubricate();
-    pCharacteristic->setValue<bool>(manualLubricate);
-  }
+  //
+  //  //  if (uuid == CHARACTERISTIC_WHEEL_DIAMETER_UUID) {
+  //  //    auto const pumpTimeout = m_configuration->getWheelLength();
+  //  //    pCharacteristic->setValue(pumpTimeout);
+  //  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_MINIMAL_SPEED_UUID) {
+  //    float const minimalSpeed = m_configuration->getMinimalSpeed();
+  //    pCharacteristic->setValue<float>(minimalSpeed);
+  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_DISTANCE_FOR_ENABLE_UUID) {
+  //    float const distanceForEnable = m_configuration->getDistanceForEnable();
+  //    pCharacteristic->setValue<float>(distanceForEnable);
+  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_TOTAL_DISTANCE_UUID) {
+  //    float const totalDistance = m_configuration->getTotalDistance();
+  //    pCharacteristic->setValue<float>(totalDistance);
+  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_NEXT_DISTANCE_UUID) {
+  //    float const nextDistance = m_configuration->getNextDistance();
+  //    pCharacteristic->setValue<float>(nextDistance);
+  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_MANUAL_LUBRICATE_UUID) {
+  //    bool const manualLubricate = m_configuration->isManualLubricate();
+  //    pCharacteristic->setValue<bool>(manualLubricate);
+  //  }
 }
 
 void ConfigurationCharacteristicCallback::onWrite(NimBLECharacteristic *pCharacteristic, NimBLEConnInfo &connInfo) {
@@ -69,30 +71,32 @@ void ConfigurationCharacteristicCallback::onWrite(NimBLECharacteristic *pCharact
 
   NimBLEUUID const uuid = pCharacteristic->getUUID();
 
-  if (uuid == CHARACTERISTIC_PUMP_TIMEOUT_UUID) {
-    auto const pumpTimeout = pCharacteristic->getValue<uint64_t>();
-    m_configuration->setPumpTimeout(pumpTimeout);
-  }
+  //  TODO Edit characteristics
 
-  //  if (uuid == CHARACTERISTIC_WHEEL_DIAMETER_UUID) {
-  //    auto const pumpTimeout = m_configuration->getWheelLength();
-  //    pCharacteristic->setValue(pumpTimeout);
+  //  if (uuid == CHARACTERISTIC_PUMP_TIMEOUT_UUID) {
+  //    auto const pumpTimeout = pCharacteristic->getValue<uint64_t>();
+  //    m_configuration->setPumpTimeout(pumpTimeout);
   //  }
-
-  if (uuid == CHARACTERISTIC_MINIMAL_SPEED_UUID) {
-    auto const minimalSpeed = pCharacteristic->getValue<float>();
-    m_configuration->setMinimalSpeed(minimalSpeed);
-  }
-
-  if (uuid == CHARACTERISTIC_DISTANCE_FOR_ENABLE_UUID) {
-    auto const distanceForEnable = pCharacteristic->getValue<float>();
-    m_configuration->setDistanceForEnable(distanceForEnable);
-  }
-
-  if (uuid == CHARACTERISTIC_MANUAL_LUBRICATE_UUID) {
-    auto const manualLubricate = pCharacteristic->getValue<bool>();
-    m_configuration->setManualLubricate(manualLubricate);
-  }
+  //
+  //  //  if (uuid == CHARACTERISTIC_WHEEL_DIAMETER_UUID) {
+  //  //    auto const pumpTimeout = m_configuration->getWheelLength();
+  //  //    pCharacteristic->setValue(pumpTimeout);
+  //  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_MINIMAL_SPEED_UUID) {
+  //    auto const minimalSpeed = pCharacteristic->getValue<float>();
+  //    m_configuration->setMinimalSpeed(minimalSpeed);
+  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_DISTANCE_FOR_ENABLE_UUID) {
+  //    auto const distanceForEnable = pCharacteristic->getValue<float>();
+  //    m_configuration->setDistanceForEnable(distanceForEnable);
+  //  }
+  //
+  //  if (uuid == CHARACTERISTIC_MANUAL_LUBRICATE_UUID) {
+  //    auto const manualLubricate = pCharacteristic->getValue<bool>();
+  //    m_configuration->setManualLubricate(manualLubricate);
+  //  }
 }
 
 void ConfigurationCharacteristicCallback::onStatus(NimBLECharacteristic *pCharacteristic, int code) {

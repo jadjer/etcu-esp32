@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2025 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,34 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
-
-#include <cstdint>
-#include <functional>
-
-#include <esp_timer.h>
-
-using TimerCallback = std::function<void()>;
-
-class Timer {
-public:
-  Timer();
-
-public:
-  [[nodiscard]] bool isEnabled() const;
-
-public:
-  void start(std::uint32_t delay, TimerCallback callback);
-  void stop();
-
-private:
-  static void callback(void *arg);
-
-private:
-  TimerCallback m_callback = nullptr;
-  esp_timer_handle_t m_timerHandle = nullptr;
-};
-
-#include <memory>
-
-using TimerPtr = std::unique_ptr<Timer>;
+#include "Indicator.hpp"

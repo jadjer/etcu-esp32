@@ -12,20 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <servo/ServoBuilder.hpp>
+#include "configuration/Configuration.hpp"
+#include "controller/Controller.hpp"
 
 extern "C" void app_main() {
-  auto const servo = servo::ServoBuilder()
-                         .setChannel(0)
-                         .setPin(19)
-                         .setAngle(0, 90)
-                         .setWidth(1000, 2000)
-                         .setFrequency(400)
-                         .build();
+  auto configuration = std::make_shared<Configuration>();
 
-  if (not servo) {
-    return;
-  }
-
-  servo->move(45);
+  Controller controller(configuration);
+  controller.spin();
 }

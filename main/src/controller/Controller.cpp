@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2025 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,32 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
-// Created by jadjer on 3/18/24.
-//
-
 #include "controller/Controller.hpp"
-
 #include <esp_log.h>
-#include <esp_sleep.h>
 
 auto constexpr TAG = "Controller";
 
-auto constexpr MICROSECONDS_PER_SECOND = 1000000;
-
 Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)),
-                                                         m_timerPtr(std::make_unique<Timer>()){
-
-  auto const nextDistance = m_configuration->getNextDistance();
-  auto const totalDistance = m_configuration->getTotalDistance();
-
-  if (nextDistance <= totalDistance) {
-    auto const distanceForEnable = m_configuration->getDistanceForEnable();
-
-    m_configuration->saveNextDistance(totalDistance + distanceForEnable);
-  }
+                                                         m_throttle(),
+                                                         m_modeSwitch(),
+                                                         m_guardSwitch(),
+                                                         m_breakSwitch(),
+                                                         m_clutchSwitch(),
+                                                         m_indicator(),
+                                                         m_twistPosition() {
 }
 
 void Controller::spinOnce() {
+  auto const percentageOfTwisting = m_twistPosition.getPercent();
 
+  ESP_LOGD(TAG, "Percentage of twisting position %d", percentageOfTwisting);
+
+  m_throttle.setPercent(percentageOfTwisting);
 }

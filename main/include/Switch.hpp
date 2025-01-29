@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2025 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,18 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "controller/ControllerBase.hpp"
+#pragma once
 
-auto constexpr TASK_RESET_MILLISECONDS = 10;
+class Switch {
+public:
+  Switch();
 
-[[noreturn]] void ControllerBase::spin() {
-  ESP_ERROR_CHECK(esp_task_wdt_add_user("controller_spin", &m_watchdogHandle));
+public:
+  [[nodiscard]] bool isEnabled() const;
+};
 
-  while (true) {
-    ESP_ERROR_CHECK(esp_task_wdt_reset_user(m_watchdogHandle));
-    spinOnce();
-    vTaskDelay(pdMS_TO_TICKS(TASK_RESET_MILLISECONDS));
-  }
-
-  ESP_ERROR_CHECK(esp_task_wdt_delete_user(m_watchdogHandle));
-}

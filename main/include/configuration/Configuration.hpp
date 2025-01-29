@@ -28,29 +28,14 @@ public:
   ~Configuration() override;
 
 public:
-  [[nodiscard]] bool isLubricate() const override;
-  [[nodiscard]] bool isManualLubricate() const override;
-  [[nodiscard]] std::uint8_t getExternalPowerPin() const override;
-  [[nodiscard]] std::uint8_t getPumpPin() const override;
-  [[nodiscard]] std::uint8_t getWheelSensorPin() const override;
-  [[nodiscard]] std::uint32_t getPumpTimeout() const override;
-  [[nodiscard]] float getWheelLength() const override;
-  [[nodiscard]] float getMinimalSpeed() const override;
-  [[nodiscard]] float getDistanceForEnable() const override;
-  [[nodiscard]] float getTotalDistance() const override;
-  [[nodiscard]] float getNextDistance() const override;
-
-public:
-  void setLubricate(bool lubricate) override;
-  void setManualLubricate(bool lubricate) override;
-  void setPumpTimeout(std::uint32_t timeout) override;
-  void setWheelLength(float wheelLength) override;
-  void setMinimalSpeed(float minimalSpeed) override;
-  void setDistanceForEnable(float distance) override;
-  void saveTotalDistance(float distance) override;
-  void saveNextDistance(float distance) override;
+  [[nodiscard]] interface::Pin getIndicatorPin() const override;
+  [[nodiscard]] interface::Pin getModeSwitchPin() const override;
+  [[nodiscard]] interface::Pin getBreakSwitchPin() const override;
+  [[nodiscard]] interface::Pin getGuardSwitchPin() const override;
+  [[nodiscard]] interface::Pin getClutchSwitchPin() const override;
+  [[nodiscard]] interface::Pin getTwistSensor1Pin() const override;
+  [[nodiscard]] interface::Pin getTwistSensor2Pin() const override;
 
 private:
-  bool m_isManualLubricate;
   nvs_handle_t m_storageHandle;
 };

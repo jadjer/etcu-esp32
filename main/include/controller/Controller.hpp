@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2025 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
-// Created by jadjer on 3/18/24.
-//
-
 #pragma once
 
-#include "Timer.hpp"
-
+#include "Indicator.hpp"
+#include "Switch.hpp"
 #include "configuration/interface/Configuration.hpp"
 #include "controller/ControllerBase.hpp"
+#include "sensor/Throttle.hpp"
+#include "sensor/TwistPosition.hpp"
 
 class Controller : public ControllerBase {
 public:
@@ -35,5 +33,11 @@ private:
   ConfigurationPtr m_configuration = nullptr;
 
 private:
-  TimerPtr m_timerPtr = nullptr;
+  Throttle m_throttle;
+  Switch m_modeSwitch;
+  Switch m_guardSwitch;
+  Switch m_breakSwitch;
+  Switch m_clutchSwitch;
+  Indicator m_indicator;
+  TwistPosition m_twistPosition;
 };

@@ -7,8 +7,14 @@ set(INCLUDE_DIRS
 set(SOURCES
         app_main.cpp
 
-        src/Timer.cpp
+        src/Switch.cpp
+        src/Indicator.cpp
         src/Configuration.cpp
+
+        src/sensor/Throttle.cpp
+        src/sensor/SensorBase.cpp
+        src/sensor/TwistPosition.cpp
+        src/sensor/TwistPositionSensor.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ConfigurationCharacteristicCallback.cpp

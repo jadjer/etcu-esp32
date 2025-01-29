@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2025 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,42 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
-// Created by jadjer on 9/20/24.
-//
-
 #pragma once
 
 #include <cstdint>
 
 namespace interface {
 
+using Pin = std::uint8_t;
+
 class Configuration {
 public:
   virtual ~Configuration() = default;
 
 public:
-  [[nodiscard]] virtual bool isLubricate() const = 0;
-  [[nodiscard]] virtual bool isManualLubricate() const = 0;
-  [[nodiscard]] virtual std::uint8_t getExternalPowerPin() const = 0;
-  [[nodiscard]] virtual std::uint8_t getPumpPin() const = 0;
-  [[nodiscard]] virtual std::uint8_t getWheelSensorPin() const = 0;
-  [[nodiscard]] virtual std::uint32_t getPumpTimeout() const = 0;
-  [[nodiscard]] virtual float getWheelLength() const = 0;
-  [[nodiscard]] virtual float getMinimalSpeed() const = 0;
-  [[nodiscard]] virtual float getDistanceForEnable() const = 0;
-  [[nodiscard]] virtual float getTotalDistance() const = 0;
-  [[nodiscard]] virtual float getNextDistance() const = 0;
-
-public:
-  virtual void setLubricate(bool lubricate) = 0;
-  virtual void setManualLubricate(bool lubricate) = 0;
-  virtual void setPumpTimeout(std::uint32_t timeout) = 0;
-  virtual void setWheelLength(float wheelLength) = 0;
-  virtual void setMinimalSpeed(float minimalSpeed) = 0;
-  virtual void setDistanceForEnable(float distance) = 0;
-  virtual void saveTotalDistance(float distance) = 0;
-  virtual void saveNextDistance(float distance) = 0;
+  [[nodiscard]] virtual Pin getIndicatorPin() const = 0;
+  [[nodiscard]] virtual Pin getModeSwitchPin() const = 0;
+  [[nodiscard]] virtual Pin getBreakSwitchPin() const = 0;
+  [[nodiscard]] virtual Pin getGuardSwitchPin() const = 0;
+  [[nodiscard]] virtual Pin getClutchSwitchPin() const = 0;
+  [[nodiscard]] virtual Pin getTwistSensor1Pin() const = 0;
+  [[nodiscard]] virtual Pin getTwistSensor2Pin() const = 0;
 };
 
 }// namespace interface
