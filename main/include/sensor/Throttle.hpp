@@ -17,7 +17,7 @@
 #include "sensor/SensorBase.hpp"
 #include <cstdint>
 
-using Percent = std::uint8_t;
+using Position = std::uint8_t;
 
 class Throttle : public SensorBase {
 public:
@@ -25,5 +25,21 @@ public:
   ~Throttle() override = default;
 
 public:
-  void setPercent(Percent percent);
+  void setPosition(Position position) const;
+
+public:
+  void setMinimalPosition(Position position);
+  void setMaximalPosition(Position position);
+
+public:
+  void enable();
+  void disable();
+
+public:
+  [[nodiscard]] bool isEnabled() const;
+
+private:
+  bool m_enable;
+  Position m_minimalPosition;
+  Position m_maximalPosition;
 };

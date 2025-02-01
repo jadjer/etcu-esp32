@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <esp_adc/adc_oneshot.h>
-
 #include "sensor/TwistPositionSensor.hpp"
 
 TwistPositionSensor::TwistPositionSensor() : SensorBase() {
 }
 
-std::uint16_t TwistPositionSensor::getVoltage() const {
+Voltage TwistPositionSensor::getVoltage() const {
   return 0;
 }

@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "switch/ClutchSwitch.hpp"
 
-class Switch {
-public:
-  Switch();
+ClutchSwitch::ClutchSwitch() {
+}
 
-public:
-  [[nodiscard]] bool isEnabled() const;
-};
-
+bool ClutchSwitch::isEnabled() const {
+  return false;
+}

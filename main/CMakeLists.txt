@@ -7,7 +7,7 @@ set(INCLUDE_DIRS
 set(SOURCES
         app_main.cpp
 
-        src/Switch.cpp
+        src/HECU.cpp
         src/Indicator.cpp
         src/Configuration.cpp
 
@@ -15,6 +15,11 @@ set(SOURCES
         src/sensor/SensorBase.cpp
         src/sensor/TwistPosition.cpp
         src/sensor/TwistPositionSensor.cpp
+
+        src/switch/ModeSwitch.cpp
+        src/switch/BreakSwitch.cpp
+        src/switch/GuardSwitch.cpp
+        src/switch/ClutchSwitch.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ConfigurationCharacteristicCallback.cpp

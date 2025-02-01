@@ -12,21 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "sensor/TwistPosition.hpp"
+#pragma once
 
-TwistPosition::TwistPosition() : m_sensor1(), m_sensor2() {
-  auto const sensorVoltage1 = m_sensor1.getVoltage();
-  auto const sensorVoltage2 = m_sensor2.getVoltage();
+#include "switch/interface/Switch.hpp"
 
-  auto const voltageDifferenceFromSensors = sensorVoltage2 - sensorVoltage1;
-  if (voltageDifferenceFromSensors) {
+class ModeSwitch : public Switch {
+public:
+  ModeSwitch();
+  ~ModeSwitch() override = default;
 
-  }
-}
-
-Percent TwistPosition::getPercent() const {
-  auto const sensorVoltage1 = m_sensor1.getVoltage();
-  auto const sensorVoltage2 = m_sensor2.getVoltage();
-
-  return 0;
-}
+public:
+  bool isEnabled() const override;
+};

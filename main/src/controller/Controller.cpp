@@ -13,24 +13,51 @@
 // limitations under the License.
 
 #include "controller/Controller.hpp"
-#include <esp_log.h>
 
-auto constexpr TAG = "Controller";
-
-Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)),
-                                                         m_throttle(),
-                                                         m_modeSwitch(),
-                                                         m_guardSwitch(),
-                                                         m_breakSwitch(),
-                                                         m_clutchSwitch(),
-                                                         m_indicator(),
-                                                         m_twistPosition() {
+Controller::Controller(ConfigurationPtr const &configuration) : m_configuration(configuration),
+                                                                m_hondaECU(),
+                                                                m_throttle(),
+                                                                m_indicator(configuration->getIndicatorPin()),
+                                                                m_modeSwitch(),
+                                                                m_guardSwitch(),
+                                                                m_breakSwitch(),
+                                                                m_clutchSwitch(),
+                                                                m_twistPosition() {
+  if (m_guardSwitch.isEnabled()) {
+    m_throttle.disable();
+  }
 }
 
-void Controller::spinOnce() {
-  auto const percentageOfTwisting = m_twistPosition.getPercent();
+bool Controller::hasError() const {
+  if (m_throttle.hasError()) {
+    return true;
+  }
 
-  ESP_LOGD(TAG, "Percentage of twisting position %d", percentageOfTwisting);
+  if (m_twistPosition.hasError()) {
+    return true;
+  }
 
-  m_throttle.setPercent(percentageOfTwisting);
+  if (m_hondaECU.hasError()) {
+    return true;
+  }
+
+  return false;
+}
+
+void Controller::executeLogic() {
+  if (m_throttle.isEnabled()) {
+    auto const percentageOfTwisting = m_twistPosition.getPercent();
+    m_throttle.setPosition(percentageOfTwisting);
+  }
+
+  if (hasError()) {
+    m_indicator.setMode(ERROR_MODE);
+  } else {
+    m_indicator.setMode(NORMAL_MODE);
+  }
+}
+
+void Controller::processComponents() {
+  //  m_throttle.process();
+  m_indicator.process();
 }

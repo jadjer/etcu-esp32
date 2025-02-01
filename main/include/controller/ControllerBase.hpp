@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <esp_task_wdt.h>
 
 class ControllerBase {
@@ -21,11 +22,16 @@ public:
   virtual ~ControllerBase() = default;
 
 public:
-  [[noreturn]] void spin();
+  [[noreturn]] void loop();
 
 protected:
-  virtual void spinOnce() = 0;
+  virtual void executeLogic() = 0;
+  virtual void processComponents() = 0;
 
 private:
+  void watchdogTimerReset();
+
+private:
+  std::uint32_t m_watchdogResetLastTime = 0;
   esp_task_wdt_user_handle_t m_watchdogHandle = nullptr;
 };

@@ -14,16 +14,29 @@
 
 #include "controller/ControllerBase.hpp"
 
-auto constexpr TASK_RESET_MILLISECONDS = 10;
+#include <esp_timer.h>
 
-[[noreturn]] void ControllerBase::spin() {
-  ESP_ERROR_CHECK(esp_task_wdt_add_user("controller_spin", &m_watchdogHandle));
+auto const MICRO_SECONDS_IN_SECOND = 1000000;
+auto const WATCHDOG_TIMER_RESET_MICROSECONDS = 3 * MICRO_SECONDS_IN_SECOND;
+
+[[noreturn]] void ControllerBase::loop() {
+  ESP_ERROR_CHECK(esp_task_wdt_add_user("controller_loop", &m_watchdogHandle));
 
   while (true) {
-    ESP_ERROR_CHECK(esp_task_wdt_reset_user(m_watchdogHandle));
-    spinOnce();
-    vTaskDelay(pdMS_TO_TICKS(TASK_RESET_MILLISECONDS));
+    watchdogTimerReset();
+    executeLogic();
+    processComponents();
+    vTaskDelay(1);
   }
 
   ESP_ERROR_CHECK(esp_task_wdt_delete_user(m_watchdogHandle));
+}
+
+void ControllerBase::watchdogTimerReset() {
+  auto const currentTime = esp_timer_get_time();
+  auto const timeDifference = currentTime - m_watchdogResetLastTime;
+  if (timeDifference >= WATCHDOG_TIMER_RESET_MICROSECONDS) {
+    ESP_ERROR_CHECK(esp_task_wdt_reset_user(m_watchdogHandle));
+    m_watchdogResetLastTime = timeDifference;
+  }
 }

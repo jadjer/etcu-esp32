@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "Switch.hpp"
+#pragma once
 
-Switch::Switch() {
-}
+class Switch {
+public:
+  virtual ~Switch() = default;
 
-bool Switch::isEnabled() const {
-  return false;
-}
+public:
+  [[nodiscard]] virtual bool isEnabled() const = 0;
+};

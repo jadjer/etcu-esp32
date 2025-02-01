@@ -17,11 +17,13 @@
 #include <cstdint>
 #include "sensor/SensorBase.hpp"
 
+using Voltage = std::uint16_t;
+
 class TwistPositionSensor : public SensorBase {
 public:
   TwistPositionSensor();
   ~TwistPositionSensor() override = default;
 
 public:
-  [[nodiscard]] std::uint16_t getVoltage() const;
+  [[nodiscard]] Voltage getVoltage() const;
 };

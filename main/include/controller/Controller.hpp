@@ -14,30 +14,40 @@
 
 #pragma once
 
+#include "HECU.hpp"
 #include "Indicator.hpp"
-#include "Switch.hpp"
 #include "configuration/interface/Configuration.hpp"
 #include "controller/ControllerBase.hpp"
 #include "sensor/Throttle.hpp"
 #include "sensor/TwistPosition.hpp"
+#include "switch/BreakSwitch.hpp"
+#include "switch/ClutchSwitch.hpp"
+#include "switch/GuardSwitch.hpp"
+#include "switch/ModeSwitch.hpp"
+#include "switch/interface/Switch.hpp"
 
 class Controller : public ControllerBase {
 public:
-  explicit Controller(ConfigurationPtr configuration);
+  explicit Controller(ConfigurationPtr const &configuration);
   ~Controller() override = default;
 
-private:
-  void spinOnce() override;
+public:
+  [[nodiscard]] bool hasError() const;
 
 private:
+  void executeLogic() override;
+  void processComponents() override;
+
+protected:
   ConfigurationPtr m_configuration = nullptr;
 
-private:
+protected:
+  HECU m_hondaECU;
   Throttle m_throttle;
-  Switch m_modeSwitch;
-  Switch m_guardSwitch;
-  Switch m_breakSwitch;
-  Switch m_clutchSwitch;
   Indicator m_indicator;
+  ModeSwitch m_modeSwitch;
+  GuardSwitch m_guardSwitch;
+  BreakSwitch m_breakSwitch;
+  ClutchSwitch m_clutchSwitch;
   TwistPosition m_twistPosition;
 };
