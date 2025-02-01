@@ -24,4 +24,3 @@ void SensorBase::resetError() {
 bool SensorBase::hasError() const {
   return m_hasError;
 }
-

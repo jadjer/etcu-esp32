@@ -14,24 +14,25 @@
 
 #pragma once
 
-#include <cstdint>
-#include <esp_task_wdt.h>
+#include "configuration/interface/Configuration.hpp"
 
-class ControllerBase {
+class Controller {
 public:
-  virtual ~ControllerBase() = default;
+  explicit Controller(ConfigurationPtr configuration);
 
 public:
-  [[noreturn]] void loop();
+  void setRPM(std::uint16_t rpm);
+  void setSpeed(std::uint16_t speed);
+  void setTwistPosition(std::uint8_t position);
 
-protected:
-  virtual void executeLogic() = 0;
-  virtual void processComponents() = 0;
+public:
+  void modeButtonLongPressed();
+  void modeButtonShortPressed();
 
 private:
-  void watchdogTimerReset();
+  ConfigurationPtr m_configuration = nullptr;
 
 private:
-  std::uint32_t m_watchdogResetLastTime = 0;
-  esp_task_wdt_user_handle_t m_watchdogHandle = nullptr;
+  std::uint16_t m_RPM = 0;
+  std::uint16_t m_speed = 0;
 };

@@ -29,7 +29,7 @@ public:
 
 public:
   [[nodiscard]] interface::Pin getIndicatorPin() const override;
-  [[nodiscard]] interface::Pin getModeSwitchPin() const override;
+  [[nodiscard]] interface::Pin getModeButtonPin() const override;
   [[nodiscard]] interface::Pin getBreakSwitchPin() const override;
   [[nodiscard]] interface::Pin getGuardSwitchPin() const override;
   [[nodiscard]] interface::Pin getClutchSwitchPin() const override;

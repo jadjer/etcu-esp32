@@ -7,16 +7,18 @@ set(INCLUDE_DIRS
 set(SOURCES
         app_main.cpp
 
+        src/App.cpp
         src/HECU.cpp
         src/Indicator.cpp
-        src/Configuration.cpp
+        src/Controller.cpp
+        src/ModeButton.cpp
+
 
         src/sensor/Throttle.cpp
         src/sensor/SensorBase.cpp
         src/sensor/TwistPosition.cpp
         src/sensor/TwistPositionSensor.cpp
 
-        src/switch/ModeSwitch.cpp
         src/switch/BreakSwitch.cpp
         src/switch/GuardSwitch.cpp
         src/switch/ClutchSwitch.cpp
@@ -28,8 +30,7 @@ set(SOURCES
         src/bluetooth/ota/MessageHandler.cpp
         src/bluetooth/ota/UpdateCharacteristicCallback.cpp
 
-        src/controller/Controller.cpp
-        src/controller/ControllerBase.cpp
+        src/configuration/Configuration.cpp
 )
 
 idf_component_register(SRCS ${SOURCES} INCLUDE_DIRS ${INCLUDE_DIRS})

@@ -12,15 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#pragma once
+#include "Controller.hpp"
 
-#include "switch/interface/Switch.hpp"
+#include <esp_log.h>
 
-class ModeSwitch : public Switch {
-public:
-  ModeSwitch();
-  ~ModeSwitch() override = default;
+auto const TAG = "Controller";
 
-public:
-  bool isEnabled() const override;
-};
+Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)) {
+}
+
+void Controller::setRPM(std::uint16_t rpm) {
+}
+
+void Controller::setSpeed(std::uint16_t speed) {
+}
+
+void Controller::setTwistPosition(std::uint8_t const position) {
+  ESP_LOGI(TAG, "Twist position: %u", position);
+}
+
+void Controller::modeButtonLongPressed() {
+  ESP_LOGI(TAG, "Mode button held");
+}
+
+void Controller::modeButtonShortPressed() {
+  ESP_LOGI(TAG, "Mode button pressed");
+}

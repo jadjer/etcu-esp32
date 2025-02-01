@@ -26,4 +26,7 @@ public:
 
 public:
   [[nodiscard]] Voltage getVoltage() const;
+
+private:
+  void process() override;
 };

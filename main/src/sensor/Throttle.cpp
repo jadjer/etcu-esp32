@@ -79,3 +79,6 @@ void Throttle::disable() {
 bool Throttle::isEnabled() const {
   return m_enable;
 }
+
+void Throttle::process() {
+}

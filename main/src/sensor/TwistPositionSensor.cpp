@@ -20,3 +20,6 @@ TwistPositionSensor::TwistPositionSensor() : SensorBase() {
 Voltage TwistPositionSensor::getVoltage() const {
   return 0;
 }
+
+void TwistPositionSensor::process() {
+}

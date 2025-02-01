@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "configuration/Configuration.hpp"
+#include "Configuration.hpp"
 
 #include <cstring>
 #include <nvs.h>
@@ -59,7 +59,7 @@ Configuration::~Configuration() {
 interface::Pin Configuration::getIndicatorPin() const {
   return CONFIG_INDICATOR_PIN;
 }
-interface::Pin Configuration::getModeSwitchPin() const {
+interface::Pin Configuration::getModeButtonPin() const {
   return CONFIG_MODE_SWITCH_PIN;
 }
 interface::Pin Configuration::getBreakSwitchPin() const {

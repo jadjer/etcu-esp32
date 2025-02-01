@@ -14,19 +14,32 @@
 
 #include "sensor/TwistPosition.hpp"
 
-TwistPosition::TwistPosition() : m_sensor1(), m_sensor2() {
+TwistPosition::TwistPosition() : m_callback(nullptr),
+
+                                 m_sensor1(),
+                                 m_sensor2() {
+
   auto const sensorVoltage1 = m_sensor1.getVoltage();
   auto const sensorVoltage2 = m_sensor2.getVoltage();
 
   auto const voltageDifferenceFromSensors = sensorVoltage2 - sensorVoltage1;
   if (voltageDifferenceFromSensors) {
-
   }
 }
 
-Percent TwistPosition::getPercent() const {
+void TwistPosition::registerPositionChangedCallback(TwistPositionChangePositionCallbackFunction const &callback) {
+  m_callback = callback;
+}
+
+Position TwistPosition::getPosition() const {
   auto const sensorVoltage1 = m_sensor1.getVoltage();
   auto const sensorVoltage2 = m_sensor2.getVoltage();
 
   return 0;
+}
+
+void TwistPosition::process() {
+  if (m_callback) {
+    m_callback(123);
+  }
 }

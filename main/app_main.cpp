@@ -12,12 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "controller/Controller.hpp"
-#include "configuration/Configuration.hpp"
+#include "App.hpp"
 
 extern "C" void app_main() {
-  auto configuration = std::make_shared<Configuration>();
-
-  Controller controller(configuration);
-  controller.loop();
+  App app;
+  app.setup();
+  app.run();
 }

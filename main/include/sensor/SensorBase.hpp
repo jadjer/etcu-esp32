@@ -14,10 +14,12 @@
 
 #pragma once
 
-class SensorBase {
+#include <executor/Node.hpp>
+
+class SensorBase : public executor::Node {
 public:
   SensorBase();
-  virtual ~SensorBase() = default;
+  ~SensorBase() override = default;
 
 public:
   void resetError();

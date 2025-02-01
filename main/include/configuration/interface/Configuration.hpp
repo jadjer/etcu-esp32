@@ -26,7 +26,7 @@ public:
 
 public:
   [[nodiscard]] virtual Pin getIndicatorPin() const = 0;
-  [[nodiscard]] virtual Pin getModeSwitchPin() const = 0;
+  [[nodiscard]] virtual Pin getModeButtonPin() const = 0;
   [[nodiscard]] virtual Pin getBreakSwitchPin() const = 0;
   [[nodiscard]] virtual Pin getGuardSwitchPin() const = 0;
   [[nodiscard]] virtual Pin getClutchSwitchPin() const = 0;

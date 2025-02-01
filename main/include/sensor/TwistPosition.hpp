@@ -14,11 +14,14 @@
 
 #pragma once
 
-#include "sensor/TwistPositionSensor.hpp"
 #include "sensor/SensorBase.hpp"
-#include <cstdint>
+#include "sensor/TwistPositionSensor.hpp"
 
-using Percent = std::uint8_t;
+#include <cstdint>
+#include <functional>
+
+using Position = std::uint8_t;
+using TwistPositionChangePositionCallbackFunction = std::function<void(Position const)>;
 
 class TwistPosition : public SensorBase {
 public:
@@ -26,7 +29,16 @@ public:
   ~TwistPosition() override = default;
 
 public:
-  [[nodiscard]] Percent getPercent() const;
+  void registerPositionChangedCallback(TwistPositionChangePositionCallbackFunction const &callback);
+
+public:
+  [[nodiscard]] Position getPosition() const;
+
+private:
+  void process() override;
+
+private:
+  TwistPositionChangePositionCallbackFunction m_callback;
 
 private:
   TwistPositionSensor m_sensor1;

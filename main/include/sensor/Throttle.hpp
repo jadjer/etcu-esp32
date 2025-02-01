@@ -39,6 +39,9 @@ public:
   [[nodiscard]] bool isEnabled() const;
 
 private:
+  void process() override;
+
+private:
   bool m_enable;
   Position m_minimalPosition;
   Position m_maximalPosition;
