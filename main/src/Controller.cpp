@@ -21,20 +21,56 @@ auto const TAG = "Controller";
 Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)) {
 }
 
+void Controller::registerCruiseEnableCallback(ControllerCallback const &callback) {
+  m_enableCallback = callback;
+}
+
+void Controller::registerCruiseDisableCallback(ControllerCallback const &callback) {
+  m_disableCallback = callback;
+}
+
+void Controller::registerChangeThrottlePositionCallback(ControllerChangePositionCallback const &callback) {
+  m_callback = callback;
+}
+
 void Controller::setRPM(std::uint16_t rpm) {
+  m_RPM = rpm;
 }
 
 void Controller::setSpeed(std::uint16_t speed) {
+  m_speed = speed;
 }
 
 void Controller::setTwistPosition(std::uint8_t const position) {
   ESP_LOGI(TAG, "Twist position: %u", position);
+
+  m_twistPosition = position;
+
+  calculateThrottlePosition();
 }
 
 void Controller::modeButtonLongPressed() {
   ESP_LOGI(TAG, "Mode button held");
+
+//  if (m_speed == 0) {
+//        m_throttleMinimalPosition = m_throttlePosition
+//  }
 }
 
 void Controller::modeButtonShortPressed() {
   ESP_LOGI(TAG, "Mode button pressed");
+}
+
+void Controller::enable() {
+  m_throttleMaximalPosition = 100;
+}
+
+void Controller::disable() {
+  m_throttleMaximalPosition = 0;
+}
+
+void Controller::calculateThrottlePosition() {
+  if (m_callback) {
+    m_callback(m_throttlePosition);
+  }
 }

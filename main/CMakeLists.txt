@@ -8,7 +8,6 @@ set(SOURCES
         app_main.cpp
 
         src/App.cpp
-        src/HECU.cpp
         src/Indicator.cpp
         src/Controller.cpp
         src/ModeButton.cpp
@@ -24,6 +23,7 @@ set(SOURCES
         src/switch/ClutchSwitch.cpp
 
         src/bluetooth/Bluetooth.cpp
+        src/bluetooth/ServerCallback.cpp
         src/bluetooth/ConfigurationCharacteristicCallback.cpp
 
         src/bluetooth/ota/Updater.cpp

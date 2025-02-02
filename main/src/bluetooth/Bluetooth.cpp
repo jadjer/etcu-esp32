@@ -1,4 +1,4 @@
-// Copyright 2024 Pavel Suprunov
+// Copyright 2025 Pavel Suprunov
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,28 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//
-// Created by jadjer on 9/25/24.
-//
-
 #include "bluetooth/Bluetooth.hpp"
 
-#include "NimBLEDevice.h"
+#include <NimBLEDevice.h>
 
 #include "ConfigurationCharacteristicCallback.hpp"
+#include "ServerCallback.hpp"
 #include "bluetooth/Identificator.hpp"
 #include "ota/MessageHandler.hpp"
 #include "ota/UpdateCharacteristicCallback.hpp"
 
-auto constexpr MTU = BLE_ATT_MTU_MAX;
+auto const MTU = BLE_ATT_MTU_MAX;
 
-Bluetooth::Bluetooth(ConfigurationPtr configuration) : m_otaCharacteristicCallback(nullptr),
+Bluetooth::Bluetooth(ConfigurationPtr configuration) : m_serverCallback(std::make_unique<ServerCallback>()),
+                                                       m_otaCharacteristicCallback(nullptr),
                                                        m_configurationCharacteristicCallback(std::make_unique<ConfigurationCharacteristicCallback>(std::move(configuration))) {
 
-  NimBLEDevice::init("CLS");
+  NimBLEDevice::init("ETCU");
   NimBLEDevice::setMTU(MTU);
+  NimBLEDevice::setSecurityAuth(true, true, true);
+  NimBLEDevice::setSecurityIOCap(BLE_HS_IO_DISPLAY_ONLY);
+  NimBLEDevice::setSecurityPasskey(586226);
 
   auto const server = NimBLEDevice::createServer();
+  server->setCallbacks(m_serverCallback.get());
   server->advertiseOnDisconnect(true);
 
   {
@@ -87,7 +89,9 @@ Bluetooth::~Bluetooth() {
 
 void Bluetooth::advertise() {
   auto const advertising = NimBLEDevice::getAdvertising();
+  advertising->setName("ETCU");
   advertising->setManufacturerData("jadjer");
+  advertising->enableScanResponse(true);
   advertising->addServiceUUID(ADVERTISING_UUID);
   advertising->start();
 }

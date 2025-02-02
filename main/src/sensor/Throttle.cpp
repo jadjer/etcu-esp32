@@ -36,12 +36,12 @@ void Throttle::setPosition(Position position) const {
 
   if (requiredPosition > m_maximalPosition) {
     requiredPosition = m_maximalPosition;
-    ESP_LOGW(TAG, "Limiting the throttle position to the maximum value of %d", m_minimalPosition);
+    ESP_LOGW(TAG, "Limiting the throttle position to the maximum value of %d", m_maximalPosition);
   }
 
   //  m_throttle.setPercent(setPercentage);
 
-  ESP_LOGD(TAG, "Throttle position is set to %d", requiredPosition);
+  ESP_LOGI(TAG, "Throttle position is set to %d", requiredPosition);
 }
 
 void Throttle::setMinimalPosition(Position position) {

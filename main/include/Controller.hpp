@@ -15,10 +15,19 @@
 #pragma once
 
 #include "configuration/interface/Configuration.hpp"
+#include <functional>
+
+using ControllerCallback = std::function<void()>;
+using ControllerChangePositionCallback = std::function<void(std::uint8_t)>;
 
 class Controller {
 public:
   explicit Controller(ConfigurationPtr configuration);
+
+public:
+  void registerCruiseEnableCallback(ControllerCallback const& callback);
+  void registerCruiseDisableCallback(ControllerCallback const& callback);
+  void registerChangeThrottlePositionCallback(ControllerChangePositionCallback const &callback);
 
 public:
   void setRPM(std::uint16_t rpm);
@@ -29,10 +38,26 @@ public:
   void modeButtonLongPressed();
   void modeButtonShortPressed();
 
+public:
+  void enable();
+  void disable();
+
+private:
+  void calculateThrottlePosition();
+
 private:
   ConfigurationPtr m_configuration = nullptr;
+  ControllerCallback m_enableCallback = nullptr;
+  ControllerCallback m_disableCallback = nullptr;
+  ControllerChangePositionCallback m_callback = nullptr;
+
+private:
+  std::uint8_t m_twistPosition = 0;
+  std::uint8_t m_throttlePosition = 0;
 
 private:
   std::uint16_t m_RPM = 0;
   std::uint16_t m_speed = 0;
+  std::uint16_t m_throttleMinimalPosition = 0;
+  std::uint16_t m_throttleMaximalPosition = 100;
 };

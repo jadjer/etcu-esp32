@@ -14,25 +14,19 @@
 
 #pragma once
 
-#include "configuration/interface/Configuration.hpp"
-
-#include <NimBLECharacteristic.h>
 #include <NimBLEServer.h>
-#include <memory>
 
-using ServerCallbackPtr = std::unique_ptr<NimBLEServerCallbacks>;
-using CharacteristicCallbackPtr = std::unique_ptr<NimBLECharacteristicCallbacks>;
-
-class Bluetooth {
+class ServerCallback : public NimBLEServerCallbacks {
 public:
-  explicit Bluetooth(ConfigurationPtr configuration);
-  ~Bluetooth();
+  ~ServerCallback() override = default;
 
 public:
-  void advertise();
-
-private:
-  ServerCallbackPtr m_serverCallback = nullptr;
-  CharacteristicCallbackPtr m_otaCharacteristicCallback = nullptr;
-  CharacteristicCallbackPtr m_configurationCharacteristicCallback = nullptr;
+  void onConnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo) override;
+  void onDisconnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo, int reason) override;
+  void onMTUChange(uint16_t MTU, NimBLEConnInfo &connInfo) override;
+  uint32_t onPassKeyDisplay() override;
+  void onConfirmPassKey(NimBLEConnInfo &connInfo, uint32_t pin) override;
+  void onAuthenticationComplete(NimBLEConnInfo &connInfo) override;
+  void onIdentity(NimBLEConnInfo &connInfo) override;
+  void onConnParamsUpdate(NimBLEConnInfo &connInfo) override;
 };
