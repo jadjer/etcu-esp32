@@ -20,6 +20,8 @@
 #include "configuration/interface/Configuration.hpp"
 #include "sensor/Throttle.hpp"
 #include "sensor/TwistPosition.hpp"
+
+#include <event/EventLoop.hpp>
 #include <executor/Executor.hpp>
 
 using ThrottlePtr = std::shared_ptr<Throttle>;
@@ -40,6 +42,7 @@ private:
 private:
   Bluetooth m_bluetooth;
   Controller m_controller;
+  event::EventLoop m_eventLoop;
   executor::Executor m_executor;
 
 private:

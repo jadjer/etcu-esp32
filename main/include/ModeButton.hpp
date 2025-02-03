@@ -14,21 +14,17 @@
 
 #pragma once
 
+#include <event/EventLoop.hpp>
 #include <executor/Node.hpp>
 #include <functional>
 #include <gpio/InputPin.hpp>
 
 using Pin = std::uint8_t;
-using ModeButtonCallbackFunction = std::function<void()>;
 
 class ModeButton : public executor::Node {
 public:
-  explicit ModeButton(Pin pin, std::uint32_t holdTimeInUS = 1000000, std::uint32_t thresholdInUS = 100000);
+  explicit ModeButton(event::EventLoop &eventLoop, Pin pin, std::uint32_t holdTimeInUS = 1000000, std::uint32_t thresholdInUS = 100000);
   ~ModeButton() override = default;
-
-public:
-  void registerLongPressedCallback(ModeButtonCallbackFunction const &callback);
-  void registerShortPressedCallback(ModeButtonCallbackFunction const &callback);
 
 private:
   void process() override;
@@ -36,11 +32,10 @@ private:
   void processButtonPressed();
 
 private:
-  gpio::InputPin m_button;
+  event::EventLoop &m_eventLoop;
 
 private:
-  ModeButtonCallbackFunction m_longPressedCallback;
-  ModeButtonCallbackFunction m_shortPressedCallback;
+  gpio::InputPin m_button;
 
 private:
   std::uint32_t const m_holdTime_InUS;

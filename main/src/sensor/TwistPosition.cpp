@@ -39,7 +39,5 @@ Position TwistPosition::getPosition() const {
 }
 
 void TwistPosition::process() {
-  if (m_callback) {
-    m_callback(123);
-  }
+
 }

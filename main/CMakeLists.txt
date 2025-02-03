@@ -12,7 +12,6 @@ set(SOURCES
         src/Controller.cpp
         src/ModeButton.cpp
 
-
         src/sensor/Throttle.cpp
         src/sensor/SensorBase.cpp
         src/sensor/TwistPosition.cpp

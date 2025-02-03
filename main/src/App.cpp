@@ -14,29 +14,35 @@
 
 #include "App.hpp"
 
+#include "EventType.hpp"
 #include "configuration/Configuration.hpp"
+
+auto const TAG = "APP";
 
 App::App() : m_configuration(std::make_shared<Configuration>()),
              m_bluetooth(m_configuration),
              m_controller(m_configuration),
 
              m_throttle(std::make_unique<Throttle>()),
-             m_modeButton(std::make_unique<ModeButton>(m_configuration->getModeButtonPin())),
+             m_modeButton(std::make_unique<ModeButton>(m_eventLoop, m_configuration->getModeButtonPin())),
              m_twistPosition(std::make_unique<TwistPosition>()) {
 }
 
 void App::setup() {
-  m_controller.registerChangeThrottlePositionCallback([this](std::uint8_t const position) { m_throttle->setPosition(position); });
-  m_twistPosition->registerPositionChangedCallback([this](std::uint8_t const position) { m_controller.setTwistPosition(position); });
-  m_modeButton->registerLongPressedCallback([this]() { m_controller.modeButtonLongPressed(); });
-  m_modeButton->registerShortPressedCallback([this]() { m_controller.modeButtonShortPressed(); });
+  m_eventLoop.subscribe(EVENT_MODE_BUTTON_PRESS, [](std::any const& data) {
+    ESP_LOGI(TAG, "Mode button pressed");
+  });
+
+  m_eventLoop.subscribe(EVENT_MODE_BUTTON_HOLD, [](std::any const& data) {
+    ESP_LOGI(TAG, "Mode button held");
+  });
 }
 
 void App::run() {
   m_bluetooth.advertise();
 
   m_executor.addNode(m_throttle, 1);
-  m_executor.addNode(m_modeButton, 1);
+  m_executor.addNode(m_modeButton);
   m_executor.addNode(m_twistPosition, 1);
 
   m_executor.spin();

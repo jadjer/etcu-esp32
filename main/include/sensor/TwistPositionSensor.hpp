@@ -14,19 +14,25 @@
 
 #pragma once
 
-#include <cstdint>
 #include "sensor/SensorBase.hpp"
+#include <cstdint>
 
 using Voltage = std::uint16_t;
 
 class TwistPositionSensor : public SensorBase {
 public:
   TwistPositionSensor();
-  ~TwistPositionSensor() override = default;
+  ~TwistPositionSensor() override;
 
 public:
   [[nodiscard]] Voltage getVoltage() const;
 
 private:
   void process() override;
+
+private:
+  std::uint32_t const m_trashHoldVoltage_InMillivolts;
+
+private:
+  std::uint32_t m_lastValue_InMillivolts = 0;
 };
