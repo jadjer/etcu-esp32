@@ -14,33 +14,40 @@
 
 #pragma once
 
-#include "sensor/SensorBase.hpp"
-#include "sensor/TwistPositionSensor.hpp"
+#include "TwistPositionSensor.hpp"
 
+#include <executor/Node.hpp>
 #include <cstdint>
 #include <functional>
 
-using Position = std::uint8_t;
-using TwistPositionChangePositionCallbackFunction = std::function<void(Position const)>;
+class TwistPosition : public executor::Node {
+public:
+  using Position = std::uint8_t;
+  using ErrorCallback = std::function<void()>;
+  using PositionChangeCallback = std::function<void(TwistPosition::Position)>;
 
-class TwistPosition : public SensorBase {
 public:
   TwistPosition();
   ~TwistPosition() override = default;
 
 public:
-  void registerPositionChangedCallback(TwistPositionChangePositionCallbackFunction const &callback);
+  void registerErrorCallback(TwistPosition::ErrorCallback callback);
+  void registerPositionChangeCallback(TwistPosition::PositionChangeCallback callback);
 
 public:
-  [[nodiscard]] Position getPosition() const;
+  [[nodiscard]] TwistPosition::Position getPosition() const;
 
 private:
   void process() override;
 
 private:
-  TwistPositionChangePositionCallbackFunction m_callback;
+  TwistPosition::ErrorCallback m_errorCallback = nullptr;
+  TwistPosition::PositionChangeCallback m_positionChangeCallback = nullptr;
 
 private:
   TwistPositionSensor m_sensor1;
   TwistPositionSensor m_sensor2;
+
+private:
+  TwistPosition::Position m_twistPosition = 0;
 };

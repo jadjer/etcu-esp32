@@ -14,22 +14,30 @@
 
 #pragma once
 
-#include "sensor/SensorBase.hpp"
 #include <cstdint>
+#include <functional>
+#include <executor/Node.hpp>
 
-using Position = std::uint8_t;
+class Throttle : public executor::Node {
+public:
+  using Position = std::uint8_t;
+  using ErrorCallback = std::function<void()>;
+  using PositionChangeCallback = std::function<void(Throttle::Position)>;
 
-class Throttle : public SensorBase {
 public:
   Throttle();
   ~Throttle() override = default;
 
 public:
-  void setPosition(Position position) const;
+  void registerErrorCallback(Throttle::ErrorCallback callback);
+  void registerPositionChangeCallback(Throttle::PositionChangeCallback callback);
 
 public:
-  void setMinimalPosition(Position position);
-  void setMaximalPosition(Position position);
+  void setPosition(Throttle::Position position) const;
+
+public:
+  void setMinimalPosition(Throttle::Position position);
+  void setMaximalPosition(Throttle::Position position);
 
 public:
   void enable();
@@ -40,6 +48,10 @@ public:
 
 private:
   void process() override;
+
+private:
+  ErrorCallback m_errorCallback = nullptr;
+  PositionChangeCallback m_positionChangeCallback = nullptr;
 
 private:
   bool m_enable;

@@ -14,25 +14,35 @@
 
 #pragma once
 
-#include "sensor/SensorBase.hpp"
 #include <cstdint>
+#include <executor/Node.hpp>
+#include <functional>
+#include <gpio/InputPin.hpp>
 
-using Voltage = std::uint16_t;
-
-class TwistPositionSensor : public SensorBase {
+class Switch : public executor::Node {
 public:
-  TwistPositionSensor();
-  ~TwistPositionSensor() override;
+  using Pin = std::uint8_t;
+  using SwitchCallback = std::function<void(bool)>;
 
 public:
-  [[nodiscard]] Voltage getVoltage() const;
+  explicit Switch(Pin pin);
+  ~Switch() override = default;
+
+public:
+  void registerSwitchCallback(SwitchCallback callback);
+
+public:
+  [[nodiscard]] virtual bool isEnabled() const;
 
 private:
   void process() override;
 
 private:
-  std::uint32_t const m_trashHoldVoltage_InMillivolts;
+  SwitchCallback m_switchCallback = nullptr;
 
 private:
-  std::uint32_t m_lastValue_InMillivolts = 0;
+  gpio::InputPin m_switch;
+
+private:
+  bool m_enable = false;
 };

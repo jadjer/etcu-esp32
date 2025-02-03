@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "sensor/TwistPosition.hpp"
+#include "TwistPosition.hpp"
 
-TwistPosition::TwistPosition() : m_callback(nullptr),
+#include <utility>
 
-                                 m_sensor1(),
+TwistPosition::TwistPosition() : m_sensor1(),
                                  m_sensor2() {
 
   auto const sensorVoltage1 = m_sensor1.getVoltage();
@@ -24,14 +24,21 @@ TwistPosition::TwistPosition() : m_callback(nullptr),
 
   auto const voltageDifferenceFromSensors = sensorVoltage2 - sensorVoltage1;
   if (voltageDifferenceFromSensors) {
+    if (m_errorCallback) {
+      m_errorCallback();
+    }
   }
 }
 
-void TwistPosition::registerPositionChangedCallback(TwistPositionChangePositionCallbackFunction const &callback) {
-  m_callback = callback;
+void TwistPosition::registerErrorCallback(TwistPosition::ErrorCallback callback) {
+  m_errorCallback = std::move(callback);
 }
 
-Position TwistPosition::getPosition() const {
+void TwistPosition::registerPositionChangeCallback(TwistPosition::PositionChangeCallback callback) {
+  m_positionChangeCallback = std::move(callback);
+}
+
+TwistPosition::Position TwistPosition::getPosition() const {
   auto const sensorVoltage1 = m_sensor1.getVoltage();
   auto const sensorVoltage2 = m_sensor2.getVoltage();
 
@@ -39,5 +46,7 @@ Position TwistPosition::getPosition() const {
 }
 
 void TwistPosition::process() {
-
+  if (m_positionChangeCallback) {
+    m_positionChangeCallback(m_twistPosition);
+  }
 }

@@ -14,17 +14,23 @@
 
 #pragma once
 
-#include <event/EventLoop.hpp>
 #include <executor/Node.hpp>
 #include <functional>
 #include <gpio/InputPin.hpp>
 
-using Pin = std::uint8_t;
-
 class ModeButton : public executor::Node {
 public:
-  explicit ModeButton(event::EventLoop &eventLoop, Pin pin, std::uint32_t holdTimeInUS = 1000000, std::uint32_t thresholdInUS = 100000);
+  using Pin = std::uint8_t;
+  using PressCallback = std::function<void()>;
+  using HoldCallback = std::function<void()>;
+
+public:
+  explicit ModeButton(Pin pin, std::uint32_t holdTimeInUS = 1000000, std::uint32_t thresholdInUS = 100000);
   ~ModeButton() override = default;
+
+public:
+  void registerHoldCallback(HoldCallback callback);
+  void registerPressCallback(PressCallback callback);
 
 private:
   void process() override;
@@ -32,7 +38,8 @@ private:
   void processButtonPressed();
 
 private:
-  event::EventLoop &m_eventLoop;
+  HoldCallback m_holdCallback = nullptr;
+  PressCallback m_pressCallback = nullptr;
 
 private:
   gpio::InputPin m_button;

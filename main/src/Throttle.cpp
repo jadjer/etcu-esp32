@@ -12,21 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "sensor/Throttle.hpp"
+#include "Throttle.hpp"
 
 #include <esp_log.h>
+#include <utility>
 
 auto const TAG = "Throttle";
 auto const THROTTLE_MINIMAL_POSITION = 0;
 auto const THROTTLE_MAXIMAL_POSITION = 100;
 
-Throttle::Throttle() : SensorBase(),
-                       m_enable(true),
+Throttle::Throttle() : m_enable(true),
                        m_minimalPosition(THROTTLE_MINIMAL_POSITION),
                        m_maximalPosition(THROTTLE_MAXIMAL_POSITION) {
 }
 
-void Throttle::setPosition(Position position) const {
+void Throttle::registerErrorCallback(Throttle::ErrorCallback callback) {
+  m_errorCallback = std::move(callback);
+}
+
+void Throttle::registerPositionChangeCallback(Throttle::PositionChangeCallback callback) {
+  m_positionChangeCallback = std::move(callback);
+}
+
+void Throttle::setPosition(Throttle::Position position) const {
   auto requiredPosition = position;
 
   if (requiredPosition < m_minimalPosition) {
@@ -44,7 +52,7 @@ void Throttle::setPosition(Position position) const {
   ESP_LOGI(TAG, "Throttle position is set to %d", requiredPosition);
 }
 
-void Throttle::setMinimalPosition(Position position) {
+void Throttle::setMinimalPosition(Throttle::Position position) {
   m_minimalPosition = position;
 
   if (m_minimalPosition < THROTTLE_MINIMAL_POSITION) {
@@ -56,7 +64,7 @@ void Throttle::setMinimalPosition(Position position) {
   }
 }
 
-void Throttle::setMaximalPosition(Position position) {
+void Throttle::setMaximalPosition(Throttle::Position position) {
   m_maximalPosition = position;
 
   if (m_maximalPosition > THROTTLE_MAXIMAL_POSITION) {

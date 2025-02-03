@@ -16,19 +16,22 @@
 
 #include "Controller.hpp"
 #include "ModeButton.hpp"
+#include "Switch.hpp"
 #include "bluetooth/Bluetooth.hpp"
 #include "configuration/interface/Configuration.hpp"
-#include "sensor/Throttle.hpp"
-#include "sensor/TwistPosition.hpp"
+#include "Throttle.hpp"
+#include "TwistPosition.hpp"
 
-#include <event/EventLoop.hpp>
 #include <executor/Executor.hpp>
 
-using ThrottlePtr = std::shared_ptr<Throttle>;
-using ModeButtonPtr = std::shared_ptr<ModeButton>;
-using TwistPositionPtr = std::shared_ptr<TwistPosition>;
-
 class App {
+public:
+  using SwitchPtr = std::shared_ptr<Switch>;
+  using ThrottlePtr = std::shared_ptr<Throttle>;
+  using ControllerPtr = std::shared_ptr<Controller>;
+  using ModeButtonPtr = std::shared_ptr<ModeButton>;
+  using TwistPositionPtr = std::shared_ptr<TwistPosition>;
+
 public:
   App();
 
@@ -41,12 +44,14 @@ private:
 
 private:
   Bluetooth m_bluetooth;
-  Controller m_controller;
-  event::EventLoop m_eventLoop;
   executor::Executor m_executor;
 
 private:
   ThrottlePtr m_throttle = nullptr;
+  SwitchPtr m_guardSwitch = nullptr;
+  SwitchPtr m_breakSwitch = nullptr;
+  SwitchPtr m_clutchSwitch = nullptr;
+  ControllerPtr m_controller = nullptr;
   ModeButtonPtr m_modeButton = nullptr;
   TwistPositionPtr m_twistPosition = nullptr;
 };

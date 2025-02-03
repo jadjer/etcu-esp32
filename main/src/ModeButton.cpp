@@ -14,14 +14,11 @@
 
 #include "ModeButton.hpp"
 
-#include "EventType.hpp"
-
 #include <esp_timer.h>
+#include <utility>
 
-ModeButton::ModeButton(event::EventLoop &eventLoop, Pin pin, std::uint32_t holdTimeInUS, std::uint32_t thresholdInUS)
-    : m_eventLoop(eventLoop),
-
-      m_button(pin, gpio::PIN_LEVEL_HIGH),
+ModeButton::ModeButton(Pin pin, std::uint32_t holdTimeInUS, std::uint32_t thresholdInUS)
+    : m_button(pin, gpio::PIN_LEVEL_HIGH),
 
       m_holdTime_InUS(holdTimeInUS),
       m_threshold_InUS(thresholdInUS),
@@ -31,6 +28,14 @@ ModeButton::ModeButton(event::EventLoop &eventLoop, Pin pin, std::uint32_t holdT
 
       m_pressTime_InUS(0),
       m_releaseTime_InUS(0) {
+}
+
+void ModeButton::registerHoldCallback(ModeButton::HoldCallback callback) {
+  m_holdCallback = std::move(callback);
+}
+
+void ModeButton::registerPressCallback(ModeButton::PressCallback callback) {
+  m_pressCallback = std::move(callback);
 }
 
 void ModeButton::process() {
@@ -51,7 +56,9 @@ void ModeButton::processButtonReleased() {
   }
 
   if (not m_isHeld) {
-    m_eventLoop.post(EVENT_MODE_BUTTON_PRESS);
+    if (m_pressCallback) {
+      m_pressCallback();
+    }
   }
 
   m_releaseTime_InUS = esp_timer_get_time();
@@ -84,5 +91,7 @@ void ModeButton::processButtonPressed() {
 
   m_isHeld = true;
 
-  m_eventLoop.post(EVENT_MODE_BUTTON_HOLD);
+  if (m_holdCallback) {
+    m_holdCallback();
+  }
 }

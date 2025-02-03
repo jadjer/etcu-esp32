@@ -8,18 +8,13 @@ set(SOURCES
         app_main.cpp
 
         src/App.cpp
+        src/Switch.cpp
+        src/Throttle.cpp
         src/Indicator.cpp
         src/Controller.cpp
         src/ModeButton.cpp
-
-        src/sensor/Throttle.cpp
-        src/sensor/SensorBase.cpp
-        src/sensor/TwistPosition.cpp
-        src/sensor/TwistPositionSensor.cpp
-
-        src/switch/BreakSwitch.cpp
-        src/switch/GuardSwitch.cpp
-        src/switch/ClutchSwitch.cpp
+        src/TwistPosition.cpp
+        src/TwistPositionSensor.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ServerCallback.cpp

@@ -14,10 +14,26 @@
 
 #pragma once
 
-class Switch {
+#include <cstdint>
+#include <executor/Node.hpp>
+
+class TwistPositionSensor : public executor::Node {
 public:
-  virtual ~Switch() = default;
+  using Voltage = std::uint16_t;
 
 public:
-  [[nodiscard]] virtual bool isEnabled() const = 0;
+  TwistPositionSensor();
+  ~TwistPositionSensor() override;
+
+public:
+  [[nodiscard]] TwistPositionSensor::Voltage getVoltage() const;
+
+private:
+  void process() override;
+
+private:
+  TwistPositionSensor::Voltage const m_trashHoldVoltage_InMillivolts;
+
+private:
+  TwistPositionSensor::Voltage m_lastValue_InMillivolts = 0;
 };

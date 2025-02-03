@@ -14,50 +14,66 @@
 
 #pragma once
 
-#include "configuration/interface/Configuration.hpp"
 #include <functional>
 
-using ControllerCallback = std::function<void()>;
-using ControllerChangePositionCallback = std::function<void(std::uint8_t)>;
+#include "PidController.hpp"
+#include "configuration/interface/Configuration.hpp"
 
-class Controller {
+#include <executor/Node.hpp>
+
+class Controller : public executor::Node {
+public:
+  using PID = PIDController<float>;
+  using RPM = std::uint16_t;
+  using Time = std::uint32_t;
+  using Temp = float;
+  using Speed = std::uint16_t;
+  using Position = std::uint8_t;
+  using ErrorCallback = std::function<void()>;
+  using PositionUpdateCallback = std::function<void(Controller::Position)>;
+
 public:
   explicit Controller(ConfigurationPtr configuration);
+  ~Controller() override = default;
 
 public:
-  void registerCruiseEnableCallback(ControllerCallback const& callback);
-  void registerCruiseDisableCallback(ControllerCallback const& callback);
-  void registerChangeThrottlePositionCallback(ControllerChangePositionCallback const &callback);
+  void registerErrorCallback(Controller::ErrorCallback callback);
+  void registerPositionUpdateCallback(Controller::PositionUpdateCallback callback);
 
 public:
-  void setRPM(std::uint16_t rpm);
-  void setSpeed(std::uint16_t speed);
-  void setTwistPosition(std::uint8_t position);
-
-public:
-  void modeButtonLongPressed();
-  void modeButtonShortPressed();
+  void setRPM(Controller::RPM rpm);
+  void setSpeed(Controller::Speed speed);
+  void setTemperature(Controller::Temp temp);
+  void setTwistPosition(Controller::Position position);
+  void setThrottlePosition(Controller::Position position);
 
 public:
   void enable();
   void disable();
 
+public:
+  void modeEnable();
+  void modeDisable();
+
 private:
-  void calculateThrottlePosition();
+  void process() override;
 
 private:
   ConfigurationPtr m_configuration = nullptr;
-  ControllerCallback m_enableCallback = nullptr;
-  ControllerCallback m_disableCallback = nullptr;
-  ControllerChangePositionCallback m_callback = nullptr;
+  Controller::ErrorCallback m_errorCallback = nullptr;
+  Controller::PositionUpdateCallback m_positionUpdateCallback = nullptr;
 
 private:
-  std::uint8_t m_twistPosition = 0;
-  std::uint8_t m_throttlePosition = 0;
+  Controller::PID m_speedPID;
 
 private:
-  std::uint16_t m_RPM = 0;
-  std::uint16_t m_speed = 0;
-  std::uint16_t m_throttleMinimalPosition = 0;
-  std::uint16_t m_throttleMaximalPosition = 100;
+  Controller::RPM m_rpm = 0;
+  Controller::Temp m_temp = 0;
+  Controller::Speed m_speed = 0;
+  Controller::Time m_rpmLastUpdate = 0;
+  Controller::Time m_speedLastUpdate = 0;
+  Controller::Position m_twistPosition = 0;
+  Controller::Position m_throttlePosition = 0;
+  Controller::Position m_throttlePositionMaximal = 0;
+  Controller::Position m_throttlePositionMinimal = 0;
 };
