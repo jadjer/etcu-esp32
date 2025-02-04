@@ -98,7 +98,7 @@ void Controller::holdRPM() {
 }
 
 void Controller::releaseRPM() {
-  if (m_speed >= SPEED_MODE_CRUISE) {
+  if (m_speed > SPEED_MODE_CRUISE) {
     return;
   }
 

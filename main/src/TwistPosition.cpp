@@ -39,14 +39,14 @@ void TwistPosition::registerPositionChangeCallback(TwistPosition::PositionChange
 }
 
 TwistPosition::Position TwistPosition::getPosition() const {
-  auto const sensorVoltage1 = m_sensor1.getVoltage();
-  auto const sensorVoltage2 = m_sensor2.getVoltage();
-
-  return 0;
+  return m_position;
 }
 
 void TwistPosition::process() {
+  auto const sensorVoltage1 = m_sensor1.getVoltage();
+  auto const sensorVoltage2 = m_sensor2.getVoltage();
+
   if (m_positionChangeCallback) {
-    m_positionChangeCallback(m_twistPosition);
+    m_positionChangeCallback(m_position);
   }
 }

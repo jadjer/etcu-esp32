@@ -33,12 +33,6 @@ public:
   using CruiseEnabledCallback = std::function<void(bool)>;
   using PositionUpdateCallback = std::function<void(Controller::Position)>;
 
-  enum Mode {
-    MODE_GUARD = -1,
-    MODE_NORMAL = 0,
-    MODE_CRUISE
-  };
-
 public:
   explicit Controller(ConfigurationPtr configuration);
   ~Controller() override = default;
@@ -80,7 +74,6 @@ private:
 
 private:
   Controller::RPM m_rpm = 0;
-  Controller::Mode m_mode = Controller::MODE_GUARD;
   Controller::Temp m_temp = 0;
   Controller::Speed m_speed = 0;
   Controller::Time m_rpmLastUpdate = 0;

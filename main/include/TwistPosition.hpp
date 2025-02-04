@@ -49,5 +49,5 @@ private:
   TwistPositionSensor m_sensor2;
 
 private:
-  TwistPosition::Position m_twistPosition = 0;
+  TwistPosition::Position m_position = 0;
 };
