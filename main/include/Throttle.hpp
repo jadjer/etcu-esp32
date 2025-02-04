@@ -50,11 +50,11 @@ private:
   void process() override;
 
 private:
-  ErrorCallback m_errorCallback = nullptr;
-  PositionChangeCallback m_positionChangeCallback = nullptr;
+  Throttle::ErrorCallback m_errorCallback = nullptr;
+  Throttle::PositionChangeCallback m_positionChangeCallback = nullptr;
 
 private:
   bool m_enable;
-  Position m_minimalPosition;
-  Position m_maximalPosition;
+  Throttle::Position m_minimalPosition;
+  Throttle::Position m_maximalPosition;
 };

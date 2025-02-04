@@ -15,12 +15,13 @@
 #pragma once
 
 #include "Controller.hpp"
+#include "Indicator.hpp"
 #include "ModeButton.hpp"
 #include "Switch.hpp"
-#include "bluetooth/Bluetooth.hpp"
-#include "configuration/interface/Configuration.hpp"
 #include "Throttle.hpp"
 #include "TwistPosition.hpp"
+#include "bluetooth/Bluetooth.hpp"
+#include "configuration/interface/Configuration.hpp"
 
 #include <executor/Executor.hpp>
 
@@ -28,6 +29,7 @@ class App {
 public:
   using SwitchPtr = std::shared_ptr<Switch>;
   using ThrottlePtr = std::shared_ptr<Throttle>;
+  using IndicatorPtr = std::shared_ptr<Indicator>;
   using ControllerPtr = std::shared_ptr<Controller>;
   using ModeButtonPtr = std::shared_ptr<ModeButton>;
   using TwistPositionPtr = std::shared_ptr<TwistPosition>;
@@ -47,11 +49,12 @@ private:
   executor::Executor m_executor;
 
 private:
-  ThrottlePtr m_throttle = nullptr;
-  SwitchPtr m_guardSwitch = nullptr;
-  SwitchPtr m_breakSwitch = nullptr;
-  SwitchPtr m_clutchSwitch = nullptr;
-  ControllerPtr m_controller = nullptr;
-  ModeButtonPtr m_modeButton = nullptr;
-  TwistPositionPtr m_twistPosition = nullptr;
+  App::SwitchPtr m_guardSwitch = nullptr;
+  App::SwitchPtr m_breakSwitch = nullptr;
+  App::SwitchPtr m_clutchSwitch = nullptr;
+  App::ThrottlePtr m_throttle = nullptr;
+  App::IndicatorPtr m_indicator = nullptr;
+  App::ControllerPtr m_controller = nullptr;
+  App::ModeButtonPtr m_modeButton = nullptr;
+  App::TwistPositionPtr m_twistPosition = nullptr;
 };

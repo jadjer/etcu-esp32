@@ -29,7 +29,7 @@ public:
   ~Switch() override = default;
 
 public:
-  void registerSwitchCallback(SwitchCallback callback);
+  void registerSwitchCallback(Switch::SwitchCallback callback);
 
 public:
   [[nodiscard]] virtual bool isEnabled() const;
@@ -38,7 +38,7 @@ private:
   void process() override;
 
 private:
-  SwitchCallback m_switchCallback = nullptr;
+  Switch::SwitchCallback m_switchCallback = nullptr;
 
 private:
   gpio::InputPin m_switch;

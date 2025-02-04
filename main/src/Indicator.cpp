@@ -21,13 +21,25 @@ auto const MICROSECONDS_IN_SECOND = 1000000;
 auto const MICROSECONDS_IN_MILLISECOND = 1000;
 
 Indicator::Indicator(Pin pin) : m_indicator(pin, gpio::PIN_LEVEL_LOW),
-                                m_mode(DISABLE_MODE),
-                                m_intervals(),
                                 m_currentStep(0),
-                                m_previousTime(0) {
+                                m_previousTime(0),
+                                m_mode(DISABLE_MODE),
+                                m_intervals() {
 }
 
-void Indicator::setMode(IndicatorMode mode) {
+void Indicator::setError() {
+  m_error = true;
+  m_intervals = {
+      {100 * MICROSECONDS_IN_MILLISECOND, gpio::PIN_LEVEL_HIGH},
+      {100 * MICROSECONDS_IN_MILLISECOND, gpio::PIN_LEVEL_LOW},
+  };
+}
+
+void Indicator::setMode(Indicator::IndicatorMode mode) {
+  if (m_error) {
+    return;
+  }
+
   if (mode == m_mode) {
     return;
   }
@@ -36,12 +48,6 @@ void Indicator::setMode(IndicatorMode mode) {
   case DISABLE_MODE:
   case NORMAL_MODE:
     m_intervals.clear();
-    break;
-  case ERROR_MODE:
-    m_intervals = {
-        {100 * MICROSECONDS_IN_MILLISECOND, gpio::PIN_LEVEL_HIGH},
-        {100 * MICROSECONDS_IN_MILLISECOND, gpio::PIN_LEVEL_LOW},
-    };
     break;
   case CRUISE_READY_MODE:
     m_intervals = {

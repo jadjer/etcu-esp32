@@ -16,21 +16,28 @@
 
 #include <functional>
 
-#include "PidController.hpp"
+#include "PIDController.hpp"
 #include "configuration/interface/Configuration.hpp"
 
 #include <executor/Node.hpp>
 
 class Controller : public executor::Node {
 public:
-  using PID = PIDController<float>;
   using RPM = std::uint16_t;
-  using Time = std::uint32_t;
+  using Time = std::int64_t;
   using Temp = float;
   using Speed = std::uint16_t;
   using Position = std::uint8_t;
   using ErrorCallback = std::function<void()>;
+  using PIDController = PIDController<Controller::Position>;
+  using CruiseEnabledCallback = std::function<void(bool)>;
   using PositionUpdateCallback = std::function<void(Controller::Position)>;
+
+  enum Mode {
+    MODE_GUARD = -1,
+    MODE_NORMAL = 0,
+    MODE_CRUISE
+  };
 
 public:
   explicit Controller(ConfigurationPtr configuration);
@@ -38,6 +45,7 @@ public:
 
 public:
   void registerErrorCallback(Controller::ErrorCallback callback);
+  void registerCruiseEnableCallback(Controller::CruiseEnabledCallback callback);
   void registerPositionUpdateCallback(Controller::PositionUpdateCallback callback);
 
 public:
@@ -48,12 +56,15 @@ public:
   void setThrottlePosition(Controller::Position position);
 
 public:
-  void enable();
-  void disable();
+  void enableGuardMode();
 
 public:
-  void modeEnable();
-  void modeDisable();
+  void holdRPM();
+  void releaseRPM();
+
+public:
+  void enableCruiseMode();
+  void disableCruiseMode();
 
 private:
   void process() override;
@@ -61,13 +72,15 @@ private:
 private:
   ConfigurationPtr m_configuration = nullptr;
   Controller::ErrorCallback m_errorCallback = nullptr;
+  Controller::CruiseEnabledCallback m_cruiseEnabledCallback = nullptr;
   Controller::PositionUpdateCallback m_positionUpdateCallback = nullptr;
 
 private:
-  Controller::PID m_speedPID;
+  Controller::PIDController m_pid;
 
 private:
   Controller::RPM m_rpm = 0;
+  Controller::Mode m_mode = Controller::MODE_GUARD;
   Controller::Temp m_temp = 0;
   Controller::Speed m_speed = 0;
   Controller::Time m_rpmLastUpdate = 0;

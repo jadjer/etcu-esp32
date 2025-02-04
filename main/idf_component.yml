@@ -3,9 +3,9 @@ dependencies:
 #  gpio:
 #    git: https://github.com/jadjer/esp32-gpio.git
 #    version: "*"
-  executor:
-    git: https://github.com/jadjer/esp32-executor.git
-    version: "*"
+#  executor:
+#    git: https://github.com/jadjer/esp32-executor.git
+#    version: "*"
   nimble:
     git: https://github.com/h2zero/esp-nimble-cpp.git
     version: "*"

@@ -22,7 +22,6 @@ auto const TAG = "Controller";
 auto const MICROSECONDS_IN_SECOND = 1000000;
 auto const DEAD_TIME = 5 * MICROSECONDS_IN_SECOND;
 auto const SPEED_MODE_CRUISE = 60;
-auto const SPEED_MODE_GYMKHANA = 0;
 auto const POSITION_MINIMAL = 0;
 auto const POSITION_MAXIMAL = 100;
 
@@ -47,13 +46,17 @@ auto const POSITION_MAXIMAL = 100;
  */
 
 Controller::Controller(ConfigurationPtr configuration) : m_configuration(std::move(configuration)),
-                                                         m_speedPID(3, 0.1, 0.1),
+                                                         m_pid(5, 0, 0),
                                                          m_throttlePositionMaximal(POSITION_MAXIMAL) {
-  m_speedPID.setPoint(POSITION_MINIMAL);
+  m_pid.setPoint(POSITION_MINIMAL);
 }
 
 void Controller::registerErrorCallback(Controller::ErrorCallback callback) {
   m_errorCallback = std::move(callback);
+}
+
+void Controller::registerCruiseEnableCallback(Controller::CruiseEnabledCallback callback) {
+  m_cruiseEnabledCallback = std::move(callback);
 }
 
 void Controller::registerPositionUpdateCallback(Controller::PositionUpdateCallback callback) {
@@ -82,65 +85,62 @@ void Controller::setThrottlePosition(Controller::Position const position) {
   m_throttlePosition = position;
 }
 
-void Controller::enable() {
-  m_throttlePositionMaximal = POSITION_MAXIMAL;
-}
-
-void Controller::disable() {
+void Controller::enableGuardMode() {
   m_throttlePositionMaximal = POSITION_MINIMAL;
 }
 
-void Controller::modeEnable() {
-  if (m_speed == SPEED_MODE_GYMKHANA) {
-    m_throttlePositionMinimal = m_throttlePosition;
-    ESP_LOGI(TAG, "Gymkhana mode enables");
-  }
-
+void Controller::holdRPM() {
   if (m_speed >= SPEED_MODE_CRUISE) {
-    m_speedPID.setPoint(m_speed);
-    ESP_LOGW(TAG, "Cruise mode enabled");
-  }
-}
-
-void Controller::modeDisable() {
-  if (m_speed == SPEED_MODE_GYMKHANA) {
-    m_throttlePositionMinimal = POSITION_MINIMAL;
-    ESP_LOGI(TAG, "Gymkhana mode disabled");
     return;
   }
 
-  m_speedPID.setPoint(POSITION_MINIMAL);
-  ESP_LOGW(TAG, "Cruise mode disabled");
+  m_throttlePositionMinimal = m_throttlePosition;
+}
+
+void Controller::releaseRPM() {
+  if (m_speed >= SPEED_MODE_CRUISE) {
+    return;
+  }
+
+  m_throttlePositionMinimal = POSITION_MINIMAL;
+}
+
+void Controller::enableCruiseMode() {
+  if (m_speed < SPEED_MODE_CRUISE) {
+    return;
+  }
+
+  m_pid.setPoint(m_speed);
+
+  if (m_cruiseEnabledCallback) {
+    m_cruiseEnabledCallback(true);
+  }
+}
+
+void Controller::disableCruiseMode() {
+  m_pid.setPoint(POSITION_MINIMAL);
+
+  if (m_cruiseEnabledCallback) {
+    m_cruiseEnabledCallback(false);
+  }
 }
 
 void Controller::process() {
-  auto targetThrottle = m_speedPID.compute(m_speed);
+  auto throttlePosition = m_pid.compute(m_speed);
 
-  if (targetThrottle < POSITION_MINIMAL) {
-    targetThrottle = POSITION_MINIMAL;
+  if (throttlePosition < m_twistPosition) {
+    throttlePosition = m_twistPosition;
   }
 
-  if (targetThrottle > POSITION_MAXIMAL) {
-    targetThrottle = POSITION_MAXIMAL;
+  if (throttlePosition < m_throttlePositionMinimal) {
+    throttlePosition = m_throttlePositionMinimal;
   }
 
-  ESP_LOGI(TAG, "Speed: %d, Throttle: %d -> %f", m_speed, m_throttlePosition, targetThrottle);
-
-  m_throttlePosition = static_cast<Controller::Position>(targetThrottle);
-
-  if (m_throttlePosition < m_twistPosition) {
-    m_throttlePosition = m_twistPosition;
-  }
-
-  if (m_throttlePosition < m_throttlePositionMinimal) {
-    m_throttlePosition = m_throttlePositionMinimal;
-  }
-
-  if (m_throttlePosition > m_throttlePositionMaximal) {
-    m_throttlePosition = m_throttlePositionMaximal;
+  if (throttlePosition > m_throttlePositionMaximal) {
+    throttlePosition = m_throttlePositionMaximal;
   }
 
   if (m_positionUpdateCallback) {
-    m_positionUpdateCallback(m_throttlePosition);
+    m_positionUpdateCallback(throttlePosition);
   }
 }

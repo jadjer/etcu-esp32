@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <executor/Node.hpp>
 #include <functional>
 #include <gpio/InputPin.hpp>
@@ -21,38 +22,39 @@
 class ModeButton : public executor::Node {
 public:
   using Pin = std::uint8_t;
-  using PressCallback = std::function<void()>;
+  using Time = std::int64_t;
   using HoldCallback = std::function<void()>;
+  using PressCallback = std::function<void()>;
 
 public:
-  explicit ModeButton(Pin pin, std::uint32_t holdTimeInUS = 1000000, std::uint32_t thresholdInUS = 100000);
+  explicit ModeButton(ModeButton::Pin pin, ModeButton::Time holdTimeInUS = 1000000, ModeButton::Time thresholdInUS = 100000);
   ~ModeButton() override = default;
 
 public:
-  void registerHoldCallback(HoldCallback callback);
-  void registerPressCallback(PressCallback callback);
+  void registerHoldCallback(ModeButton::HoldCallback callback);
+  void registerPressCallback(ModeButton::PressCallback callback);
 
 private:
   void process() override;
-  void processButtonReleased();
   void processButtonPressed();
+  void processButtonReleased();
 
 private:
-  HoldCallback m_holdCallback = nullptr;
-  PressCallback m_pressCallback = nullptr;
+  ModeButton::HoldCallback m_holdCallback = nullptr;
+  ModeButton::PressCallback m_pressCallback = nullptr;
 
 private:
   gpio::InputPin m_button;
 
 private:
-  std::uint32_t const m_holdTime_InUS;
-  std::uint32_t const m_threshold_InUS;
+  ModeButton::Time const m_holdTime;
+  ModeButton::Time const m_threshold;
 
 private:
   bool m_isHeld;
   bool m_isPressed;
 
 private:
-  std::uint32_t m_pressTime_InUS;
-  std::uint32_t m_releaseTime_InUS;
+  ModeButton::Time m_pressTime;
+  ModeButton::Time m_releaseTime;
 };

@@ -17,17 +17,17 @@
 #include <esp_timer.h>
 #include <utility>
 
-ModeButton::ModeButton(Pin pin, std::uint32_t holdTimeInUS, std::uint32_t thresholdInUS)
+ModeButton::ModeButton(ModeButton::Pin const pin, ModeButton::Time const holdTimeInUS, ModeButton::Time const thresholdInUS)
     : m_button(pin, gpio::PIN_LEVEL_HIGH),
 
-      m_holdTime_InUS(holdTimeInUS),
-      m_threshold_InUS(thresholdInUS),
+      m_holdTime(holdTimeInUS),
+      m_threshold(thresholdInUS),
 
       m_isHeld(false),
       m_isPressed(false),
 
-      m_pressTime_InUS(0),
-      m_releaseTime_InUS(0) {
+      m_pressTime(0),
+      m_releaseTime(0) {
 }
 
 void ModeButton::registerHoldCallback(ModeButton::HoldCallback callback) {
@@ -50,6 +50,36 @@ void ModeButton::process() {
   }
 }
 
+void ModeButton::processButtonPressed() {
+  if (m_isHeld) {
+    return;
+  }
+
+  auto const currentTime = esp_timer_get_time();
+  auto const idleTime = currentTime - m_releaseTime;
+  if (idleTime < m_threshold) {
+    return;
+  }
+
+  if (not m_isPressed) {
+    m_isPressed = true;
+    m_pressTime = currentTime;
+
+    return;
+  }
+
+  auto const holdTime = currentTime - m_pressTime;
+  if (holdTime < m_holdTime) {
+    return;
+  }
+
+  m_isHeld = true;
+
+  if (m_holdCallback) {
+    m_holdCallback();
+  }
+}
+
 void ModeButton::processButtonReleased() {
   if (not m_isPressed) {
     return;
@@ -61,37 +91,7 @@ void ModeButton::processButtonReleased() {
     }
   }
 
-  m_releaseTime_InUS = esp_timer_get_time();
+  m_releaseTime = esp_timer_get_time();
   m_isHeld = false;
   m_isPressed = false;
-}
-
-void ModeButton::processButtonPressed() {
-  if (m_isHeld) {
-    return;
-  }
-
-  auto const currentTime_InUS = esp_timer_get_time();
-  auto const idleTime_InUS = currentTime_InUS - m_releaseTime_InUS;
-  if (idleTime_InUS < m_threshold_InUS) {
-    return;
-  }
-
-  if (not m_isPressed) {
-    m_isPressed = true;
-    m_pressTime_InUS = currentTime_InUS;
-
-    return;
-  }
-
-  auto const holdTime_InUS = currentTime_InUS - m_pressTime_InUS;
-  if (holdTime_InUS < m_holdTime_InUS) {
-    return;
-  }
-
-  m_isHeld = true;
-
-  if (m_holdCallback) {
-    m_holdCallback();
-  }
 }

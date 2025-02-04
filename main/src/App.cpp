@@ -16,17 +16,14 @@
 
 #include "configuration/Configuration.hpp"
 
-auto const TAG = "APP";
-
-auto speed = 80;
-
 App::App() : m_configuration(std::make_shared<Configuration>()),
              m_bluetooth(m_configuration),
 
-             m_throttle(std::make_unique<Throttle>()),
              m_guardSwitch(std::make_unique<Switch>(m_configuration->getGuardSwitchPin())),
              m_breakSwitch(std::make_unique<Switch>(m_configuration->getBreakSwitchPin())),
              m_clutchSwitch(std::make_unique<Switch>(m_configuration->getClutchSwitchPin())),
+             m_throttle(std::make_unique<Throttle>()),
+             m_indicator(std::make_unique<Indicator>(m_configuration->getIndicatorPin())),
              m_controller(std::make_unique<Controller>(m_configuration)),
              m_modeButton(std::make_unique<ModeButton>(m_configuration->getModeButtonPin())),
              m_twistPosition(std::make_unique<TwistPosition>()) {
@@ -34,45 +31,59 @@ App::App() : m_configuration(std::make_shared<Configuration>()),
 
 void App::setup() {
   m_guardSwitch->registerSwitchCallback([this](bool const isEnabled) {
-    m_controller->disable();
+    m_controller->enableGuardMode();
   });
   m_breakSwitch->registerSwitchCallback([this](bool const isEnabled) {
     if (isEnabled) {
-      m_controller->modeDisable();
+      m_controller->disableCruiseMode();
     }
   });
   m_clutchSwitch->registerSwitchCallback([this](bool const isEnabled) {
     if (isEnabled) {
-      m_controller->modeDisable();
+      m_controller->disableCruiseMode();
     }
   });
+
   m_controller->registerPositionUpdateCallback([this](Controller::Position const position) {
     m_throttle->setPosition(position);
-    if (position > 20) {
-      speed += 1;
-    } else {
-      speed -= 1;
-    }
-    m_controller->setSpeed(speed);
+    m_controller->setThrottlePosition(position);
   });
+  m_controller->registerCruiseEnableCallback([this](bool const isEnabled) {
+    if (isEnabled) {
+      m_indicator->setMode(Indicator::CRUISE_ON_MODE);
+    } else {
+      m_indicator->setMode(Indicator::NORMAL_MODE);
+    }
+  });
+  m_controller->registerErrorCallback([this] {
+    m_indicator->setError();
+  });
+
   m_modeButton->registerHoldCallback([this] {
-    m_controller->modeEnable();
+    m_controller->holdRPM();
+    m_controller->enableCruiseMode();
   });
   m_modeButton->registerPressCallback([this] {
-    m_controller->modeDisable();
+    m_controller->releaseRPM();
+    m_controller->disableCruiseMode();
   });
+
   m_twistPosition->registerPositionChangeCallback([this](TwistPosition::Position const position) {
     m_controller->setTwistPosition(position);
+  });
+  m_twistPosition->registerErrorCallback([this] {
+    m_indicator->setError();
   });
 }
 
 void App::run() {
   m_bluetooth.advertise();
 
-  m_executor.addNode(m_throttle, 1);
   m_executor.addNode(m_guardSwitch, 1);
-  m_executor.addNode(m_breakSwitch ,1);
-  m_executor.addNode(m_clutchSwitch ,1);
+  m_executor.addNode(m_breakSwitch, 1);
+  m_executor.addNode(m_clutchSwitch, 1);
+  m_executor.addNode(m_throttle, 1);
+  m_executor.addNode(m_indicator);
   m_executor.addNode(m_controller, 1);
   m_executor.addNode(m_modeButton);
   m_executor.addNode(m_twistPosition, 1);

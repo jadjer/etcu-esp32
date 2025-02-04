@@ -15,43 +15,51 @@
 #pragma once
 
 #include <cstdint>
+#include <executor/Node.hpp>
 #include <gpio/OutputPin.hpp>
 #include <vector>
 
-using Pin = std::uint8_t;
-using Interval = std::uint32_t;
+class Indicator : public executor::Node {
+public:
+  using Pin = std::uint8_t;
+  using Step = std::size_t;
+  using Time = std::int64_t;
+  using Interval = std::uint32_t;
 
-enum IndicatorMode {
-  DISABLE_MODE = 0,
-  NORMAL_MODE,
-  ERROR_MODE,
-  CRUISE_READY_MODE,
-  CRUISE_ON_MODE,
-};
+  enum IndicatorMode {
+    DISABLE_MODE = 0,
+    NORMAL_MODE,
+    CRUISE_READY_MODE,
+    CRUISE_ON_MODE,
+  };
 
-struct IntervalSetting {
-  Interval interval;
-  gpio::PinLevel indicatorLevel;
-};
+  struct IntervalSetting {
+    Indicator::Interval interval;
+    gpio::PinLevel indicatorLevel;
+  };
 
-using Intervals = std::vector<IntervalSetting>;
+  using Intervals = std::vector<Indicator::IntervalSetting>;
 
-class Indicator {
 public:
   explicit Indicator(Pin pin);
+  ~Indicator() override = default;
 
 public:
-  void setMode(IndicatorMode mode);
+  void setError();
 
 public:
-  void process();
+  void setMode(Indicator::IndicatorMode mode);
+
+public:
+  void process() override;
 
 private:
   gpio::OutputPin m_indicator;
 
 private:
-  IndicatorMode m_mode;
-  Intervals m_intervals;
-  std::size_t m_currentStep;
-  std::uint32_t m_previousTime;
+  bool m_error = false;
+  Indicator::Step m_currentStep;
+  Indicator::Time m_previousTime;
+  Indicator::IndicatorMode m_mode;
+  Indicator::Intervals m_intervals;
 };
