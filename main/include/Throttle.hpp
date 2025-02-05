@@ -25,7 +25,6 @@ public:
   using PositionChangeCallback = std::function<void(Throttle::Position)>;
 
 public:
-  Throttle();
   ~Throttle() override = default;
 
 public:
@@ -35,26 +34,10 @@ public:
 public:
   void setPosition(Throttle::Position position) const;
 
-public:
-  void setMinimalPosition(Throttle::Position position);
-  void setMaximalPosition(Throttle::Position position);
-
-public:
-  void enable();
-  void disable();
-
-public:
-  [[nodiscard]] bool isEnabled() const;
-
 private:
   void process() override;
 
 private:
   Throttle::ErrorCallback m_errorCallback = nullptr;
   Throttle::PositionChangeCallback m_positionChangeCallback = nullptr;
-
-private:
-  bool m_enable;
-  Throttle::Position m_minimalPosition;
-  Throttle::Position m_maximalPosition;
 };

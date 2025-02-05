@@ -18,13 +18,8 @@
 #include <utility>
 
 auto const TAG = "Throttle";
-auto const THROTTLE_MINIMAL_POSITION = 0;
-auto const THROTTLE_MAXIMAL_POSITION = 100;
-
-Throttle::Throttle() : m_enable(true),
-                       m_minimalPosition(THROTTLE_MINIMAL_POSITION),
-                       m_maximalPosition(THROTTLE_MAXIMAL_POSITION) {
-}
+auto const POSITION_MINIMAL = 0;
+auto const POSITION_MAXIMAL = 100;
 
 void Throttle::registerErrorCallback(Throttle::ErrorCallback callback) {
   m_errorCallback = std::move(callback);
@@ -37,55 +32,19 @@ void Throttle::registerPositionChangeCallback(Throttle::PositionChangeCallback c
 void Throttle::setPosition(Throttle::Position position) const {
   auto requiredPosition = position;
 
-  if (requiredPosition < m_minimalPosition) {
-    requiredPosition = m_minimalPosition;
-    ESP_LOGW(TAG, "Limiting the throttle position to the minimum value of %d", m_minimalPosition);
+  if (requiredPosition < POSITION_MINIMAL) {
+    requiredPosition = POSITION_MINIMAL;
+    ESP_LOGW(TAG, "Limiting the throttle position to the minimum value of %d", POSITION_MINIMAL);
   }
 
-  if (requiredPosition > m_maximalPosition) {
-    requiredPosition = m_maximalPosition;
-    ESP_LOGW(TAG, "Limiting the throttle position to the maximum value of %d", m_maximalPosition);
+  if (requiredPosition > POSITION_MAXIMAL) {
+    requiredPosition = POSITION_MAXIMAL;
+    ESP_LOGW(TAG, "Limiting the throttle position to the maximum value of %d", POSITION_MAXIMAL);
   }
 
   //  m_throttle.setPercent(setPercentage);
 
   ESP_LOGI(TAG, "Throttle position is set to %d", requiredPosition);
-}
-
-void Throttle::setMinimalPosition(Throttle::Position position) {
-  m_minimalPosition = position;
-
-  if (m_minimalPosition < THROTTLE_MINIMAL_POSITION) {
-    m_minimalPosition = THROTTLE_MINIMAL_POSITION;
-  }
-
-  if (m_minimalPosition > m_maximalPosition) {
-    m_minimalPosition = m_maximalPosition;
-  }
-}
-
-void Throttle::setMaximalPosition(Throttle::Position position) {
-  m_maximalPosition = position;
-
-  if (m_maximalPosition > THROTTLE_MAXIMAL_POSITION) {
-    m_maximalPosition = THROTTLE_MAXIMAL_POSITION;
-  }
-
-  if (m_maximalPosition < m_minimalPosition) {
-    m_maximalPosition = m_minimalPosition;
-  }
-}
-
-void Throttle::enable() {
-  m_enable = true;
-}
-
-void Throttle::disable() {
-  m_enable = false;
-}
-
-bool Throttle::isEnabled() const {
-  return m_enable;
 }
 
 void Throttle::process() {

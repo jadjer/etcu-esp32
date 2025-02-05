@@ -14,20 +14,14 @@
 
 #include "TwistPosition.hpp"
 
+#include <esp_log.h>
 #include <utility>
 
-TwistPosition::TwistPosition() : m_sensor1(),
-                                 m_sensor2() {
+auto const TAG = "Twist Position";
 
-  auto const sensorVoltage1 = m_sensor1.getVoltage();
-  auto const sensorVoltage2 = m_sensor2.getVoltage();
-
-  auto const voltageDifferenceFromSensors = sensorVoltage2 - sensorVoltage1;
-  if (voltageDifferenceFromSensors) {
-    if (m_errorCallback) {
-      m_errorCallback();
-    }
-  }
+TwistPosition::TwistPosition() : m_adc(0),
+                                 m_sensor1(m_adc.createChannel(3)),
+                                 m_sensor2(m_adc.createChannel(6)) {
 }
 
 void TwistPosition::registerErrorCallback(TwistPosition::ErrorCallback callback) {
@@ -43,8 +37,10 @@ TwistPosition::Position TwistPosition::getPosition() const {
 }
 
 void TwistPosition::process() {
-  auto const sensorVoltage1 = m_sensor1.getVoltage();
-  auto const sensorVoltage2 = m_sensor2.getVoltage();
+  auto const voltageFromSensor1 = m_sensor1->getVoltage();
+  auto const voltageFromSensor2 = m_sensor2->getVoltage();
+
+  ESP_LOGI(TAG, "Voltage 1: %d, Voltage 2: %d", voltageFromSensor1, voltageFromSensor2);
 
   if (m_positionChangeCallback) {
     m_positionChangeCallback(m_position);

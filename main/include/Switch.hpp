@@ -25,7 +25,7 @@ public:
   using SwitchCallback = std::function<void(bool)>;
 
 public:
-  explicit Switch(Pin pin);
+  explicit Switch(Switch::Pin pin);
   ~Switch() override = default;
 
 public:

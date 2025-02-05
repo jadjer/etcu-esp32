@@ -14,10 +14,10 @@
 
 #pragma once
 
-#include "TwistPositionSensor.hpp"
-
-#include <executor/Node.hpp>
+#include <adc/ADC.hpp>
+#include <adc/Channel.hpp>
 #include <cstdint>
+#include <executor/Node.hpp>
 #include <functional>
 
 class TwistPosition : public executor::Node {
@@ -45,8 +45,9 @@ private:
   TwistPosition::PositionChangeCallback m_positionChangeCallback = nullptr;
 
 private:
-  TwistPositionSensor m_sensor1;
-  TwistPositionSensor m_sensor2;
+  adc::ADC m_adc;
+  ChannelPtr m_sensor1 = nullptr;
+  ChannelPtr m_sensor2 = nullptr;
 
 private:
   TwistPosition::Position m_position = 0;

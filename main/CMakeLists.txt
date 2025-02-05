@@ -14,7 +14,6 @@ set(SOURCES
         src/Controller.cpp
         src/ModeButton.cpp
         src/TwistPosition.cpp
-        src/TwistPositionSensor.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ServerCallback.cpp
