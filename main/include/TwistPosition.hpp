@@ -24,6 +24,7 @@ class TwistPosition : public executor::Node {
 public:
   using Position = std::uint8_t;
   using ErrorCallback = std::function<void()>;
+  using SensorPosition = std::uint16_t;
   using PositionChangeCallback = std::function<void(TwistPosition::Position)>;
 
 public:
@@ -51,4 +52,8 @@ private:
 
 private:
   TwistPosition::Position m_position = 0;
+  TwistPosition::SensorPosition m_positionMinSensor1 = 0;
+  TwistPosition::SensorPosition m_positionMaxSensor1 = 0;
+  TwistPosition::SensorPosition m_positionMinSensor2 = 0;
+  TwistPosition::SensorPosition m_positionMaxSensor2 = 0;
 };

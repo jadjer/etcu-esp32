@@ -84,9 +84,9 @@ void App::run() {
   m_executor.addNode(m_clutchSwitch, 1);
   m_executor.addNode(m_throttle, 1);
   m_executor.addNode(m_indicator);
-  m_executor.addNode(m_controller, 1);
+  m_executor.addNode(m_controller);
   m_executor.addNode(m_modeButton);
-  m_executor.addNode(m_twistPosition, 1);
+  m_executor.addNode(m_twistPosition);
 
   m_executor.spin();
 }

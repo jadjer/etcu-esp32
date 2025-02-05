@@ -1,10 +1,13 @@
 dependencies:
-  idf: ">=5.3.2"
+  idf: ">=5.4"
 #  gpio:
 #    git: https://github.com/jadjer/esp32-gpio.git
 #    version: "*"
-#  executor:
-#    git: https://github.com/jadjer/esp32-executor.git
+  executor:
+    git: https://github.com/jadjer/esp32-executor.git
+    version: "*"
+#  adc:
+#    git: https://github.com/jadjer/esp32-adc.git
 #    version: "*"
   nimble:
     git: https://github.com/h2zero/esp-nimble-cpp.git
