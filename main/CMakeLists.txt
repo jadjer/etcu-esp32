@@ -9,8 +9,10 @@ set(SOURCES
 
         src/App.cpp
         src/Switch.cpp
+        src/AS5600.cpp
         src/Throttle.cpp
         src/Indicator.cpp
+        src/HourMeter.cpp
         src/Controller.cpp
         src/ModeButton.cpp
         src/TwistPosition.cpp

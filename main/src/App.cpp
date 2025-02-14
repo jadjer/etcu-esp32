@@ -79,10 +79,10 @@ void App::setup() {
 void App::run() {
   m_bluetooth.advertise();
 
-  m_executor.addNode(m_guardSwitch, 1);
-  m_executor.addNode(m_breakSwitch, 1);
-  m_executor.addNode(m_clutchSwitch, 1);
-  m_executor.addNode(m_throttle, 1);
+  m_executor.addNode(m_guardSwitch);
+  m_executor.addNode(m_breakSwitch);
+  m_executor.addNode(m_clutchSwitch);
+  m_executor.addNode(m_throttle);
   m_executor.addNode(m_indicator);
   m_executor.addNode(m_controller);
   m_executor.addNode(m_modeButton);

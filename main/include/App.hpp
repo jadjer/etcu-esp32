@@ -14,7 +14,9 @@
 
 #pragma once
 
+#include "AS5600.hpp"
 #include "Controller.hpp"
+#include "HourMeter.hpp"
 #include "Indicator.hpp"
 #include "ModeButton.hpp"
 #include "Switch.hpp"
@@ -45,7 +47,9 @@ private:
   ConfigurationPtr const m_configuration;
 
 private:
+  AS5600 m_as5600;
   Bluetooth m_bluetooth;
+  HourMeter m_hourMeter;
   executor::Executor m_executor;
 
 private:
