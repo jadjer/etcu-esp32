@@ -12,9 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "AS5600.hpp"
+#include "motor/Motor.hpp"
 
-AS5600::AS5600() {
-  m_busMaster = std::make_unique<i2c::Master>(12, 13, 0);
-  m_device = m_busMaster->createDevice(0x55);
+#include <esp_log.h>
+
+auto const TAG = "Motor";
+
+Motor::Motor() {
+  m_encoder.setPowerMode(AS5600::PowerMode::POWER_MODE_NORMAL);
+  m_encoder.setSlowFilter(AS5600::SlowFilter::SLOW_FILTER_X16);
+  m_encoder.setFastFilterThreshold(AS5600::FastFilterThreshold::SLOW_FILTER_ONLY);
+  m_encoder.setWatchdog(true);
+
+  //  m_encoder.setCurrentPositionAsHome();
+}
+
+void Motor::process() {
+  auto const angleRaw = m_encoder.getRawAngle();
+  auto const angle = m_encoder.getAngle();
+  ESP_LOGI(TAG, "Angle: %d, (%d)", angle, angleRaw);
 }

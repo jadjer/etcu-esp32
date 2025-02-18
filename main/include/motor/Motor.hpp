@@ -14,18 +14,18 @@
 
 #pragma once
 
-#include <i2c/Device.hpp>
-#include <i2c/Master.hpp>
+#include "motor/AS5600.hpp"
 
-class AS5600 {
-public:
-  using Device = std::unique_ptr<i2c::Device>;
-  using BusMaster = std::unique_ptr<i2c::Master>;
+#include <executor/Node.hpp>
 
+class Motor : public executor::Node {
 public:
-  AS5600();
+  Motor();
+  ~Motor() override = default;
 
 private:
-  AS5600::Device m_device = nullptr;
-  AS5600::BusMaster m_busMaster = nullptr;
+  void process() override;
+
+private:
+  AS5600 m_encoder;
 };

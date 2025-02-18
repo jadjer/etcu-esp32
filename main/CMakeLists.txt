@@ -9,13 +9,15 @@ set(SOURCES
 
         src/App.cpp
         src/Switch.cpp
-        src/AS5600.cpp
         src/Throttle.cpp
         src/Indicator.cpp
         src/HourMeter.cpp
         src/Controller.cpp
         src/ModeButton.cpp
         src/TwistPosition.cpp
+
+        src/motor/Motor.cpp
+        src/motor/AS5600.cpp
 
         src/bluetooth/Bluetooth.cpp
         src/bluetooth/ServerCallback.cpp
