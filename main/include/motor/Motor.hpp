@@ -20,12 +20,22 @@
 
 class Motor : public executor::Node {
 public:
+  using Position = std::uint16_t;
+
+public:
   Motor();
   ~Motor() override = default;
+
+public:
+  void setPosition(Position position);
 
 private:
   void process() override;
 
 private:
   AS5600 m_encoder;
+
+private:
+  Motor::Position m_targetPosition = 0;
+  Motor::Position m_currentPosition = 0;
 };

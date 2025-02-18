@@ -27,6 +27,10 @@ Motor::Motor() {
   //  m_encoder.setCurrentPositionAsHome();
 }
 
+void Motor::setPosition(Motor::Position position) {
+  m_targetPosition = position;
+}
+
 void Motor::process() {
   auto const angleRaw = m_encoder.getRawAngle();
   auto const angle = m_encoder.getAngle();
