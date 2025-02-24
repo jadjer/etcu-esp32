@@ -4,13 +4,13 @@ dependencies:
 #    git: https://github.com/jadjer/idf-gpio.git
 #    version: "*"
   executor:
-    git: https://github.com/jadjer/idf-executor.git
+    git: https://github.com/jadjer/esp-idf-executor.git
     version: "*"
 #  adc:
 #    git: https://github.com/jadjer/idf-adc.git
 #    version: "*"
   i2c:
-    git: https://github.com/jadjer/idf-i2c.git
+    git: https://github.com/jadjer/esp-idf-i2c.git
     version: "*"
   nimble:
     git: https://github.com/h2zero/esp-nimble-cpp.git

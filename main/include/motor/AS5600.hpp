@@ -16,8 +16,9 @@
 
 #include <i2c/Device.hpp>
 #include <i2c/Master.hpp>
+#include <foc/encoder/BaseEncoder.hpp>
 
-class AS5600 {
+class AS5600 : public foc::BaseEncoder {
 public:
   using Byte = std::uint8_t;
   using Angle = std::uint16_t;
@@ -91,6 +92,7 @@ public:
 
 public:
   AS5600();
+  ~AS5600() override = default;
 
 public:
   void setPowerMode(PowerMode powerMode);
@@ -102,18 +104,21 @@ public:
   void setWatchdog(bool enable);
 
 public:
-  void setCurrentPositionAsHome();
+  float getMechanicalAngle() override;
+  float getAngle() override;
+  double getPreciseAngle() override;
+  float getVelocity() override;
+  int32_t getFullRotations() override;
+  void update() override;
+  int needsSearch() override;
+
+protected:
+  float getSensorAngle() override;
+  void init() override;
 
 public:
   [[nodiscard]] AS5600::Status getStatus();
   [[nodiscard]] AS5600::Configuration getConfiguration();
-
-public:
-  [[nodiscard]] AS5600::Angle getAngle() const;
-  [[nodiscard]] AS5600::Angle getRawAngle() const;
-
-public:
-  [[nodiscard]] AS5600::Byte getAGC() const;
 
 private:
   AS5600::Device m_device = nullptr;

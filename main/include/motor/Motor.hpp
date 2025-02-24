@@ -17,9 +17,13 @@
 #include "motor/AS5600.hpp"
 
 #include <executor/Node.hpp>
+#include <foc/motor/BaseMotor.hpp>
+#include <memory>
 
 class Motor : public executor::Node {
 public:
+  using Encoder = std::unique_ptr<AS5600>;
+  using FOCMotor = std::unique_ptr<foc::BaseMotor>;
   using Position = std::uint16_t;
 
 public:
@@ -33,7 +37,8 @@ private:
   void process() override;
 
 private:
-  AS5600 m_encoder;
+  Encoder m_encoder = nullptr;
+  FOCMotor m_motor = nullptr;
 
 private:
   Motor::Position m_targetPosition = 0;

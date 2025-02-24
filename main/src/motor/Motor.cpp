@@ -14,25 +14,25 @@
 
 #include "motor/Motor.hpp"
 
+#include <foc/motor/BLDCMotor.hpp>
 #include <esp_log.h>
 
 auto const TAG = "Motor";
 
-Motor::Motor() {
-  m_encoder.setPowerMode(AS5600::PowerMode::POWER_MODE_NORMAL);
-  m_encoder.setSlowFilter(AS5600::SlowFilter::SLOW_FILTER_X16);
-  m_encoder.setFastFilterThreshold(AS5600::FastFilterThreshold::SLOW_FILTER_ONLY);
-  m_encoder.setWatchdog(true);
+Motor::Motor() : m_encoder(std::make_unique<AS5600>()),
+                 m_motor(std::make_unique<foc::BLDCMotor>(22, 0.2, 360, 20)) {
 
-  //  m_encoder.setCurrentPositionAsHome();
+  m_motor->linkEncoder(std::move(m_encoder));
+//  m_motor->linkCurrentSense()
+
+  m_motor->init();
+  m_motor->initFOC();
 }
 
 void Motor::setPosition(Motor::Position position) {
-  m_targetPosition = position;
+  m_motor->move(position);
 }
 
 void Motor::process() {
-  auto const angleRaw = m_encoder.getRawAngle();
-  auto const angle = m_encoder.getAngle();
-  ESP_LOGI(TAG, "Angle: %d, (%d)", angle, angleRaw);
+  m_motor->loopFOC();
 }

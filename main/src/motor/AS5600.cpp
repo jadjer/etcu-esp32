@@ -20,18 +20,18 @@
 
 auto const TAG = "AS5600";
 
-auto const DEVICE_ADDRESS = 0x36; ///< Адрес устройства
-auto const REGISTER_ZMCO = 0x00; ///< Количество записей
-auto const REGISTER_ZPOS = 0x01; ///< Минимальное положение
-auto const REGISTER_MPOS = 0x03; ///< Максимальное положение
-auto const REGISTER_MANG = 0x05; ///< Диапазон значений
-auto const REGISTER_CONF = 0x07; ///<  Конфигурация
-auto const REGISTER_STATUS = 0x0B; ///< Статус
-auto const REGISTER_RAW_ANGLE = 0x0C; ///< Угол (сырое значение)
-auto const REGISTER_ANGLE = 0x0E; ///< Угол (значение после фильтрации)
-auto const REGISTER_AGC = 0x1A; ///< Automatic Gain Control
-auto const REGISTER_MAGNITUDE = 0x1B; ///< Магнитуда
-auto const REGISTER_BURN = 0xFF; ///< Запись в ПЗУ
+auto const DEVICE_ADDRESS = 0x36;    ///< Адрес устройства
+auto const REGISTER_ZMCO = 0x00;     ///< Количество записей
+auto const REGISTER_ZPOS = 0x01;     ///< Минимальное положение
+auto const REGISTER_MPOS = 0x03;     ///< Максимальное положение
+auto const REGISTER_MANG = 0x05;     ///< Диапазон значений
+auto const REGISTER_CONF = 0x07;     ///<  Конфигурация
+auto const REGISTER_STATUS = 0x0B;   ///< Статус
+auto const REGISTER_RAW_ANGLE = 0x0C;///< Угол (сырое значение)
+auto const REGISTER_ANGLE = 0x0E;    ///< Угол (значение после фильтрации)
+auto const REGISTER_AGC = 0x1A;      ///< Automatic Gain Control
+auto const REGISTER_MAGNITUDE = 0x1B;///< Магнитуда
+auto const REGISTER_BURN = 0xFF;     ///< Запись в ПЗУ
 
 template<typename T>
 T convertBytesToData(std::vector<std::uint8_t> bytes) {
@@ -128,13 +128,6 @@ void AS5600::setWatchdog(bool enable) {
   m_device->write(REGISTER_CONF, configurationData);
 }
 
-void AS5600::setCurrentPositionAsHome() {
-  auto const angleData = m_device->read(REGISTER_RAW_ANGLE);
-
-  m_device->write(REGISTER_ZPOS, angleData);
-}
-
-
 AS5600::Status AS5600::getStatus() {
   if (not m_device) {
     return m_status;
@@ -159,7 +152,35 @@ AS5600::Configuration AS5600::getConfiguration() {
   return m_configuration;
 }
 
-AS5600::Angle AS5600::getAngle() const {
+float AS5600::getMechanicalAngle() {
+  return BaseEncoder::getMechanicalAngle();
+}
+
+float AS5600::getAngle() {
+  return BaseEncoder::getAngle();
+}
+
+double AS5600::getPreciseAngle() {
+  return BaseEncoder::getPreciseAngle();
+}
+
+float AS5600::getVelocity() {
+  return BaseEncoder::getVelocity();
+}
+
+int32_t AS5600::getFullRotations() {
+  return BaseEncoder::getFullRotations();
+}
+
+void AS5600::update() {
+  BaseEncoder::update();
+}
+
+int AS5600::needsSearch() {
+  return BaseEncoder::needsSearch();
+}
+
+float AS5600::getSensorAngle() {
   if (not m_device) {
     return {};
   }
@@ -169,22 +190,6 @@ AS5600::Angle AS5600::getAngle() const {
   return convertBytesToData<AS5600::Angle>(angleData);
 }
 
-AS5600::Angle AS5600::getRawAngle() const {
-  if (not m_device) {
-    return {};
-  }
-
-  auto const angleData = m_device->read(REGISTER_RAW_ANGLE, 2);
-
-  return convertBytesToData<AS5600::Angle>(angleData);
-}
-
-AS5600::Byte AS5600::getAGC() const {
-  if (not m_device) {
-    return {};
-  }
-
-  auto const agcData = m_device->read(REGISTER_AGC);
-
-  return convertBytesToData<AS5600::Byte>(agcData);
+void AS5600::init() {
+  BaseEncoder::init();
 }
